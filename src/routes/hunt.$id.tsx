@@ -8,7 +8,13 @@ import { CommitModal } from "@/components/hunt/CommitModal";
 import { Button } from "@/components/ui/button";
 import Countdown from "@/components/ui/Countdown";
 import { Separator } from "@/components/ui/separator";
-import { canCommit, canOpenChat, canSettle, getSettlementOutcome } from "@/lib/hunt-lifecycle";
+import {
+  canCommit,
+  canOpenChat,
+  canSettle,
+  getSettlementOutcome,
+  isProgressVisible,
+} from "@/lib/hunt-lifecycle";
 import { markHuntSettled } from "@/lib/hunt-state-store";
 import { useCommitment } from "@/lib/useCommitment";
 import { useHunt } from "@/lib/useHunt";
@@ -150,16 +156,26 @@ function HuntDetailPage() {
 
       {/* Compteur fourni par useHunt (mock ZK-lite) */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">Participants engagés</p>
-          <p className="text-3xl font-semibold">
-            {commitCount}
-            <span className="text-base font-normal text-muted-foreground">
-              {" "}
-              sur {hunt.threshold} requis
-            </span>
-          </p>
-        </div>
+        {isProgressVisible(hunt, status) ? (
+          <div>
+            <p className="text-sm text-muted-foreground">Participants engagés</p>
+            <p className="text-3xl font-semibold">
+              {commitCount}
+              <span className="text-base font-normal text-muted-foreground">
+                {" "}
+                sur {hunt.threshold} requis
+              </span>
+            </p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm text-muted-foreground">Progression masquée</p>
+            <p className="text-sm">
+              Seuil : {hunt.threshold} participants. Le nombre d'engagés sera révélé à l'activation
+              ou à la date limite.
+            </p>
+          </div>
+        )}
         {/* Engagement possible uniquement tant que la chasse est active */}
         {!canCommit(status) ? (
           <Button size="lg" disabled>

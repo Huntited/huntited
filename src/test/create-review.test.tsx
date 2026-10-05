@@ -3,7 +3,8 @@ import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/rea
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { setCreateHuntDraft } from "@/lib/create-hunt-store";
+import { getHunt } from "@/lib/covenants";
+import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
 import { getUserHunts } from "@/lib/user-hunts";
 import { connectWallet, disconnectWallet, getWalletState } from "@/lib/wallet";
 import { routeTree } from "@/routeTree.gen";
@@ -52,5 +53,18 @@ describe("Création d'une chasse : wallet obligatoire", () => {
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/hunt\//));
     const huntId = router.state.location.pathname.split("/").pop();
     expect(getUserHunts(address).map((h) => h.huntId)).toContain(huntId);
+  });
+
+  it("conserve le choix « progression masquée » à la création", async () => {
+    setCreateHuntDraft({ ...getCreateHuntDraft()!, progressVisibility: "hidden" });
+    await connectWallet();
+    const router = renderReview();
+
+    expect(await screen.findByText("Masquée jusqu'à la fin")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer et créer la chasse" }));
+
+    await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/hunt\//));
+    const huntId = router.state.location.pathname.split("/").pop()!;
+    expect(getHunt(huntId)?.progressVisibility).toBe("hidden");
   });
 });

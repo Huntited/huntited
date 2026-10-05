@@ -4,6 +4,15 @@
 /** États UI d'une chasse. */
 export type HuntStatus = "draft" | "active" | "activated" | "expired" | "settled";
 
+/**
+ * Visibilité de la progression pendant la phase d'engagement :
+ * - "visible" : le compteur d'engagements est affiché à tous ;
+ * - "hidden"  : personne ne voit le compteur avant l'activation ou la date limite.
+ * Dans le prototype, "hidden" est un masquage d'affichage, pas une garantie
+ * cryptographique.
+ */
+export type ProgressVisibility = "visible" | "hidden";
+
 export interface Hunt {
   /** Identifiant unique de la chasse (mock pour l'instant) */
   id: string;
@@ -25,6 +34,8 @@ export interface Hunt {
   commitCount: number;
   /** Statut enregistré ; le statut affiché est dérivé par deriveHuntStatus(). */
   status: HuntStatus;
+  /** Visibilité de la progression (absente = "visible"). */
+  progressVisibility?: ProgressVisibility;
   /** Date d'activation (ISO), si connue. */
   activatedAt?: string;
   /** Date de résolution (ISO), si connue. */
@@ -42,4 +53,6 @@ export interface HuntFormData {
   /** Montants fixes, affichés en lecture seule dans le MVP. */
   deposit: number;
   commitDeposit: number;
+  /** Visibilité de la progression choisie par le créateur (absente = "visible"). */
+  progressVisibility?: ProgressVisibility;
 }

@@ -93,6 +93,10 @@ function CreateReviewPage() {
     ["Lieu", draft.location],
     ["Date limite", deadlineFr],
     ["Seuil", `${draft.threshold} participants`],
+    [
+      "Progression",
+      draft.progressVisibility === "hidden" ? "Masquée jusqu'à la fin" : "Visible par tous",
+    ],
     ["Dépôt de création", `${CREATE_DEPOSIT_KAS} KAS`],
     ["Dépôt par engagement", `${COMMIT_DEPOSIT_KAS} KAS`],
   ];

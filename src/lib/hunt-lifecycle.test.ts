@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { canCommit, canOpenChat, canSettle, deriveHuntStatus } from "./hunt-lifecycle";
+import {
+  canCommit,
+  canOpenChat,
+  canSettle,
+  deriveHuntStatus,
+  isProgressVisible,
+} from "./hunt-lifecycle";
 
 const deadline = "2026-10-10T18:00:00Z";
 const before = new Date("2026-10-09T12:00:00Z").getTime();
@@ -48,5 +54,21 @@ describe("permissions par statut", () => {
     expect(canSettle("expired")).toBe(true);
     expect(canSettle("active")).toBe(false);
     expect(canSettle("settled")).toBe(false);
+  });
+});
+
+describe("visibilité de la progression", () => {
+  it("visible par défaut, quel que soit le statut", () => {
+    expect(isProgressVisible({}, "active")).toBe(true);
+    expect(isProgressVisible({ progressVisibility: "visible" }, "active")).toBe(true);
+  });
+
+  it("masquée pendant la phase d'engagement, révélée ensuite", () => {
+    const hidden = { progressVisibility: "hidden" as const };
+    expect(isProgressVisible(hidden, "draft")).toBe(false);
+    expect(isProgressVisible(hidden, "active")).toBe(false);
+    for (const s of ["activated", "expired", "settled"] as const) {
+      expect(isProgressVisible(hidden, s)).toBe(true);
+    }
   });
 });

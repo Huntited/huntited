@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +17,7 @@ interface CreateHuntFormValues {
   location: string;
   deadline: string;
   threshold: string;
+  hideProgress: boolean;
 }
 
 /**
@@ -32,6 +34,7 @@ export function CreateHuntForm() {
     location: "",
     deadline: "",
     threshold: "",
+    hideProgress: false,
   });
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,6 +56,7 @@ export function CreateHuntForm() {
     threshold: Number(values.threshold),
     deposit: CREATE_DEPOSIT_KAS,
     commitDeposit: COMMIT_DEPOSIT_KAS,
+    progressVisibility: values.hideProgress ? "hidden" : "visible",
   });
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -86,6 +90,7 @@ export function CreateHuntForm() {
       location: draft.location,
       deadline: draft.deadline,
       threshold: String(draft.threshold),
+      hideProgress: draft.progressVisibility === "hidden",
     });
   }, []);
 
@@ -176,6 +181,26 @@ export function CreateHuntForm() {
         <ErrorText msg={errors.threshold} />
         <p className="text-xs text-muted-foreground">
           Nombre minimum d'engagements pour déclencher l'action.
+        </p>
+      </div>
+
+      {/* Visibilité de la progression */}
+      <div className="space-y-2">
+        <label className="flex cursor-pointer items-start gap-3 text-sm">
+          <Checkbox
+            id="hide-progress"
+            checked={values.hideProgress}
+            onCheckedChange={(checked) =>
+              setValues((prev) => ({ ...prev, hideProgress: checked === true }))
+            }
+            className="mt-0.5"
+          />
+          <span>Masquer la progression</span>
+        </label>
+        <p className="text-xs text-muted-foreground">
+          Personne ne voit combien de personnes se sont engagées avant l'activation ou la date
+          limite : s'engager en premier n'expose plus. Dans ce prototype, c'est un masquage
+          d'affichage, pas encore une garantie cryptographique.
         </p>
       </div>
 

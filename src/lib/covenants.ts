@@ -163,6 +163,9 @@ function readCreatedHunts(): Hunt[] {
           commitCount: typeof candidate.commitCount === "number" ? candidate.commitCount : 0,
           // Anciennes chasses sans statut : considérées comme "active".
           status: candidate.status === "settled" ? "settled" : "active",
+          ...(candidate.progressVisibility === "hidden"
+            ? { progressVisibility: "hidden" as const }
+            : {}),
         },
       ];
     });
@@ -200,6 +203,7 @@ export async function createHuntCovenant(data: HuntFormData): Promise<HuntCovena
     commitDeposit: COMMIT_DEPOSIT_KAS,
     commitCount: 0,
     status: "active",
+    ...(data.progressVisibility === "hidden" ? { progressVisibility: "hidden" as const } : {}),
   };
 
   saveCreatedHunts([...readCreatedHunts(), hunt]);

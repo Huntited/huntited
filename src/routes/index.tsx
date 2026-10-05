@@ -12,7 +12,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getHunts, type HuntFilters } from "@/lib/registry";
-import { getCommitCount, onCommitmentsChange, type CovenantStatus } from "@/lib/covenants";
+import {
+  getCommitCount,
+  getCovenantStatus,
+  getHuntCovenant,
+  onCommitmentsChange,
+  type CovenantStatus,
+} from "@/lib/covenants";
+import { isProgressVisible } from "@/lib/hunt-lifecycle";
 import { useWallet } from "@/lib/useWallet";
 import type { Hunt } from "@/lib/types";
 
@@ -175,7 +182,9 @@ function Index() {
                     })}
                   </div>
                   <div className="mt-1 text-sm">
-                    {getCommitCount(h)} sur {h.threshold} engagés
+                    {isProgressVisible(h, getCovenantStatus(getHuntCovenant(h)))
+                      ? `${getCommitCount(h)} sur ${h.threshold} engagés`
+                      : `Seuil : ${h.threshold} · progression masquée`}
                   </div>
                 </Link>
               </li>

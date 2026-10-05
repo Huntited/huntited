@@ -24,6 +24,18 @@ export function deriveHuntStatus(
   return "active";
 }
 
+/**
+ * Le compteur d'engagements est-il affichable ? Une chasse à progression
+ * masquée ne révèle son compteur qu'une fois la phase d'engagement terminée
+ * (activation, expiration ou résolution).
+ */
+export function isProgressVisible(
+  hunt: Pick<Hunt, "progressVisibility">,
+  status: HuntStatus,
+): boolean {
+  return hunt.progressVisibility !== "hidden" || (status !== "active" && status !== "draft");
+}
+
 /** S'engager n'est possible que pendant la phase active. */
 export function canCommit(status: HuntStatus): boolean {
   return status === "active";
