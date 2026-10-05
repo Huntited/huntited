@@ -64,10 +64,11 @@ describe("engagements", () => {
     expect(second.body["rank"]).toBe(2);
     expect((second.body["hunt"] as Record<string, unknown>)["status"]).toBe("activated");
 
-    // Engagements fermés après activation.
+    // Option B : les engagements restent ouverts après l'activation.
     const late = await app.post(`/api/hunts/${id}/commit`, {}, await app.login(makeWallet()));
-    expect(late.status).toBe(409);
-    expect(late.body["code"]).toBe("closed");
+    expect(late.status).toBe(201);
+    expect(late.body["rank"]).toBe(3);
+    expect((late.body["hunt"] as Record<string, unknown>)["status"]).toBe("activated");
   });
 
   it("refusé sans session", async () => {

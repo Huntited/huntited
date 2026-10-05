@@ -18,10 +18,15 @@ import type {
   StoredHunt,
 } from "../types/hunt.js";
 import type { HuntAccessStore } from "./hunt-access-store.js";
+import { computeRetainedGroup, isRetained, type RetainedGroup } from "./retained-group.js";
+
+/** Seuil personnel maximal accepté (comme le seuil d'une chasse). */
+export const MAX_PERSONAL_THRESHOLD = 100_000;
 
 export class RegistryError extends Error {
   constructor(
-    public readonly code: "not_found" | "closed" | "already_committed" | "not_settleable",
+    public readonly code:
+      "not_found" | "closed" | "already_committed" | "not_settleable" | "invalid_threshold",
     message: string,
   ) {
     super(message);
@@ -68,6 +73,29 @@ export class HuntRegistry implements HuntAccessStore {
     return this.commits.get(huntId)?.length ?? 0;
   }
 
+  /** Seuil personnel effectif d'un engagement (anciens engagements : seuil de la chasse). */
+  private personalThreshold(hunt: StoredHunt, c: StoredCommit): number {
+    return c.personalThreshold ?? hunt.threshold;
+  }
+
+  /** Groupe retenu courant (voir docs/seuil-personnel.md). */
+  group(hunt: StoredHunt): RetainedGroup {
+    const list = this.commits.get(hunt.id) ?? [];
+    return computeRetainedGroup(
+      list.map((c) => this.personalThreshold(hunt, c)),
+      hunt.threshold,
+    );
+  }
+
+  /**
+   * Engagements acceptés : tant que la chasse n'est pas résolue et que la date
+   * limite n'est pas passée — y compris après l'activation (le groupe retenu
+   * peut grandir jusqu'à la date limite).
+   */
+  commitsOpen(hunt: StoredHunt): boolean {
+    return !hunt.outcome && this.now() <= Date.parse(hunt.deadline);
+  }
+
   /** L'activation prime sur l'expiration ; « settled » est définitif. */
   status(hunt: StoredHunt): RegistryHuntStatus {
     if (hunt.outcome) return "settled";
@@ -79,6 +107,7 @@ export class HuntRegistry implements HuntAccessStore {
   publicView(hunt: StoredHunt): PublicHunt {
     const status = this.status(hunt);
     const masked = hunt.progressVisibility === "hidden" && status === "active";
+    const group = this.group(hunt);
     return {
       id: hunt.id,
       title: hunt.title,
@@ -89,7 +118,13 @@ export class HuntRegistry implements HuntAccessStore {
       progressVisibility: hunt.progressVisibility,
       status,
       commitCount: masked ? null : this.commitCount(hunt.id),
+      retainedCount: masked ? null : group.retainedCount,
+      retainedThreshold: masked ? null : group.retainedThreshold,
+      commitsOpen: this.commitsOpen(hunt),
       createdAt: hunt.createdAt,
+      ...(hunt.activationRank !== undefined && !masked
+        ? { activationRank: hunt.activationRank }
+        : {}),
       ...(hunt.outcome ? { outcome: hunt.outcome } : {}),
       ...(hunt.activatedAt ? { activatedAt: hunt.activatedAt } : {}),
       ...(hunt.settledAt ? { settledAt: hunt.settledAt } : {}),
@@ -111,8 +146,13 @@ export class HuntRegistry implements HuntAccessStore {
     const hunt = this.hunts.get(huntId);
     if (!hunt) return undefined;
     if (hunt.creatorKey === walletKey) return "creator";
+    // Seuls les engagé·es retenu·es participent (et accèdent au chat).
     const key = commitKeyFor(huntId, walletKey);
-    return this.commits.get(huntId)?.some((c) => c.commitKey === key) ? "participant" : undefined;
+    const mine = this.commits.get(huntId)?.find((c) => c.commitKey === key);
+    if (!mine) return undefined;
+    return isRetained(this.personalThreshold(hunt, mine), this.group(hunt))
+      ? "participant"
+      : undefined;
   }
 
   // --- Écriture --------------------------------------------------------------
@@ -130,12 +170,26 @@ export class HuntRegistry implements HuntAccessStore {
     return hunt;
   }
 
-  /** Engage un wallet. Renvoie sa position (1 = premier). */
-  commit(huntId: string, walletKey: string): { rank: number; hunt: StoredHunt } {
+  /**
+   * Engage un wallet avec son seuil personnel (par défaut : seuil de la
+   * chasse). Renvoie sa position (1 = premier).
+   */
+  commit(
+    huntId: string,
+    walletKey: string,
+    personalThreshold?: number,
+  ): { rank: number; hunt: StoredHunt } {
     const hunt = this.hunts.get(huntId);
     if (!hunt) throw new RegistryError("not_found", "Chasse introuvable.");
-    if (this.status(hunt) !== "active") {
+    if (!this.commitsOpen(hunt)) {
       throw new RegistryError("closed", "Les engagements sont fermés pour cette chasse.");
+    }
+    const t = personalThreshold ?? hunt.threshold;
+    if (!Number.isInteger(t) || t < hunt.threshold || t > MAX_PERSONAL_THRESHOLD) {
+      throw new RegistryError(
+        "invalid_threshold",
+        `Ton seuil personnel doit être un entier d'au moins ${hunt.threshold}.`,
+      );
     }
     const list = this.commits.get(huntId) ?? [];
     const key = commitKeyFor(huntId, walletKey);
@@ -143,10 +197,18 @@ export class HuntRegistry implements HuntAccessStore {
       throw new RegistryError("already_committed", "Tu es déjà engagé·e dans cette chasse.");
     }
     const iso = new Date(this.now()).toISOString();
-    list.push({ huntId, commitKey: key, createdAt: iso });
+    list.push({
+      huntId,
+      commitKey: key,
+      createdAt: iso,
+      ...(t !== hunt.threshold ? { personalThreshold: t } : {}),
+    });
     this.commits.set(huntId, list);
-    // Activation au moment où le seuil est atteint (avant la deadline).
-    if (list.length >= hunt.threshold && !hunt.activatedAt) hunt.activatedAt = iso;
+    // Activation dès que le groupe retenu existe (il atteint alors le seuil).
+    if (!hunt.activatedAt && this.group(hunt).retainedThreshold !== null) {
+      hunt.activatedAt = iso;
+      hunt.activationRank = list.length;
+    }
     this.save();
     return { rank: list.length, hunt };
   }
@@ -159,17 +221,37 @@ export class HuntRegistry implements HuntAccessStore {
     return hunt.progressVisibility === "hidden" && this.status(hunt) === "active" ? null : rank;
   }
 
-  /** Activité d'un wallet : chasses créées et engagements (avec leur rang). */
+  /**
+   * Activité d'un wallet : chasses créées et engagements (rang, seuil
+   * personnel, retenu ou non). « Retenu » ne révèle rien de masqué : tant
+   * qu'une chasse est active, aucun groupe n'existe et personne n'est retenu.
+   */
   activityFor(walletKey: string): {
     created: StoredHunt[];
-    commitments: { hunt: StoredHunt; rank: number; committedAt: string }[];
+    commitments: {
+      hunt: StoredHunt;
+      rank: number;
+      committedAt: string;
+      personalThreshold: number;
+      retained: boolean;
+    }[];
   } {
     const created = this.list().filter((h) => h.creatorKey === walletKey);
     const commitments = this.list().flatMap((hunt) => {
       const key = commitKeyFor(hunt.id, walletKey);
       const list = this.commits.get(hunt.id) ?? [];
       const i = list.findIndex((c) => c.commitKey === key);
-      return i < 0 ? [] : [{ hunt, rank: i + 1, committedAt: list[i]!.createdAt }];
+      if (i < 0) return [];
+      const t = this.personalThreshold(hunt, list[i]!);
+      return [
+        {
+          hunt,
+          rank: i + 1,
+          committedAt: list[i]!.createdAt,
+          personalThreshold: t,
+          retained: isRetained(t, this.group(hunt)),
+        },
+      ];
     });
     return { created, commitments };
   }

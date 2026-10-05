@@ -43,6 +43,10 @@ Exemple, T = 3, seuils : 3, 3, 4, 10.
 
 ## 3. Économie
 
+> **Décidé le 6 octobre 2026 :** en cas de succès, un·e engagé·e non retenu·e
+> récupère ses 5 KAS **sans bonus** (le bonus reste réservé aux échecs, et un
+> seuil personnel inatteignable ne doit pas rapporter de bonus garanti).
+
 Inchangée dans son principe, appliquée **au groupe retenu** :
 
 - **Succès** : les dépôts des membres du groupe retenu vont 95 % au créateur,

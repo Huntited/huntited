@@ -43,9 +43,13 @@ export function huntsRouter(deps: {
   });
 
   const sendRegistryError = (res: import("express").Response, e: RegistryError) => {
-    const code = { not_found: 404, closed: 409, already_committed: 409, not_settleable: 409 }[
-      e.code
-    ];
+    const code = {
+      not_found: 404,
+      closed: 409,
+      already_committed: 409,
+      not_settleable: 409,
+      invalid_threshold: 400,
+    }[e.code];
     return res.status(code).json({ error: e.message, code: e.code });
   };
 
@@ -73,8 +77,17 @@ export function huntsRouter(deps: {
   router.post("/:id/commit", writeLimiter, requireSession(auth), (req, res) => {
     const id = huntIdSchema.safeParse(req.params["id"]);
     if (!id.success) return res.status(404).json({ error: "Chasse introuvable." });
+    // Seuil personnel facultatif (« je viens si au moins N personnes viennent »).
+    const body = z
+      .object({ personalThreshold: z.number().int().positive().optional() })
+      .safeParse(req.body ?? {});
+    if (!body.success) return res.status(400).json({ error: "Requête invalide." });
     try {
-      const { rank, hunt } = registry.commit(id.data, req.session!.walletKey);
+      const { rank, hunt } = registry.commit(
+        id.data,
+        req.session!.walletKey,
+        body.data.personalThreshold,
+      );
       // Rang masqué pour une chasse à progression masquée encore active :
       // il révélerait le nombre d'engagés.
       return res

@@ -21,6 +21,8 @@ export function meRouter(deps: { registry: HuntRegistry; auth: AuthService }): R
         hunt: registry.publicView(c.hunt),
         rank: registry.visibleRank(c.hunt, c.rank),
         committedAt: c.committedAt,
+        personalThreshold: c.personalThreshold,
+        retained: c.retained,
       })),
     });
   });

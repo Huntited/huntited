@@ -18,6 +18,8 @@ export interface StoredHunt {
   creatorKey: string;
   createdAt: string;
   activatedAt?: string;
+  /** Nombre d'engagements au moment où le groupe retenu s'est formé. */
+  activationRank?: number;
   settledAt?: string;
   outcome?: HuntOutcome;
 }
@@ -27,6 +29,8 @@ export interface StoredCommit {
   huntId: string;
   commitKey: string;
   createdAt: string;
+  /** Seuil personnel (≥ seuil de la chasse) ; absent = seuil de la chasse. Privé. */
+  personalThreshold?: number;
 }
 
 export interface NewHuntInput {
@@ -50,6 +54,14 @@ export interface PublicHunt {
   status: RegistryHuntStatus;
   /** null tant qu'une chasse à progression masquée est en phase d'engagement. */
   commitCount: number | null;
+  /** Taille du groupe retenu (masquée comme commitCount). */
+  retainedCount: number | null;
+  /** Seuil personnel maximal satisfait (k*) ; null sans groupe ou si masqué. */
+  retainedThreshold: number | null;
+  /** Engagement qui a déclenché l'activation (si non masqué). */
+  activationRank?: number;
+  /** Engagements encore acceptés (active, ou activée avant la date limite). */
+  commitsOpen: boolean;
   outcome?: HuntOutcome;
   createdAt: string;
   activatedAt?: string;
