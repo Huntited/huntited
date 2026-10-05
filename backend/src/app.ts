@@ -7,6 +7,7 @@ import { requestId } from "./middleware/request-id.js";
 import { authRouter, type WalletSignatureVerifier } from "./routes/auth.js";
 import { chatRouter } from "./routes/chat.js";
 import { huntsRouter } from "./routes/hunts.js";
+import { meRouter } from "./routes/me.js";
 import type { AuthService } from "./services/auth-service.js";
 import type { ChallengeService } from "./services/challenge-service.js";
 import type { ChatService } from "./services/chat-service.js";
@@ -58,6 +59,7 @@ export function createApp(d: AppDeps) {
       ...(d.now ? { now: d.now } : {}),
     }),
   );
+  app.use("/api/me", meRouter({ registry: d.registry, auth: d.auth }));
   app.use("/api/chats", chatRouter(d.chat, d.auth, d.registry, d.nodeEnv !== "production"));
 
   // Erreurs : réponse générique, aucun détail interne ni secret.

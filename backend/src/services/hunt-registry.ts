@@ -151,6 +151,29 @@ export class HuntRegistry implements HuntAccessStore {
     return { rank: list.length, hunt };
   }
 
+  /**
+   * Rang affichable : masqué (null) tant qu'une chasse à progression masquée
+   * est en phase d'engagement — sinon il révélerait le compteur.
+   */
+  visibleRank(hunt: StoredHunt, rank: number): number | null {
+    return hunt.progressVisibility === "hidden" && this.status(hunt) === "active" ? null : rank;
+  }
+
+  /** Activité d'un wallet : chasses créées et engagements (avec leur rang). */
+  activityFor(walletKey: string): {
+    created: StoredHunt[];
+    commitments: { hunt: StoredHunt; rank: number; committedAt: string }[];
+  } {
+    const created = this.list().filter((h) => h.creatorKey === walletKey);
+    const commitments = this.list().flatMap((hunt) => {
+      const key = commitKeyFor(hunt.id, walletKey);
+      const list = this.commits.get(hunt.id) ?? [];
+      const i = list.findIndex((c) => c.commitKey === key);
+      return i < 0 ? [] : [{ hunt, rank: i + 1, committedAt: list[i]!.createdAt }];
+    });
+    return { created, commitments };
+  }
+
   /** Résolution simulée : succès si activée, échec si expirée. Aucun KAS transféré. */
   settle(huntId: string): StoredHunt {
     const hunt = this.hunts.get(huntId);

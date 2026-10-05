@@ -24,11 +24,23 @@ function read(): Store {
   }
 }
 
+/**
+ * Mémorise (ou complète) un engagement : un rang déjà connu n'est jamais
+ * effacé par une information plus pauvre (rang encore masqué).
+ */
 export function rememberCommitment(address: string, huntId: string, c: MyCommitment): void {
   if (typeof window === "undefined") return;
   const all = read();
   const key = badgeWalletKey(address);
-  all[key] = { ...(all[key] ?? {}), [huntId]: c };
+  const prev = all[key]?.[huntId];
+  const rank = c.rank ?? prev?.rank;
+  all[key] = {
+    ...(all[key] ?? {}),
+    [huntId]: {
+      committedAt: prev ? Math.min(prev.committedAt, c.committedAt) : c.committedAt,
+      ...(rank !== undefined ? { rank } : {}),
+    },
+  };
   window.localStorage.setItem(MY_COMMITMENTS_KEY, JSON.stringify(all));
 }
 

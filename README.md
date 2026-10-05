@@ -89,7 +89,7 @@ Par défaut (`VITE_DATA_MODE=local`), les chasses sont stockées dans le navigat
    Une seule signature du wallet par visite ouvre une session d'une heure.
 
 Routes du backend : `GET /health`, `GET|POST /api/hunts`, `GET /api/hunts/:id`,
-`POST /api/hunts/:id/commit`, `POST /api/auth/challenge|session|chat-access`,
+`POST /api/hunts/:id/commit`, `GET /api/me`, `POST /api/auth/challenge|session|chat-access`,
 `POST /api/chats`, `GET /api/chats/:huntId`.
 
 ## Principes non négociables

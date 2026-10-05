@@ -10,8 +10,10 @@ import {
   HuntActionError,
   isCommitted,
   listHuntViews,
+  syncMyActivity,
 } from "./hunt-repository";
 import { getMyCommitment } from "./my-commitments";
+import { getUserHunts } from "./user-hunts";
 
 const ADDRESS = "kaspatest:qq_repo_wallet_aaaa";
 const PUBLIC = {
@@ -139,6 +141,37 @@ describe("hunt-repository (mode registre partagé)", () => {
     expect(err).toBeInstanceOf(HuntActionError);
     expect((err as Error).message).toBe("Tu es déjà engagé·e dans cette chasse.");
     expect(isCommitted("h1", ADDRESS)).toBe(true);
+  });
+
+  it("rang masqué (null) : engagement mémorisé sans rang, complété plus tard", async () => {
+    backend({
+      ...AUTH_ROUTES,
+      "POST /api/hunts/h1/commit": { status: 201, body: { rank: null, hunt: PUBLIC } },
+      "GET /api/me": {
+        status: 200,
+        body: {
+          created: [{ ...PUBLIC, id: "mine" }],
+          commitments: [
+            { hunt: { ...PUBLIC, status: "activated" }, rank: 3, committedAt: PUBLIC.createdAt },
+          ],
+        },
+      },
+    });
+    await commit("h1", ADDRESS);
+    expect(isCommitted("h1", ADDRESS)).toBe(true);
+    expect(getMyCommitment(ADDRESS, "h1")?.rank).toBeUndefined();
+
+    // Autre appareil / plus tard : la synchronisation complète le rang et « Mes chasses ».
+    expect(await syncMyActivity(ADDRESS)).toEqual({ created: 1, commitments: 1 });
+    expect(getMyCommitment(ADDRESS, "h1")?.rank).toBe(3);
+    expect(getUserHunts(ADDRESS).map((h) => h.huntId)).toEqual(["mine"]);
+  });
+
+  it("la synchronisation ne fait rien en mode local", async () => {
+    vi.stubEnv("VITE_DATA_MODE", "local");
+    const calls = backend({});
+    expect(await syncMyActivity(ADDRESS)).toEqual({ created: 0, commitments: 0 });
+    expect(calls).toEqual([]);
   });
 
   it("service indisponible : message neutre", async () => {

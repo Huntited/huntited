@@ -25,6 +25,7 @@ import {
 import { hasMockCommitment } from "./mock-zk";
 import { getMyCommitment, rememberCommitment } from "./my-commitments";
 import type { Hunt, HuntFormData, HuntStatus, ProgressVisibility } from "./types";
+import { addUserHunt } from "./user-hunts";
 
 export type DataMode = "local" | "api";
 
@@ -190,13 +191,17 @@ export async function commit(huntId: string, address: string): Promise<void> {
   }
   try {
     const token = await getSessionToken(address);
-    const r = await apiFetch<{ rank: number }>(
+    // Rang null : chasse à progression masquée encore active (révélé plus tard).
+    const r = await apiFetch<{ rank: number | null }>(
       "POST",
       `/api/hunts/${encodeURIComponent(huntId)}/commit`,
       {},
       token,
     );
-    rememberCommitment(address, huntId, { rank: r.rank, committedAt: Date.now() });
+    rememberCommitment(address, huntId, {
+      committedAt: Date.now(),
+      ...(r.rank !== null ? { rank: r.rank } : {}),
+    });
     notify();
   } catch (e) {
     // Déjà engagé·e (autre appareil, cache vidé) : on s'en souvient localement.
@@ -205,6 +210,52 @@ export async function commit(huntId: string, address: string): Promise<void> {
       notify();
     }
     throw actionError(e, "L'engagement a échoué. Réessaie.");
+  }
+}
+
+/** Chasses dans lesquelles ce wallet est (connu comme) engagé. */
+export async function listMyEngagements(address: string): Promise<HuntView[]> {
+  const views = await listHuntViews();
+  return views.filter((v) => isCommitted(v.hunt.id, address));
+}
+
+export interface SyncResult {
+  created: number;
+  commitments: number;
+}
+
+/**
+ * Mode registre : récupère l'activité du wallet sur le serveur (chasses
+ * créées, engagements et rangs révélés) pour retrouver « Mes chasses » et les
+ * badges sur cet appareil. Demande une signature si aucune session n'est ouverte.
+ */
+export async function syncMyActivity(address: string): Promise<SyncResult> {
+  if (getDataMode() === "local") return { created: 0, commitments: 0 };
+  try {
+    const token = await getSessionToken(address);
+    const me = await apiFetch<{
+      created: PublicHunt[];
+      commitments: { hunt: PublicHunt; rank: number | null; committedAt: string }[];
+    }>("GET", "/api/me", undefined, token);
+    for (const h of me.created) {
+      addUserHunt(address, {
+        huntId: h.id,
+        title: h.title,
+        location: h.location,
+        deadline: h.deadline,
+        threshold: h.threshold,
+      });
+    }
+    for (const c of me.commitments) {
+      rememberCommitment(address, c.hunt.id, {
+        committedAt: Date.parse(c.committedAt) || Date.now(),
+        ...(c.rank !== null ? { rank: c.rank } : {}),
+      });
+    }
+    notify();
+    return { created: me.created.length, commitments: me.commitments.length };
+  } catch (e) {
+    throw actionError(e, "La synchronisation a échoué. Réessaie.");
   }
 }
 

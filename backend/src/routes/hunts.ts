@@ -75,7 +75,11 @@ export function huntsRouter(deps: {
     if (!id.success) return res.status(404).json({ error: "Chasse introuvable." });
     try {
       const { rank, hunt } = registry.commit(id.data, req.session!.walletKey);
-      return res.status(201).json({ rank, hunt: registry.publicView(hunt) });
+      // Rang masqué pour une chasse à progression masquée encore active :
+      // il révélerait le nombre d'engagés.
+      return res
+        .status(201)
+        .json({ rank: registry.visibleRank(hunt, rank), hunt: registry.publicView(hunt) });
     } catch (e) {
       if (e instanceof RegistryError) return sendRegistryError(res, e);
       throw e;
