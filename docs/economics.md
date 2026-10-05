@@ -17,7 +17,7 @@ Brouillon → Créée → Active → Seuil atteint / Activée → Chat Matrix ou
 - **Chat Matrix ouvert** : salon chiffré éphémère, expire 24 h après la deadline.
 - **Résolution économique** : flux ci-dessous (succès) ; une chasse qui expire sans atteindre le seuil passe directement à la résolution (échec).
 
-Les missions, XP, niveaux et badges restent des récompenses non financières futures : ils n'influencent jamais les paiements.
+Les badges (`src/lib/badges.ts`) et, plus tard, les missions, XP et niveaux sont des récompenses non financières : ils n'influencent jamais les paiements. Les badges sont privés par défaut ; chaque wallet choisit de les rendre visibles publiquement.
 
 ## Dépôts
 

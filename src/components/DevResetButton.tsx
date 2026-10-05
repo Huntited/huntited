@@ -9,6 +9,8 @@ export const HUNTITED_MOCK_KEYS = [
   "huntited:mock-chat-rooms",
   "huntited:wallet",
   "huntited:user-hunts",
+  "huntited:badge-visibility",
+  "huntited:shares",
   "huntited:mock-wallet",
   // anciens formats du prototype
   "huntited:mock-commitment-records",

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { BadgesPanel } from "@/components/hunt/BadgesPanel";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/lib/useWallet";
 import { getUserHunts } from "@/lib/user-hunts";
@@ -85,6 +86,8 @@ function MyHuntsPage() {
           <Link to="/create">Créer une chasse</Link>
         </Button>
       </div>
+
+      <BadgesPanel address={address} />
     </div>
   );
 }

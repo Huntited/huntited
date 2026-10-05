@@ -75,6 +75,22 @@ export function hasMockCommitment(huntId: string, walletAddress: string): boolea
 }
 
 /**
+ * Position (1 = premier) et date de l'engagement de ce wallet parmi les
+ * engagements locaux de la chasse, ou undefined s'il n'est pas engagé.
+ */
+export function getMockCommitPosition(
+  huntId: string,
+  walletAddress: string,
+): { localRank: number; createdAt: number } | undefined {
+  const fp = walletFingerprint(huntId, walletAddress);
+  const records = readRecords()
+    .filter((r) => r.huntId === huntId)
+    .sort((a, b) => a.createdAt - b.createdAt);
+  const i = records.findIndex((r) => r.walletFingerprint === fp);
+  return i < 0 ? undefined : { localRank: i + 1, createdAt: records[i]!.createdAt };
+}
+
+/**
  * Enregistre un engagement mocké (5 KAS simulés).
  * Lève une erreur si ce wallet est déjà engagé dans la chasse.
  */

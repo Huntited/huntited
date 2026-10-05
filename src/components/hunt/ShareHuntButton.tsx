@@ -2,7 +2,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { recordShare } from "@/lib/badge-store";
 import { huntShareUrl } from "@/lib/share";
+import { getWalletState } from "@/lib/wallet";
 import type { Hunt } from "@/lib/types";
 
 /**
@@ -14,6 +16,9 @@ export function ShareHuntButton({ hunt }: { hunt: Pick<Hunt, "id" | "title"> }) 
 
   async function handleShare() {
     const url = huntShareUrl(hunt.id, window.location.origin);
+    // Badge Messager·ère : le partage est noté pour le wallet connecté (empreinte).
+    const { address } = getWalletState();
+    if (address) recordShare(address, hunt.id);
     if (typeof navigator.share === "function") {
       try {
         await navigator.share({ title: hunt.title, url });
