@@ -27,6 +27,7 @@ const app = createApp({
   verifySignature: createSignatureVerifier(env.WALLET_AUTH_MODE, env.KASPA_NETWORK),
   corsOrigin: env.CORS_ORIGIN,
   nodeEnv: env.NODE_ENV,
+  trustProxy: env.TRUST_PROXY,
 });
 
 // Nettoyage périodique des salons expirés.

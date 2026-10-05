@@ -21,11 +21,14 @@ export interface AppDeps {
   corsOrigin: string | string[];
   nodeEnv: "development" | "test" | "production";
   now?: () => number;
+  /** Nombre de proxys de confiance (hébergeur) pour l'IP du visiteur. */
+  trustProxy?: number;
 }
 
 export function createApp(d: AppDeps) {
   const app = express();
   app.disable("x-powered-by");
+  if (d.trustProxy) app.set("trust proxy", d.trustProxy);
   app.use(requestId);
   app.use(
     cors({

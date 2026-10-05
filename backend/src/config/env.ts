@@ -31,6 +31,9 @@ const schema = z
     AUTH_SESSION_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(3600),
     // Fichier JSON du registre des chasses ; vide = mémoire (perdu au redémarrage).
     REGISTRY_FILE: z.string().default(""),
+    // Nombre de proxys devant le serveur (hébergeur) : 0 en local, souvent 1
+    // en ligne. Sans cela, tous les visiteurs partagent la même limite de fréquence.
+    TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
     // Seul le testnet est accepté tant qu'aucune transaction réelle n'est prévue.
     KASPA_NETWORK: z.enum(["testnet-10"]).default("testnet-10"),
     // signature = vraie vérification Kaspa ; mock = wallet factice (dev uniquement).
