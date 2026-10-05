@@ -70,7 +70,9 @@ Inchangée dans son principe, appliquée **au groupe retenu** :
 - Badges : « Déclencheur·se » = l'engagement qui a fait atteindre T au groupe
   retenu.
 
-## 6. Décision à prendre : que se passe-t-il après l'activation ?
+## 6. Que se passe-t-il après l'activation ?
+
+> **Décidé le 5 octobre 2026 : option B** (engagements ouverts jusqu'à la date limite).
 
 **Option A — on ferme à l'activation (comme aujourd'hui).**
 Simple. Mais une personne exigeant 25 dans une chasse à 10 n'a presque aucune
