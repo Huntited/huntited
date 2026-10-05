@@ -7,9 +7,34 @@
  *
  * Privacy-first : on ne stocke que des références (id, titre, lieu,
  * deadline, seuil), pas le contenu complet ni de données personnelles.
+ * Le créateur est indexé par une empreinte pseudonyme, jamais par son
+ * adresse brute.
  */
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
 
 const STORAGE_KEY = "huntited:user-hunts";
+
+/** Empreinte pseudonyme du créateur : SHA-256("huntited:creator" | adresse). */
+export function creatorFingerprint(address: string): string {
+  return bytesToHex(sha256(utf8ToBytes(`huntited:creator|${address}`)));
+}
+
+/**
+ * Migre une entrée de l'ancien format (indexée par adresse brute) vers
+ * l'empreinte. Renvoie true si le registre a été modifié.
+ */
+function migrateLegacy(store: Record<string, UserHuntRef[]>, address: string, fp: string) {
+  const legacy = store[address];
+  if (!legacy) return false;
+  const current = store[fp] ?? [];
+  for (const h of legacy) {
+    if (!current.some((c) => c.huntId === h.huntId)) current.push(h);
+  }
+  store[fp] = current;
+  delete store[address];
+  return true;
+}
 
 /** Référence minimale d'une chasse créée par l'utilisateur. */
 export interface UserHuntRef {
@@ -43,16 +68,20 @@ function setStore(store: Record<string, UserHuntRef[]>) {
  */
 export function addUserHunt(address: string, hunt: UserHuntRef) {
   const store = getStore();
-  const list = store[address] ?? [];
-  if (list.some((h) => h.huntId === hunt.huntId)) return;
-  list.push(hunt);
-  store[address] = list;
+  const fp = creatorFingerprint(address);
+  migrateLegacy(store, address, fp);
+  const list = store[fp] ?? [];
+  if (!list.some((h) => h.huntId === hunt.huntId)) list.push(hunt);
+  store[fp] = list;
   setStore(store);
 }
 
 /** Retourne les chasses créées par une adresse (les plus récentes en dernier). */
 export function getUserHunts(address: string): UserHuntRef[] {
-  return getStore()[address] ?? [];
+  const store = getStore();
+  const fp = creatorFingerprint(address);
+  if (migrateLegacy(store, address, fp)) setStore(store);
+  return store[fp] ?? [];
 }
 
 /** Vide le registre (dev / tests uniquement). */

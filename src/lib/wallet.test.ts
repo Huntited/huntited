@@ -86,6 +86,35 @@ describe("wallet en mode Kastle", () => {
     expect(w.getWalletState()).toEqual({ isConnected: false, address: null });
   });
 
+  it("un changement de compte pendant la connexion retient le dernier compte", async () => {
+    const k = fakeKastle();
+    let calls = 0;
+    k.getAccount.mockImplementation(async () => {
+      calls += 1;
+      // Au premier appel, l'utilisateur change de compte dans Kastle.
+      if (calls === 1) {
+        k.emit("kas:account_changed", "kaspatest:qq_other_bbbb");
+        return { address: TEST_ADDRESS, publicKey: "pk" };
+      }
+      return { address: "kaspatest:qq_other_bbbb", publicKey: "pk2" };
+    });
+    const w = await loadWallet();
+    expect(await w.connectWallet()).toBe("kaspatest:qq_other_bbbb");
+    expect(w.getWalletState().address).toBe("kaspatest:qq_other_bbbb");
+  });
+
+  it("migre l'ancienne clé de stockage vers la clé neutre", async () => {
+    window.localStorage.setItem(
+      "huntited:mock-wallet",
+      JSON.stringify({ isConnected: true, address: TEST_ADDRESS }),
+    );
+    vi.stubEnv("VITE_WALLET_MODE", "mock");
+    const w = await loadWallet();
+    expect(w.getWalletState().address).toBe(TEST_ADDRESS);
+    expect(window.localStorage.getItem("huntited:mock-wallet")).toBeNull();
+    expect(window.localStorage.getItem("huntited:wallet")).toContain(TEST_ADDRESS);
+  });
+
   it("se déconnecte si l'extension change de réseau", async () => {
     const k = fakeKastle();
     const w = await loadWallet();
@@ -117,7 +146,7 @@ describe("wallet en mode Kastle", () => {
 
   it("revalide une session restaurée et la coupe si Kastle a changé de réseau", async () => {
     window.localStorage.setItem(
-      "huntited:mock-wallet",
+      "huntited:wallet",
       JSON.stringify({ isConnected: true, address: TEST_ADDRESS }),
     );
     fakeKastle({ network: "mainnet" });

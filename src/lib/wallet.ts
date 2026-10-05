@@ -5,7 +5,10 @@
 // Aucun envoi de KAS : seules la connexion et la signature de message sont
 // utilisées. Confidentialité : aucun log ; l'adresse ne quitte jamais l'appareil.
 
-const STORAGE_KEY = "huntited:mock-wallet";
+// Simple mémoire d'interface : ce n'est JAMAIS une preuve d'identité.
+const STORAGE_KEY = "huntited:wallet";
+/** Ancienne clé (prototype mock), migrée à la première lecture. */
+const LEGACY_STORAGE_KEY = "huntited:mock-wallet";
 const isBrowser = () => typeof window !== "undefined";
 
 /** Réseau imposé tant que l'intégration est en test : jamais mainnet. */
@@ -54,12 +57,21 @@ const listeners = new Set<(s: WalletState) => void>();
 let state: WalletState = DISCONNECTED;
 let loaded = false;
 let kastleBound = false;
+/** Incrémenté à chaque événement Kastle (compte ou réseau). */
+let kastleEvents = 0;
 
 /** Lecture paresseuse (évite tout accès à localStorage côté serveur). */
 function load(): WalletState {
   if (loaded || !isBrowser()) return state;
   loaded = true;
   try {
+    const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (legacy !== null) {
+      if (window.localStorage.getItem(STORAGE_KEY) === null) {
+        window.localStorage.setItem(STORAGE_KEY, legacy);
+      }
+      window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+    }
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? (JSON.parse(raw) as WalletState) : null;
     state = parsed?.isConnected && parsed.address ? parsed : DISCONNECTED;
@@ -87,10 +99,12 @@ function bindKastle() {
   kastleBound = true;
 
   kastle.on("kas:account_changed", (address) => {
+    kastleEvents += 1;
     if (!load().isConnected) return;
     setState(address ? { isConnected: true, address } : DISCONNECTED);
   });
   kastle.on("kas:network_changed", (network) => {
+    kastleEvents += 1;
     if (network !== KASTLE_NETWORK && load().isConnected) setState(DISCONNECTED);
   });
 
@@ -139,12 +153,19 @@ async function connectKastle(): Promise<string> {
     }
 
     // Relecture finale : réseau et compte doivent être valides ensemble.
-    const [network, account] = await Promise.all([kastle.getNetwork(), kastle.getAccount()]);
-    if (network !== KASTLE_NETWORK) throw new WalletError(MSG_WRONG_NETWORK);
-    if (!account.address) throw new WalletError("Aucun compte disponible dans Kastle.");
+    // Un événement Kastle reçu pendant la lecture (changement de compte ou de
+    // réseau) serait ignoré, l'état étant encore déconnecté : on relit alors.
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const seen = kastleEvents;
+      const [network, account] = await Promise.all([kastle.getNetwork(), kastle.getAccount()]);
+      if (network !== KASTLE_NETWORK) throw new WalletError(MSG_WRONG_NETWORK);
+      if (!account.address) throw new WalletError("Aucun compte disponible dans Kastle.");
+      if (kastleEvents !== seen) continue;
 
-    setState({ isConnected: true, address: account.address });
-    return account.address;
+      setState({ isConnected: true, address: account.address });
+      return account.address;
+    }
+    throw new WalletError("Le compte Kastle a changé pendant la connexion. Réessaie.");
   } catch (e) {
     // Aucun état partiel : tout échec laisse le wallet déconnecté.
     setState(DISCONNECTED);
