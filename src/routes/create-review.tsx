@@ -34,7 +34,8 @@ export const Route = createFileRoute("/create-review")({
  */
 function CreateReviewPage() {
   const navigate = useNavigate();
-  const { address } = useWallet();
+  const wallet = useWallet();
+  const { address } = wallet;
   const [draft, setDraft] = useState<HuntFormData | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +57,9 @@ function CreateReviewPage() {
   }
 
   const handleConfirm = async () => {
+    // Le wallet créateur est obligatoire : sans lui, personne ne pourrait
+    // ouvrir le chat de la chasse une fois le seuil atteint.
+    if (!address) return;
     setIsCreating(true);
     setError(null);
     try {
@@ -64,15 +68,13 @@ function CreateReviewPage() {
 
       // Mémorise la chasse dans l'historique local du créateur
       // (références uniquement, stockées sur l'appareil).
-      if (address) {
-        addUserHunt(address, {
-          huntId: receipt.huntId,
-          title: draft.title,
-          location: draft.location,
-          deadline: new Date(draft.deadline).toISOString(),
-          threshold: draft.threshold,
-        });
-      }
+      addUserHunt(address, {
+        huntId: receipt.huntId,
+        title: draft.title,
+        location: draft.location,
+        deadline: new Date(draft.deadline).toISOString(),
+        threshold: draft.threshold,
+      });
 
       clearCreateHuntDraft();
       navigate({ to: "/hunt/$id", params: { id: receipt.huntId } });
@@ -125,13 +127,26 @@ function CreateReviewPage() {
         </p>
       )}
 
+      {!address && (
+        <p className="mt-4 text-sm text-muted-foreground" role="status">
+          Connecte ton wallet pour créer la chasse : il t'identifie comme créateur·rice et te
+          permettra d'ouvrir le chat une fois le seuil atteint.
+        </p>
+      )}
+
       <div className="mt-6 flex justify-end gap-3">
         <Button variant="outline" disabled={isCreating} onClick={() => navigate({ to: "/create" })}>
           Retour
         </Button>
-        <Button disabled={isCreating} onClick={handleConfirm}>
-          {isCreating ? "Création en cours…" : "Confirmer et créer la chasse"}
-        </Button>
+        {address ? (
+          <Button disabled={isCreating} onClick={handleConfirm}>
+            {isCreating ? "Création en cours…" : "Confirmer et créer la chasse"}
+          </Button>
+        ) : (
+          <Button disabled={wallet.isLoading} onClick={() => void wallet.connectWallet()}>
+            {wallet.isLoading ? "Connexion…" : "Connecter le wallet"}
+          </Button>
+        )}
       </div>
     </div>
   );
