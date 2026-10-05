@@ -1,22 +1,22 @@
 // Accès au chat d'une chasse : créateur ou engagé·e uniquement.
 //   - mode "mock" : rôle déterminé localement, aucun appel réseau ;
-//   - mode "api"  : jeton court demandé au backend, gardé en mémoire seulement.
+//   - mode "api"  : jeton court demandé au backend à partir de la session
+//                   signée du wallet ; le rôle vient du registre partagé.
 // Aucune demande tant que la chasse n'est pas activée (ou résolue en succès).
 import { useCallback, useEffect, useState } from "react";
 
 import {
   ChatAccessError,
-  devSeedHuntAccess,
   obtainChatAccess,
+  roleFromChatToken,
   type ChatAccessToken,
 } from "./chat-access-api";
 import { chatMode } from "./chat-client";
+import { isCommitted } from "./hunt-repository";
 import type { SettlementOutcome } from "./hunt-state-store";
 import { canCreateRoom } from "./matrix-mock";
-import { hasMockCommitment } from "./mock-zk";
 import type { HuntStatus } from "./types";
 import { getUserHunts } from "./user-hunts";
-import { signMessage } from "./wallet";
 import { useWallet } from "./useWallet";
 
 export type ChatRole = "creator" | "participant";
@@ -33,7 +33,7 @@ export interface UseChatAccessResult {
 /** Rôle local (mock) : créateur si la chasse a été créée ici, engagé·e si engagement local. */
 function localRole(huntId: string, address: string): ChatRole | null {
   if (getUserHunts(address).some((h) => h.huntId === huntId)) return "creator";
-  if (hasMockCommitment(huntId, address)) return "participant";
+  if (isCommitted(huntId, address)) return "participant";
   return null;
 }
 
@@ -71,17 +71,12 @@ export function useChatAccess(
     let cancelled = false;
     setIsLoading(true);
     (async () => {
-      await devSeedHuntAccess({
-        huntId,
-        status: status === "settled" ? "settled" : "activated",
-        ...(outcome ? { outcome } : {}),
-        ...(r ? { walletAddress: address, role: r } : {}),
-      });
-      // Prouve la possession de l'adresse : signature d'un défi du serveur.
-      const t = await obtainChatAccess({ huntId, walletAddress: address, sign: signMessage });
+      // Session signée (une signature par visite), puis jeton de chat. Le
+      // serveur décide du rôle et l'inscrit dans le jeton.
+      const t = await obtainChatAccess({ huntId, walletAddress: address });
       if (cancelled) return;
       setToken(t);
-      setRole(r);
+      setRole(roleFromChatToken(t.accessToken) ?? r ?? "participant");
     })()
       .catch((e: unknown) => {
         if (cancelled) return;

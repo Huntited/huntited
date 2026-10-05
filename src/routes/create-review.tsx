@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS, createHuntCovenant } from "@/lib/covenants";
+import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { clearCreateHuntDraft, getCreateHuntDraft } from "@/lib/create-hunt-store";
+import { createHunt, HuntActionError } from "@/lib/hunt-repository";
 import { addUserHunt } from "@/lib/user-hunts";
 import { useWallet } from "@/lib/useWallet";
 import type { HuntFormData } from "@/lib/types";
@@ -63,13 +64,14 @@ function CreateReviewPage() {
     setIsCreating(true);
     setError(null);
     try {
-      // Création via la couche covenant (mock). Aucun log du contenu.
-      const receipt = await createHuntCovenant(draft);
+      // Création via hunt-repository (mock local ou registre partagé, qui
+      // demande alors une signature du wallet). Aucun log du contenu.
+      const huntId = await createHunt(draft, address);
 
       // Mémorise la chasse dans l'historique local du créateur
       // (références uniquement, stockées sur l'appareil).
       addUserHunt(address, {
-        huntId: receipt.huntId,
+        huntId,
         title: draft.title,
         location: draft.location,
         deadline: new Date(draft.deadline).toISOString(),
@@ -77,9 +79,13 @@ function CreateReviewPage() {
       });
 
       clearCreateHuntDraft();
-      navigate({ to: "/hunt/$id", params: { id: receipt.huntId } });
-    } catch {
-      setError("Une erreur est survenue lors de la création de la chasse. Réessaie.");
+      navigate({ to: "/hunt/$id", params: { id: huntId } });
+    } catch (e) {
+      setError(
+        e instanceof HuntActionError
+          ? e.message
+          : "Une erreur est survenue lors de la création de la chasse. Réessaie.",
+      );
       setIsCreating(false);
     }
   };

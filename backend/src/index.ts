@@ -22,7 +22,8 @@ const app = createApp({
     env.AUTH_SESSION_TTL_SECONDS,
   ),
   registry: new HuntRegistry(env.REGISTRY_FILE ? { file: env.REGISTRY_FILE } : {}),
-  challenges: new ChallengeService({ appUri: env.CORS_ORIGIN, network: env.KASPA_NETWORK }),
+  // L'URI affichée dans le message à signer est l'origine principale.
+  challenges: new ChallengeService({ appUri: env.CORS_ORIGIN[0]!, network: env.KASPA_NETWORK }),
   verifySignature: createSignatureVerifier(env.WALLET_AUTH_MODE, env.KASPA_NETWORK),
   corsOrigin: env.CORS_ORIGIN,
   nodeEnv: env.NODE_ENV,

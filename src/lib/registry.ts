@@ -9,6 +9,7 @@ import {
   listHunts,
   type CovenantStatus,
 } from "./covenants";
+import type { HuntView } from "./hunt-repository";
 import type { Hunt } from "./types";
 
 export interface HuntFilters {
@@ -39,6 +40,27 @@ export function getHunts(filters: HuntFilters = {}): Hunt[] {
       (h) => !q || [h.title, h.description, h.location].some((t) => t.toLowerCase().includes(q)),
     )
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+}
+
+/** Statut de filtre d'une vue : une chasse résolue compte selon son issue. */
+function filterStatus(v: HuntView): CovenantStatus {
+  if (v.status === "settled") return v.outcome === "failure" ? "expired" : "activated";
+  return v.status === "draft" ? "active" : v.status;
+}
+
+/** Filtre et trie des vues (deadline la plus proche d'abord). */
+export function filterHuntViews(views: HuntView[], filters: HuntFilters = {}): HuntView[] {
+  const q = filters.search?.trim().toLowerCase();
+  return views
+    .filter((v) => !filters.status || filterStatus(v) === filters.status)
+    .filter(
+      (v) =>
+        !q ||
+        [v.hunt.title, v.hunt.description, v.hunt.location].some((t) =>
+          t.toLowerCase().includes(q),
+        ),
+    )
+    .sort((a, b) => new Date(a.hunt.deadline).getTime() - new Date(b.hunt.deadline).getTime());
 }
 
 /** Lecture d'une chasse par identifiant. */

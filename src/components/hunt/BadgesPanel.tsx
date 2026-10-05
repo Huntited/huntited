@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
 import { Switch } from "@/components/ui/switch";
-import { getWalletBadges } from "@/lib/badge-activity";
+import { loadWalletBadges } from "@/lib/badge-activity";
 import { getBadgeVisibility, setBadgeVisibility, subscribeBadges } from "@/lib/badge-store";
 import { BADGES, type BadgeTier, type EarnedBadge } from "@/lib/badges";
-import { onCommitmentsChange } from "@/lib/covenants";
-import { subscribeHuntState } from "@/lib/hunt-state-store";
+import { onHuntsChange } from "@/lib/hunt-repository";
 
 const TIER_LABEL: Record<BadgeTier, string> = { bronze: "bronze", argent: "argent", or: "or" };
 
@@ -20,13 +19,19 @@ export function BadgesPanel({ address }: { address: string }) {
 
   useEffect(() => {
     const bump = () => setVersion((v) => v + 1);
-    const unsubs = [subscribeBadges(bump), onCommitmentsChange(bump), subscribeHuntState(bump)];
+    const unsubs = [subscribeBadges(bump), onHuntsChange(bump)];
     return () => unsubs.forEach((u) => u());
   }, []);
 
   useEffect(() => {
-    setEarned(getWalletBadges(address));
+    let cancelled = false;
     setIsPublic(getBadgeVisibility(address) === "public");
+    loadWalletBadges(address)
+      .then((b) => !cancelled && setEarned(b))
+      .catch(() => !cancelled && setEarned([]));
+    return () => {
+      cancelled = true;
+    };
   }, [address, version]);
 
   const earnedById = new Map(earned.map((b) => [b.id, b]));

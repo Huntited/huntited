@@ -18,7 +18,7 @@ export interface AppDeps {
   registry: HuntRegistry;
   challenges: ChallengeService;
   verifySignature: WalletSignatureVerifier;
-  corsOrigin: string;
+  corsOrigin: string | string[];
   nodeEnv: "development" | "test" | "production";
   now?: () => number;
 }

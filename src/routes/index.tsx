@@ -11,17 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getHunts, type HuntFilters } from "@/lib/registry";
-import {
-  getCommitCount,
-  getCovenantStatus,
-  getHuntCovenant,
-  onCommitmentsChange,
-  type CovenantStatus,
-} from "@/lib/covenants";
+import { filterHuntViews, type HuntFilters } from "@/lib/registry";
+import type { CovenantStatus } from "@/lib/covenants";
 import { isProgressVisible } from "@/lib/hunt-lifecycle";
+import { listHuntViews, onHuntsChange, type HuntView } from "@/lib/hunt-repository";
 import { useWallet } from "@/lib/useWallet";
-import type { Hunt } from "@/lib/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -74,7 +68,8 @@ function Index() {
 
   // Liste lue après hydratation (les chasses créées sont en localStorage),
   // recalculée à chaque changement de filtre.
-  const [hunts, setHunts] = useState<Hunt[] | null>(null);
+  const [hunts, setHunts] = useState<HuntView[] | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     // Filtres construits conditionnellement (exactOptionalPropertyTypes :
@@ -82,10 +77,27 @@ function Index() {
     const filters: HuntFilters = {};
     if (statusFilter !== "all") filters.status = statusFilter;
     if (search) filters.search = search;
-    const load = () => setHunts(getHunts(filters));
+    let cancelled = false;
+    const load = () => {
+      listHuntViews()
+        .then((views) => {
+          if (cancelled) return;
+          setLoadError(false);
+          setHunts(filterHuntViews(views, filters));
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setLoadError(true);
+          setHunts([]);
+        });
+    };
     load();
-    // Rechargement quand un engagement change le compteur.
-    return onCommitmentsChange(load);
+    // Rechargement quand un engagement ou une chasse change.
+    const unsubscribe = onHuntsChange(load);
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [search, statusFilter]);
 
   const hasNoResults = hunts !== null && hunts.length === 0;
@@ -159,14 +171,16 @@ function Index() {
         {hunts === null ? (
           <p className="mt-3 text-sm text-muted-foreground">Chargement…</p>
         ) : hasNoResults ? (
-          <p className="mt-3 text-sm text-muted-foreground">
-            {search.trim() || statusFilter !== "all"
-              ? "Aucune chasse ne correspond à ces filtres."
-              : "Aucune chasse pour le moment."}
+          <p className="mt-3 text-sm text-muted-foreground" role={loadError ? "alert" : undefined}>
+            {loadError
+              ? "Impossible de charger les chasses pour le moment. Réessaie plus tard."
+              : search.trim() || statusFilter !== "all"
+                ? "Aucune chasse ne correspond à ces filtres."
+                : "Aucune chasse pour le moment."}
           </p>
         ) : (
           <ul className="mt-3 space-y-3">
-            {hunts.map((h) => (
+            {hunts.map(({ hunt: h, status, commitCount }) => (
               <li key={h.id}>
                 <Link
                   to="/hunt/$id"
@@ -182,8 +196,8 @@ function Index() {
                     })}
                   </div>
                   <div className="mt-1 text-sm">
-                    {isProgressVisible(h, getCovenantStatus(getHuntCovenant(h)))
-                      ? `${getCommitCount(h)} sur ${h.threshold} engagés`
+                    {isProgressVisible(h, status) && commitCount !== null
+                      ? `${commitCount} sur ${h.threshold} engagés`
                       : `Seuil : ${h.threshold} · progression masquée`}
                   </div>
                 </Link>

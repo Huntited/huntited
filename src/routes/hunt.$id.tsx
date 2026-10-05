@@ -16,7 +16,7 @@ import {
   getSettlementOutcome,
   isProgressVisible,
 } from "@/lib/hunt-lifecycle";
-import { markHuntSettled } from "@/lib/hunt-state-store";
+import { settleHunt } from "@/lib/hunt-repository";
 import { COMMIT_REFUND_SHORT } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
 import { useHunt } from "@/lib/useHunt";
@@ -46,9 +46,9 @@ function HuntDetailPage() {
   const { id } = Route.useParams();
   const [commitOpen, setCommitOpen] = useState(false);
 
-  // État de la chasse via le hook dédié (couche covenant mockée aujourd'hui,
+  // État de la chasse via hunt-repository (mock local ou registre partagé,
   // lecture on-chain Kaspa demain).
-  const { hunt, commitCount, status, outcome, isLoading, refresh } = useHunt(id);
+  const { hunt, commitCount, status, outcome, isLoading, error, refresh } = useHunt(id);
   // Wallet + engagement (un seul engagement par wallet et par chasse).
   const wallet = useWallet();
   const commitment = useCommitment(id, status);
@@ -56,6 +56,19 @@ function HuntDetailPage() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">Chargement…</div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-10">
+        <Link to="/" className="text-sm text-muted-foreground hover:underline">
+          ← Retour
+        </Link>
+        <p className="mt-4 text-sm text-muted-foreground" role="alert">
+          {error}
+        </p>
+      </div>
     );
   }
 
@@ -147,8 +160,7 @@ function HuntDetailPage() {
             ? {
                 onSettle: () => {
                   const o = getSettlementOutcome(status);
-                  if (o) markHuntSettled(hunt.id, o);
-                  refresh();
+                  if (o) void settleHunt(hunt.id, o).finally(refresh);
                 },
               }
             : {})}

@@ -62,24 +62,35 @@ Une forme de veto des engagés pourra être étudiée après le MVP si l'usage e
 
 ## Démarrage
 
-### Front
+### Front seul (tout simulé dans le navigateur)
 
 ```bash
 bun install
 bun run dev
-# http://localhost:8080
 ```
 
-### Backend (chat Matrix mocké)
+Par défaut (`VITE_DATA_MODE=local`), les chasses sont stockées dans le navigateur : idéal pour la démo, mais rien n'est partagé entre appareils.
 
-```bash
-cd backend
-npm install
-npm run dev
-# http://localhost:3001 — endpoints : POST /api/chat, GET /api/chat/:huntId, GET /health
-```
+### Tester à plusieurs (registre partagé, sans vrais KAS)
 
-Variable d'environnement optionnelle : `FRONT_ORIGIN` (origine autorisée pour CORS).
+1. Backend : copier `backend/.env.example` en `backend/.env`, puis :
+   ```bash
+   cd backend
+   bun install
+   bun run dev
+   ```
+   - `REGISTRY_FILE=data/registry.json` conserve les chasses entre deux redémarrages.
+   - `CORS_ORIGIN` : l'adresse du front, plusieurs séparées par des virgules
+     (ajouter `http://<IP-du-PC>:<port>` pour tester depuis un téléphone sur le même Wi-Fi).
+   - `WALLET_AUTH_MODE=mock` pour le wallet factice ; `signature` (défaut) pour Kastle.
+2. Front : dans `.env`, `VITE_DATA_MODE=api`, `VITE_MATRIX_MODE=api`,
+   `VITE_API_BASE_URL=http://<IP-du-PC>:3001` (et `VITE_WALLET_MODE=kastle` pour Kastle).
+3. Ouvrir le front sur chaque appareil : créer, partager le lien, s'engager.
+   Une seule signature du wallet par visite ouvre une session d'une heure.
+
+Routes du backend : `GET /health`, `GET|POST /api/hunts`, `GET /api/hunts/:id`,
+`POST /api/hunts/:id/commit`, `POST /api/auth/challenge|session|chat-access`,
+`POST /api/chats`, `GET /api/chats/:huntId`.
 
 ## Principes non négociables
 

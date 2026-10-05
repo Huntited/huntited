@@ -10,7 +10,17 @@ const schema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().int().min(1).max(65535).default(3001),
-    CORS_ORIGIN: z.string().url(),
+    // Une ou plusieurs origines autorisées, séparées par des virgules
+    // (ex. le PC et un téléphone sur le même réseau).
+    CORS_ORIGIN: z
+      .string()
+      .transform((s) =>
+        s
+          .split(",")
+          .map((o) => o.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.string().url()).min(1)),
     MATRIX_MODE: z.enum(["mock", "synapse"]).default("mock"),
     MATRIX_HOMESERVER_URL: z.string().url(),
     MATRIX_ACCESS_TOKEN: z.string().default(""),
