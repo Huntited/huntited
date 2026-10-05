@@ -33,6 +33,11 @@ export interface HuntSettlement {
   participantRefundPerCommitSompi: bigint;
   /** Bonus d'échec versé à chaque engagé (échec uniquement). */
   participantBonusPerCommitSompi: bigint;
+  /**
+   * Succès uniquement : dépôt rendu à chaque engagé·e NON retenu·e (son seuil
+   * personnel n'est pas atteint), sans bonus — voir docs/seuil-personnel.md.
+   */
+  nonRetainedRefundPerCommitSompi: bigint;
 }
 
 /**
@@ -47,6 +52,13 @@ export function failureBonusPerCommit(commitCount: number): bigint {
   return pool <= CREATE_DEPOSIT_SOMPI ? FAILURE_BONUS_PER_COMMIT_SOMPI : CREATE_DEPOSIT_SOMPI / n;
 }
 
+/**
+ * Règlement d'une chasse.
+ * - Succès : `commitCount` = engagé·es **retenu·es** (leurs dépôts financent
+ *   le créateur à 95 % et la treasury à 5 %) ; les non-retenu·es récupèrent
+ *   leur dépôt (nonRetainedRefundPerCommitSompi).
+ * - Échec : `commitCount` = tous les engagé·es (remboursement + bonus).
+ */
 export function calculateSettlement(commitCount: number, outcome: HuntOutcome): HuntSettlement {
   if (!Number.isSafeInteger(commitCount) || commitCount < 0) {
     throw new Error("Nombre d'engagements invalide.");
@@ -62,6 +74,7 @@ export function calculateSettlement(commitCount: number, outcome: HuntOutcome): 
       treasurySompi: 0n,
       participantRefundPerCommitSompi: COMMIT_DEPOSIT_SOMPI,
       participantBonusPerCommitSompi: bonus,
+      nonRetainedRefundPerCommitSompi: 0n,
     };
   }
 
@@ -74,6 +87,7 @@ export function calculateSettlement(commitCount: number, outcome: HuntOutcome): 
     treasurySompi,
     participantRefundPerCommitSompi: 0n,
     participantBonusPerCommitSompi: 0n,
+    nonRetainedRefundPerCommitSompi: COMMIT_DEPOSIT_SOMPI,
   };
 }
 

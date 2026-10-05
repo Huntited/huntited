@@ -2,41 +2,54 @@
 // Plus tard : lecture de l'état on-chain / indexeur, seule cette couche changera.
 import { getBadgeVisibility, getSharedHuntIds } from "./badge-store";
 import { computeBadges, type EarnedBadge, type HuntResult, type WalletActivity } from "./badges";
-import { getCommitCount, getHunt, listHunts } from "./covenants";
+import { getHunt, getRetainedGroup, listHunts } from "./covenants";
 import { deriveHuntStatus } from "./hunt-lifecycle";
 import { getStoredHuntState } from "./hunt-state-store";
 import { getDataMode, listHuntViews, type HuntView } from "./hunt-repository";
-import { getMockCommitPosition } from "./mock-zk";
+import { getMockCommitPosition, getMockPersonalThreshold } from "./mock-zk";
+import { isRetained } from "./retained-group";
 import { listMyCommitments } from "./my-commitments";
 import type { Hunt } from "./types";
 import { getUserHunts } from "./user-hunts";
 
-/** Résultat d'une chasse : réussie, échouée ou encore en cours. */
+/** Résultat d'une chasse (groupe retenu) : réussie, échouée ou encore en cours. */
 export function huntResult(hunt: Hunt, now: number = Date.now()): HuntResult {
-  const count = getCommitCount(hunt);
+  const retained = getRetainedGroup(hunt).retainedCount;
   const stored = getStoredHuntState(hunt.id);
-  const status = deriveHuntStatus(hunt, count, now, stored);
+  const status = deriveHuntStatus(hunt, retained, now, stored);
   if (status === "activated") return "success";
   if (status === "expired") return "failure";
   if (status === "settled") {
     if (stored?.settlementOutcome) return stored.settlementOutcome;
-    return count >= hunt.threshold ? "success" : "failure";
+    return retained >= hunt.threshold ? "success" : "failure";
   }
   return "pending";
+}
+
+/**
+ * Résultat pour un·e engagé·e : une chasse réussie ne compte comme succès
+ * que s'il ou elle fait partie du groupe retenu ; non retenu·e, c'est neutre
+ * (ni succès ni échec : remboursé·e, sans participer).
+ */
+function personalResult(result: HuntResult, retained: boolean): HuntResult {
+  return result === "success" && !retained ? "pending" : result;
 }
 
 export function collectWalletActivity(address: string, now: number = Date.now()): WalletActivity {
   const participations = listHunts().flatMap((hunt) => {
     const pos = getMockCommitPosition(hunt.id, address);
     if (!pos) return [];
+    const mine = getMockPersonalThreshold(hunt.id, address, hunt.threshold) ?? hunt.threshold;
+    const triggerRank = getStoredHuntState(hunt.id)?.activationRank;
     return [
       {
         huntId: hunt.id,
         // Les engagements de démo (hunt.commitCount) précèdent les engagements locaux.
         rank: hunt.commitCount + pos.localRank,
         threshold: hunt.threshold,
-        result: huntResult(hunt, now),
+        result: personalResult(huntResult(hunt, now), isRetained(mine, getRetainedGroup(hunt))),
         committedAt: pos.createdAt,
+        ...(triggerRank !== undefined ? { triggerRank } : {}),
       },
     ];
   });
@@ -48,7 +61,8 @@ export function collectWalletActivity(address: string, now: number = Date.now())
       {
         huntId: hunt.id,
         result: huntResult(hunt, now),
-        commitCount: getCommitCount(hunt),
+        // Personnes qui participent réellement (groupe retenu).
+        commitCount: getRetainedGroup(hunt).retainedCount,
         progressVisibility: hunt.progressVisibility ?? ("visible" as const),
       },
     ];
@@ -86,13 +100,16 @@ export async function loadWalletActivity(address: string): Promise<WalletActivit
     const v = views.get(huntId);
     // Rang inconnu (engagement fait ailleurs) : pas de badge de rang.
     if (!v || c.rank === undefined) return [];
+    const mine = c.personalThreshold ?? v.hunt.threshold;
+    const retained = v.retainedThreshold !== null && mine <= v.retainedThreshold;
     return [
       {
         huntId,
         rank: c.rank,
         threshold: v.hunt.threshold,
-        result: viewResult(v),
+        result: personalResult(viewResult(v), retained),
         committedAt: c.committedAt,
+        ...(v.activationRank !== undefined ? { triggerRank: v.activationRank } : {}),
       },
     ];
   });
@@ -104,7 +121,7 @@ export async function loadWalletActivity(address: string): Promise<WalletActivit
       {
         huntId: v.hunt.id,
         result: viewResult(v),
-        commitCount: v.commitCount ?? 0,
+        commitCount: v.retainedCount ?? v.commitCount ?? 0,
         progressVisibility: v.hunt.progressVisibility ?? ("visible" as const),
       },
     ];

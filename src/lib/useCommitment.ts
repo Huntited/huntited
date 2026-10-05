@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { canCommit as statusAllowsCommit } from "./hunt-lifecycle";
 import {
   commit as commitToHunt,
   isCommitted as checkCommitted,
   onHuntsChange,
 } from "./hunt-repository";
-import type { HuntStatus } from "./types";
 import { useWallet } from "./useWallet";
 
 export interface UseCommitmentResult {
@@ -15,15 +13,17 @@ export interface UseCommitmentResult {
   canCommit: boolean;
   isSubmitting: boolean;
   error: string | null;
-  commit: () => Promise<void>;
+  /** S'engage, avec un seuil personnel facultatif (« je viens si au moins N »). */
+  commit: (personalThreshold?: number) => Promise<void>;
 }
 
 /**
  * État d'engagement du wallet connecté pour une chasse.
+ * `commitsOpen` : engagements acceptés (active, ou activée avant la date limite).
  * Un wallet ne peut s'engager qu'une fois par chasse (vérifié aussi par le
  * registre en mode partagé). Aucun log d'adresse ni de commitment.
  */
-export function useCommitment(huntId: string, status: HuntStatus): UseCommitmentResult {
+export function useCommitment(huntId: string, commitsOpen: boolean): UseCommitmentResult {
   const { isConnected, address } = useWallet();
   const [isCommitted, setIsCommitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,22 +36,25 @@ export function useCommitment(huntId: string, status: HuntStatus): UseCommitment
     return onHuntsChange(sync);
   }, [huntId, address]);
 
-  const canCommit = isConnected && statusAllowsCommit(status) && !isCommitted && !isSubmitting;
+  const canCommit = isConnected && commitsOpen && !isCommitted && !isSubmitting;
 
-  const commit = useCallback(async () => {
-    if (!address || !canCommit) return;
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      // Le compteur se met à jour via onHuntsChange.
-      await commitToHunt(huntId, address);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "L'engagement a échoué. Réessaie.");
-      throw e;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [address, canCommit, huntId]);
+  const commit = useCallback(
+    async (personalThreshold?: number) => {
+      if (!address || !canCommit) return;
+      setIsSubmitting(true);
+      setError(null);
+      try {
+        // Le compteur se met à jour via onHuntsChange.
+        await commitToHunt(huntId, address, personalThreshold);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "L'engagement a échoué. Réessaie.");
+        throw e;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [address, canCommit, huntId],
+  );
 
   return { isConnected, isCommitted, canCommit, isSubmitting, error, commit };
 }

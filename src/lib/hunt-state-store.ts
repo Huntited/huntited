@@ -21,6 +21,8 @@ export interface StoredHuntState {
   huntId: string;
   status: StoredStatus;
   activatedAt?: string;
+  /** Nombre d'engagements au moment de l'activation (badge Déclencheur·se). */
+  activationRank?: number;
   expiredAt?: string;
   settledAt?: string;
   settlementOutcome?: SettlementOutcome;
@@ -54,13 +56,16 @@ export function setStoredHuntState(state: StoredHuntState): void {
 }
 
 /**
- * Calcule le statut à partir du compteur et de la deadline, puis le persiste.
- * Ne réécrit rien si l'état est inchangé (évite les boucles de rendu).
+ * Calcule le statut à partir du groupe retenu et de la deadline, puis le
+ * persiste. Ne réécrit rien si l'état est inchangé (évite les boucles de rendu).
+ * `retainedCount` : taille du groupe retenu (= nombre d'engagés sans seuils
+ * personnels) ; `totalCommits` : nombre total d'engagements (rang d'activation).
  */
 export function deriveAndPersistHuntState(
   hunt: Pick<Hunt, "id" | "threshold" | "deadline">,
-  commitCount: number,
+  retainedCount: number,
   now: number = Date.now(),
+  totalCommits: number = retainedCount,
 ): StoredHuntState {
   const prev = getStoredHuntState(hunt.id);
   if (prev?.status === "settled") return prev; // jamais écrasé
@@ -68,8 +73,14 @@ export function deriveAndPersistHuntState(
 
   const iso = new Date(now).toISOString();
   let next: StoredHuntState;
-  if (commitCount >= hunt.threshold) {
-    next = { huntId: hunt.id, status: "activated", activatedAt: iso, updatedAt: iso };
+  if (retainedCount >= hunt.threshold) {
+    next = {
+      huntId: hunt.id,
+      status: "activated",
+      activatedAt: iso,
+      activationRank: totalCommits,
+      updatedAt: iso,
+    };
   } else if (now > new Date(hunt.deadline).getTime()) {
     if (prev?.status === "expired") return prev;
     next = { huntId: hunt.id, status: "expired", expiredAt: iso, updatedAt: iso };

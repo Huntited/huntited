@@ -12,7 +12,7 @@ import {
   type ChatAccessToken,
 } from "./chat-access-api";
 import { chatMode } from "./chat-client";
-import { isCommitted } from "./hunt-repository";
+import { isCommitted, isRetainedHere, onHuntsChange } from "./hunt-repository";
 import type { SettlementOutcome } from "./hunt-state-store";
 import { canCreateRoom } from "./matrix-mock";
 import type { HuntStatus } from "./types";
@@ -33,11 +33,15 @@ export interface UseChatAccessResult {
 /** Rôle local (mock) : créateur si la chasse a été créée ici, engagé·e si engagement local. */
 function localRole(huntId: string, address: string): ChatRole | null {
   if (getUserHunts(address).some((h) => h.huntId === huntId)) return "creator";
-  if (isCommitted(huntId, address)) return "participant";
+  // Seuls les engagé·es retenu·es participent (seuils personnels).
+  if (isCommitted(huntId, address) && isRetainedHere(huntId, address) !== false) {
+    return "participant";
+  }
   return null;
 }
 
-const MSG_FORBIDDEN = "Le chat est réservé à la personne qui a créé la chasse et aux engagé·es.";
+const MSG_FORBIDDEN =
+  "Le chat est réservé à la personne qui a créé la chasse et aux engagé·es retenu·es (dont la condition est remplie).";
 const MSG_UNAVAILABLE = "Le chat est temporairement indisponible.";
 const MSG_SIGNATURE_REFUSED =
   "Signature refusée : signe le message dans ton wallet pour accéder au chat.";
@@ -53,6 +57,14 @@ export function useChatAccess(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const allowed = canCreateRoom(status, outcome);
+  // Rôle connu localement, relu à chaque engagement : un·e engagé·e peut
+  // devenir retenu·e quand d'autres s'engagent (seuils personnels).
+  const [membership, setMembership] = useState<ChatRole | null>(null);
+  useEffect(() => {
+    const sync = () => setMembership(address ? localRole(huntId, address) : null);
+    sync();
+    return onHuntsChange(sync);
+  }, [huntId, address]);
 
   useEffect(() => {
     // Réinitialise à chaque changement de wallet / statut (déconnexion incluse).
@@ -61,7 +73,7 @@ export function useChatAccess(
     setError(null);
     if (!allowed || !address) return;
 
-    const r = localRole(huntId, address);
+    const r = membership;
     if (chatMode === "mock") {
       if (r) setRole(r);
       else setError(MSG_FORBIDDEN);
@@ -92,7 +104,7 @@ export function useChatAccess(
     return () => {
       cancelled = true;
     };
-  }, [huntId, status, outcome, address, allowed]);
+  }, [huntId, status, outcome, address, allowed, membership]);
 
   // Invalide le jeton à expiration.
   useEffect(() => {

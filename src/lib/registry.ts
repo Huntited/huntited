@@ -4,8 +4,8 @@
 
 import {
   getCovenantStatus,
-  getCommitCount,
   getHunt,
+  getRetainedGroup,
   listHunts,
   type CovenantStatus,
 } from "./covenants";
@@ -24,7 +24,8 @@ export function getHuntStatus(hunt: Hunt, now = Date.now()): CovenantStatus {
   return getCovenantStatus(
     {
       deadline: new Date(hunt.deadline).getTime(),
-      commitCount: getCommitCount(hunt),
+      // Activation : taille du groupe retenu (seuils personnels).
+      commitCount: getRetainedGroup(hunt).retainedCount,
       threshold: hunt.threshold,
     },
     now,

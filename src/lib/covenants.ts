@@ -8,8 +8,15 @@
  */
 
 import { mockHunts } from "./mock-hunts";
-import { getMockCommitCount, mockCommit, onCommitmentsChange } from "./mock-zk";
+import {
+  getMockCommitCount,
+  getMockCommitThresholds,
+  mockCommit,
+  onCommitmentsChange,
+} from "./mock-zk";
 import { SOMPI_PER_KAS } from "./hunt-economics";
+import { getStoredHuntState } from "./hunt-state-store";
+import { computeRetainedGroup, type RetainedGroup } from "./retained-group";
 import type { Hunt, HuntFormData } from "./types";
 
 /** Paramètres économiques fixes du MVP. */
@@ -221,27 +228,36 @@ export async function createHuntCovenant(data: HuntFormData): Promise<HuntCovena
  * La version réelle demandera la signature du wallet, enverra 5 KAS
  * et ajoutera le commitment dans le covenant Kaspa.
  */
-export async function commitToHunt(huntId: string, walletAddress: string): Promise<CommitReceipt> {
+export async function commitToHunt(
+  huntId: string,
+  walletAddress: string,
+  personalThreshold?: number,
+): Promise<CommitReceipt> {
   const hunt = getHunt(huntId);
 
   if (!hunt) {
     throw new Error("Chasse introuvable.");
   }
 
-  const status = getCovenantStatus(getHuntCovenant(hunt));
-
-  if (status === "expired") {
-    throw new Error("Cette chasse a expiré.");
+  // Engagements ouverts jusqu'à la date limite, même après l'activation
+  // (seuil personnel, option B), sauf si la chasse est déjà résolue.
+  if (!commitsOpen(hunt)) {
+    throw new Error("Les engagements sont fermés pour cette chasse.");
   }
 
-  if (status === "activated") {
-    throw new Error("Cette chasse a déjà atteint son seuil.");
+  const t = personalThreshold ?? hunt.threshold;
+  if (!Number.isInteger(t) || t < hunt.threshold || t > 100_000) {
+    throw new Error(`Ton seuil personnel doit être un entier d'au moins ${hunt.threshold}.`);
   }
 
   await delay(400);
 
   // Lève une erreur si ce wallet est déjà engagé (un engagement par wallet et par chasse).
-  const { commitment } = await mockCommit(huntId, walletAddress);
+  const { commitment } = await mockCommit(
+    huntId,
+    walletAddress,
+    t !== hunt.threshold ? t : undefined,
+  );
 
   return {
     huntId,
@@ -256,6 +272,25 @@ export async function commitToHunt(huntId: string, walletAddress: string): Promi
  */
 export function getCommitCount(hunt: Hunt): number {
   return getMockCommitCount(hunt.id, hunt.commitCount);
+}
+
+/**
+ * Groupe retenu du mock : engagements de démo (au seuil de la chasse) puis
+ * engagements locaux avec leur seuil personnel.
+ */
+export function getRetainedGroup(hunt: Hunt): RetainedGroup {
+  const thresholds = [
+    ...Array.from({ length: hunt.commitCount }, () => hunt.threshold),
+    ...getMockCommitThresholds(hunt.id, hunt.threshold),
+  ];
+  return computeRetainedGroup(thresholds, hunt.threshold);
+}
+
+/** Engagements acceptés : avant la date limite et tant que la chasse n'est pas résolue. */
+export function commitsOpen(hunt: Hunt, now = Date.now()): boolean {
+  return (
+    getStoredHuntState(hunt.id)?.status !== "settled" && now <= new Date(hunt.deadline).getTime()
+  );
 }
 
 /**
@@ -303,9 +338,10 @@ export function getHuntCovenant(hunt: Hunt): HuntCovenant {
     creationDepositSompi: kasToSompi(hunt.deposit),
     commitDepositSompi: kasToSompi(hunt.commitDeposit),
     commitCount,
+    // Activation : taille du groupe retenu (seuils personnels), pas le total.
     status: getCovenantStatus({
       deadline,
-      commitCount,
+      commitCount: getRetainedGroup(hunt).retainedCount,
       threshold: hunt.threshold,
     }),
   };

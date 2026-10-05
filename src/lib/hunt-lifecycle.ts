@@ -36,10 +36,8 @@ export function isProgressVisible(
   return hunt.progressVisibility !== "hidden" || (status !== "active" && status !== "draft");
 }
 
-/** S'engager n'est possible que pendant la phase active. */
-export function canCommit(status: HuntStatus): boolean {
-  return status === "active";
-}
+// S'engager : voir HuntView.commitsOpen (hunt-repository) — ouvert jusqu'à la
+// date limite, y compris après l'activation (seuil personnel, option B).
 
 /** Chat Matrix : après activation, ou après une résolution en succès. */
 export function canOpenChat(status: HuntStatus, outcome?: SettlementOutcome): boolean {

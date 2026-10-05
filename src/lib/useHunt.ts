@@ -13,6 +13,12 @@ export interface UseHuntResult {
   status: HuntStatus;
   /** Issue de la résolution (si résolue). */
   outcome: SettlementOutcome | undefined;
+  /** Groupe retenu (seuils personnels) ; null si masqué. */
+  retainedCount: number | null;
+  retainedThreshold: number | null;
+  activationRank: number | undefined;
+  /** Engagements encore acceptés (y compris après l'activation, jusqu'à la date limite). */
+  commitsOpen: boolean;
   isLoading: boolean;
   /** Erreur de chargement (service indisponible en mode registre). */
   error: string | null;
@@ -29,6 +35,17 @@ export function useHunt(huntId: string): UseHuntResult {
   const [commitCount, setCommitCount] = useState(0);
   const [status, setStatus] = useState<HuntStatus>("active");
   const [outcome, setOutcome] = useState<SettlementOutcome | undefined>();
+  const [group, setGroup] = useState<{
+    retainedCount: number | null;
+    retainedThreshold: number | null;
+    activationRank: number | undefined;
+    commitsOpen: boolean;
+  }>({
+    retainedCount: null,
+    retainedThreshold: null,
+    activationRank: undefined,
+    commitsOpen: false,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0); // incrémenté pour forcer un refresh
@@ -43,6 +60,12 @@ export function useHunt(huntId: string): UseHuntResult {
         setCommitCount(view?.commitCount ?? 0);
         setStatus(view?.status ?? "active");
         setOutcome(view?.outcome);
+        setGroup({
+          retainedCount: view?.retainedCount ?? null,
+          retainedThreshold: view?.retainedThreshold ?? null,
+          activationRank: view?.activationRank,
+          commitsOpen: view?.commitsOpen ?? false,
+        });
       })
       .catch(() => {
         if (!cancelled) setError("Impossible de charger la chasse. Réessaie plus tard.");
@@ -60,5 +83,5 @@ export function useHunt(huntId: string): UseHuntResult {
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
   const covenant = hunt ? getHuntCovenant(hunt) : undefined;
 
-  return { hunt, covenant, commitCount, status, outcome, isLoading, error, refresh };
+  return { hunt, covenant, commitCount, status, outcome, ...group, isLoading, error, refresh };
 }

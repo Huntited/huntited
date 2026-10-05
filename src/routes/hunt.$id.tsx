@@ -10,13 +10,12 @@ import { Button } from "@/components/ui/button";
 import Countdown from "@/components/ui/Countdown";
 import { Separator } from "@/components/ui/separator";
 import {
-  canCommit,
   canOpenChat,
   canSettle,
   getSettlementOutcome,
   isProgressVisible,
 } from "@/lib/hunt-lifecycle";
-import { settleHunt } from "@/lib/hunt-repository";
+import { getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
 import { COMMIT_REFUND_SHORT } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
 import { useHunt } from "@/lib/useHunt";
@@ -48,10 +47,21 @@ function HuntDetailPage() {
 
   // État de la chasse via hunt-repository (mock local ou registre partagé,
   // lecture on-chain Kaspa demain).
-  const { hunt, commitCount, status, outcome, isLoading, error, refresh } = useHunt(id);
+  const {
+    hunt,
+    commitCount,
+    status,
+    outcome,
+    retainedCount,
+    retainedThreshold,
+    commitsOpen,
+    isLoading,
+    error,
+    refresh,
+  } = useHunt(id);
   // Wallet + engagement (un seul engagement par wallet et par chasse).
   const wallet = useWallet();
-  const commitment = useCommitment(id, status);
+  const commitment = useCommitment(id, commitsOpen);
 
   if (isLoading) {
     return (
@@ -154,6 +164,7 @@ function HuntDetailPage() {
         <HuntSettlementPanel
           hunt={hunt}
           commitCount={commitCount}
+          retainedCount={retainedCount ?? commitCount}
           status={status}
           outcome={outcome}
           {...(import.meta.env.DEV && canSettle(status)
@@ -181,6 +192,12 @@ function HuntDetailPage() {
                 sur {hunt.threshold} requis
               </span>
             </p>
+            {retainedCount !== null && retainedCount !== commitCount && (
+              <p className="text-sm text-muted-foreground">
+                Groupe retenu : {retainedCount} (les autres attendent que leur propre condition soit
+                remplie)
+              </p>
+            )}
           </div>
         ) : (
           <div>
@@ -191,8 +208,8 @@ function HuntDetailPage() {
             </p>
           </div>
         )}
-        {/* Engagement possible uniquement tant que la chasse est active */}
-        {!canCommit(status) ? (
+        {/* Engagements ouverts jusqu'à la date limite, même après l'activation */}
+        {!commitsOpen ? (
           <Button size="lg" disabled>
             Engagements fermés
           </Button>
@@ -210,15 +227,41 @@ function HuntDetailPage() {
           </Button>
         )}
       </div>
-      {canCommit(status) && !commitment.isCommitted && (
+      {commitsOpen && !commitment.isCommitted && (
         <p className="mt-2 text-right text-sm font-medium text-green-700">{COMMIT_REFUND_SHORT}</p>
       )}
+
+      {/* Condition personnelle (visible seulement par l'engagé·e concerné·e) */}
+      {commitment.isCommitted &&
+        wallet.address &&
+        (() => {
+          const mine = getMyPersonalThreshold(hunt, wallet.address);
+          if (mine === undefined) return null;
+          const met = retainedThreshold !== null && mine <= retainedThreshold;
+          return (
+            <p className="mt-3 text-sm" role="status">
+              Ta condition : au moins {mine} personnes —{" "}
+              {met ? (
+                <span className="font-medium text-green-700">
+                  remplie, tu fais partie du groupe.
+                </span>
+              ) : (
+                <span className="text-muted-foreground">
+                  en attente. Si elle n'est pas remplie, tes {hunt.commitDeposit} KAS te sont
+                  rendus.
+                </span>
+              )}
+            </p>
+          );
+        })()}
 
       {/* Bannières d'état */}
       {isActivated && (
         <div className="mt-6 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-          Cette chasse a atteint son seuil ({commitCount} / {hunt.threshold}). Le covenant est
-          activé.
+          Cette chasse a atteint son seuil ({retainedCount ?? commitCount} / {hunt.threshold}). Le
+          covenant est activé.
+          {commitsOpen &&
+            " Les engagements restent ouverts jusqu'à la date limite : le groupe peut encore grandir."}
         </div>
       )}
       {isExpired && !isActivated && (

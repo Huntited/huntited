@@ -103,8 +103,14 @@ export interface Participation {
   /** Position de l'engagement dans la chasse (1 = premier). */
   rank: number;
   threshold: number;
+  /**
+   * Résultat pour CET engagé·e : « success » seulement s'il ou elle fait
+   * partie du groupe retenu d'une chasse réussie.
+   */
   result: HuntResult;
   committedAt: number;
+  /** Engagement qui a déclenché l'activation (seuils personnels) ; défaut : le seuil. */
+  triggerRank?: number;
 }
 
 export interface Creation {
@@ -168,7 +174,7 @@ export function computeBadges(a: WalletActivity): EarnedBadge[] {
 
   const counts: Record<BadgeId, number> = {
     pionnier: won.filter(isPioneer).length,
-    declencheur: won.filter((p) => p.rank === p.threshold).length,
+    declencheur: won.filter((p) => p.rank === (p.triggerRank ?? p.threshold)).length,
     habitue: won.length,
     serie:
       longestMonthStreak(a.participations.map((p) => p.committedAt)) >= BADGE_RULES.streakMonths

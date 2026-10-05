@@ -64,6 +64,29 @@ describe("calculateSettlement", () => {
     expect(calculateSettlement(10, "success").participantBonusPerCommitSompi).toBe(0n);
   });
 
+  it("succès : un·e non-retenu·e récupère 5 KAS, sans bonus ; rien en échec", () => {
+    expect(calculateSettlement(10, "success").nonRetainedRefundPerCommitSompi).toBe(kas(5n));
+    expect(calculateSettlement(10, "failure").nonRetainedRefundPerCommitSompi).toBe(0n);
+  });
+
+  it("succès avec non-retenu·es : sorties = dépôts, au sompi près", () => {
+    for (const [retained, nonRetained] of [
+      [4, 1],
+      [10, 15],
+      [1, 0],
+      [99, 1_000],
+    ] as const) {
+      const s = calculateSettlement(retained, "success");
+      const deposits = CREATE_DEPOSIT_SOMPI + BigInt(retained + nonRetained) * COMMIT_DEPOSIT_SOMPI;
+      const payout =
+        s.creatorCreationRefundSompi +
+        s.creatorCommitRewardSompi +
+        s.treasurySompi +
+        BigInt(nonRetained) * s.nonRetainedRefundPerCommitSompi;
+      expect(payout).toBe(deposits);
+    }
+  });
+
   it("tous les montants sont des bigint", () => {
     for (const outcome of ["success", "failure"] as const) {
       for (const value of Object.values(calculateSettlement(7, outcome))) {

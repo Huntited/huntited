@@ -9,9 +9,11 @@ import {
   COMMIT_DEPOSIT_KAS,
   CREATE_DEPOSIT_KAS,
   commitToHunt as localCommit,
+  commitsOpen as localCommitsOpen,
   createHuntCovenant,
   getCommitCount,
   getHunt,
+  getRetainedGroup,
   listHunts,
   onCommitmentsChange,
 } from "./covenants";
@@ -22,8 +24,9 @@ import {
   subscribeHuntState,
   type SettlementOutcome,
 } from "./hunt-state-store";
-import { hasMockCommitment } from "./mock-zk";
+import { getMockPersonalThreshold, hasMockCommitment } from "./mock-zk";
 import { getMyCommitment, rememberCommitment } from "./my-commitments";
+import { isRetained } from "./retained-group";
 import type { Hunt, HuntFormData, HuntStatus, ProgressVisibility } from "./types";
 import { addUserHunt } from "./user-hunts";
 
@@ -39,6 +42,14 @@ export interface HuntView {
   status: HuntStatus;
   /** null quand le serveur masque le compteur (progression masquée, phase active). */
   commitCount: number | null;
+  /** Taille du groupe retenu (seuils personnels) ; null si masquée. */
+  retainedCount: number | null;
+  /** Seuil personnel maximal satisfait (k*) ; null sans groupe ou si masqué. */
+  retainedThreshold: number | null;
+  /** Engagement qui a déclenché l'activation, s'il est connu. */
+  activationRank?: number;
+  /** Engagements encore acceptés (active, ou activée avant la date limite). */
+  commitsOpen: boolean;
   outcome?: SettlementOutcome;
 }
 
@@ -65,7 +76,9 @@ export function onHuntsChange(listener: () => void): () => void {
 
 function localView(base: Hunt, now = Date.now()): HuntView {
   const count = getCommitCount(base);
-  const stored = deriveAndPersistHuntState(base, count, now);
+  const group = getRetainedGroup(base);
+  // L'activation se fonde sur le groupe retenu (seuils personnels).
+  const stored = deriveAndPersistHuntState(base, group.retainedCount, now, count);
   const hunt: Hunt = {
     ...base,
     ...(stored.activatedAt ? { activatedAt: stored.activatedAt } : {}),
@@ -73,8 +86,12 @@ function localView(base: Hunt, now = Date.now()): HuntView {
   };
   return {
     hunt,
-    status: deriveHuntStatus(base, count, now, stored),
+    status: deriveHuntStatus(base, group.retainedCount, now, stored),
     commitCount: count,
+    retainedCount: group.retainedCount,
+    retainedThreshold: group.retainedThreshold,
+    commitsOpen: localCommitsOpen(base, now),
+    ...(stored.activationRank !== undefined ? { activationRank: stored.activationRank } : {}),
     ...(stored.settlementOutcome ? { outcome: stored.settlementOutcome } : {}),
   };
 }
@@ -91,6 +108,10 @@ interface PublicHunt {
   progressVisibility: ProgressVisibility;
   status: "active" | "activated" | "expired" | "settled";
   commitCount: number | null;
+  retainedCount: number | null;
+  retainedThreshold: number | null;
+  activationRank?: number;
+  commitsOpen: boolean;
   outcome?: SettlementOutcome;
   activatedAt?: string;
   settledAt?: string;
@@ -115,6 +136,10 @@ function apiView(p: PublicHunt): HuntView {
     },
     status: p.status,
     commitCount: p.commitCount,
+    retainedCount: p.retainedCount ?? null,
+    retainedThreshold: p.retainedThreshold ?? null,
+    commitsOpen: p.commitsOpen ?? p.status === "active",
+    ...(p.activationRank !== undefined ? { activationRank: p.activationRank } : {}),
     ...(p.outcome ? { outcome: p.outcome } : {}),
   };
 }
@@ -183,23 +208,50 @@ export function isCommitted(huntId: string, address: string): boolean {
     : getMyCommitment(address, huntId) !== undefined;
 }
 
-/** Engage le wallet (5 KAS simulés). */
-export async function commit(huntId: string, address: string): Promise<void> {
+/**
+ * Mode local : true / false selon que ce wallet fait partie du groupe retenu.
+ * Mode registre : undefined (c'est le serveur qui décide, via le jeton de chat).
+ */
+export function isRetainedHere(huntId: string, address: string): boolean | undefined {
+  if (getDataMode() !== "local") return undefined;
+  const hunt = getHunt(huntId);
+  if (!hunt) return false;
+  const mine = getMockPersonalThreshold(huntId, address, hunt.threshold);
+  return mine !== undefined && isRetained(mine, getRetainedGroup(hunt));
+}
+
+/** Seuil personnel de ce wallet dans la chasse, s'il est connu sur cet appareil. */
+export function getMyPersonalThreshold(hunt: Hunt, address: string): number | undefined {
+  return getDataMode() === "local"
+    ? getMockPersonalThreshold(hunt.id, address, hunt.threshold)
+    : getMyCommitment(address, hunt.id)?.personalThreshold;
+}
+
+/**
+ * Engage le wallet (5 KAS simulés), avec un seuil personnel facultatif :
+ * « je viens si au moins N personnes viennent » (N ≥ seuil de la chasse).
+ */
+export async function commit(
+  huntId: string,
+  address: string,
+  personalThreshold?: number,
+): Promise<void> {
   if (getDataMode() === "local") {
-    await localCommit(huntId, address);
+    await localCommit(huntId, address, personalThreshold);
     return;
   }
   try {
     const token = await getSessionToken(address);
     // Rang null : chasse à progression masquée encore active (révélé plus tard).
-    const r = await apiFetch<{ rank: number | null }>(
+    const r = await apiFetch<{ rank: number | null; hunt: PublicHunt }>(
       "POST",
       `/api/hunts/${encodeURIComponent(huntId)}/commit`,
-      {},
+      personalThreshold === undefined ? {} : { personalThreshold },
       token,
     );
     rememberCommitment(address, huntId, {
       committedAt: Date.now(),
+      personalThreshold: personalThreshold ?? r.hunt.threshold,
       ...(r.rank !== null ? { rank: r.rank } : {}),
     });
     notify();
@@ -235,7 +287,12 @@ export async function syncMyActivity(address: string): Promise<SyncResult> {
     const token = await getSessionToken(address);
     const me = await apiFetch<{
       created: PublicHunt[];
-      commitments: { hunt: PublicHunt; rank: number | null; committedAt: string }[];
+      commitments: {
+        hunt: PublicHunt;
+        rank: number | null;
+        committedAt: string;
+        personalThreshold?: number;
+      }[];
     }>("GET", "/api/me", undefined, token);
     for (const h of me.created) {
       addUserHunt(address, {
@@ -249,6 +306,7 @@ export async function syncMyActivity(address: string): Promise<SyncResult> {
     for (const c of me.commitments) {
       rememberCommitment(address, c.hunt.id, {
         committedAt: Date.parse(c.committedAt) || Date.now(),
+        ...(c.personalThreshold !== undefined ? { personalThreshold: c.personalThreshold } : {}),
         ...(c.rank !== null ? { rank: c.rank } : {}),
       });
     }

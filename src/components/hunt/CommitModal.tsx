@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -53,12 +54,18 @@ export function CommitModal({
   onCommitted,
 }: CommitModalProps) {
   const [accepted, setAccepted] = useState(false);
+  // Seuil personnel : « je viens si au moins N personnes viennent » (N ≥ seuil de la chasse).
+  const [personal, setPersonal] = useState(String(hunt.threshold));
   const { isConnected, isCommitted, canCommit, isSubmitting, error, commit } = commitment;
+  const personalValue = Number(personal);
+  const personalValid =
+    Number.isInteger(personalValue) && personalValue >= hunt.threshold && personalValue <= 100_000;
 
   const handleConfirm = async () => {
     try {
-      await commit();
+      await commit(personalValue !== hunt.threshold ? personalValue : undefined);
       setAccepted(false);
+      setPersonal(String(hunt.threshold));
       onCommitted?.();
     } catch {
       /* l'erreur est affichée via commitment.error */
@@ -108,6 +115,35 @@ export function CommitModal({
                   <span className="text-muted-foreground">Wallet</span>
                   <code className="text-xs">{shortAddress(walletAddress)}</code>
                 </div>
+              )}
+            </div>
+
+            {/* Seuil personnel (facultatif) */}
+            <div className="space-y-2 rounded-lg border p-4 text-sm">
+              <label htmlFor="personal-threshold" className="flex items-center gap-2">
+                <span>Je viens si au moins</span>
+                <Input
+                  id="personal-threshold"
+                  type="number"
+                  min={hunt.threshold}
+                  step={1}
+                  value={personal}
+                  onChange={(e) => setPersonal(e.target.value)}
+                  className="h-8 w-24"
+                  aria-invalid={!personalValid}
+                />
+                <span>personnes viennent</span>
+              </label>
+              <p className="text-xs text-muted-foreground">
+                Facultatif. Laisse {hunt.threshold} (le seuil de la chasse) si tu viens dès que la
+                chasse se déclenche. Si tu demandes plus et que ce nombre n'est pas atteint, tu ne
+                participes pas et tes {hunt.commitDeposit} KAS te sont rendus. Ton choix reste
+                privé.
+              </p>
+              {!personalValid && (
+                <p className="text-xs text-destructive" role="alert">
+                  Indique un nombre entier d'au moins {hunt.threshold}.
+                </p>
               )}
             </div>
           </>
@@ -160,7 +196,7 @@ export function CommitModal({
               {walletLoading ? "Connexion…" : "Connecter le wallet"}
             </Button>
           ) : (
-            <Button onClick={handleConfirm} disabled={!accepted || !canCommit}>
+            <Button onClick={handleConfirm} disabled={!accepted || !canCommit || !personalValid}>
               {isSubmitting ? "Engagement…" : "Confirmer l'engagement"}
             </Button>
           )}

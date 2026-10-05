@@ -24,6 +24,8 @@ export interface CommitmentRecord {
   walletFingerprint: string;
   commitment: string;
   createdAt: number;
+  /** Seuil personnel (« je viens si au moins N ») ; absent = seuil de la chasse. */
+  personalThreshold?: number;
 }
 
 export interface MockCommitReceipt {
@@ -97,6 +99,7 @@ export function getMockCommitPosition(
 export async function mockCommit(
   huntId: string,
   walletAddress: string,
+  personalThreshold?: number,
 ): Promise<MockCommitReceipt> {
   if (!walletAddress) throw new Error("Wallet non connecté.");
   if (hasMockCommitment(huntId, walletAddress)) {
@@ -109,7 +112,13 @@ export async function mockCommit(
 
   writeJson(RECORDS_KEY, [
     ...readRecords(),
-    { huntId, walletFingerprint: walletFingerprint(huntId, walletAddress), commitment, createdAt },
+    {
+      huntId,
+      walletFingerprint: walletFingerprint(huntId, walletAddress),
+      commitment,
+      createdAt,
+      ...(personalThreshold !== undefined ? { personalThreshold } : {}),
+    },
   ]);
 
   // Le secret n'est pas conservé (règle privacy du prototype). Le vrai
@@ -117,6 +126,28 @@ export async function mockCommit(
 
   if (isBrowser()) window.dispatchEvent(new Event(CHANGE_EVENT));
   return { huntId, commitment, createdAt };
+}
+
+/**
+ * Seuils personnels des engagements locaux d'une chasse, dans l'ordre
+ * d'engagement (`fallback` pour ceux qui n'en ont pas).
+ */
+export function getMockCommitThresholds(huntId: string, fallback: number): number[] {
+  return readRecords()
+    .filter((r) => r.huntId === huntId)
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .map((r) => r.personalThreshold ?? fallback);
+}
+
+/** Seuil personnel de ce wallet dans la chasse (undefined s'il n'est pas engagé). */
+export function getMockPersonalThreshold(
+  huntId: string,
+  walletAddress: string,
+  fallback: number,
+): number | undefined {
+  const fp = walletFingerprint(huntId, walletAddress);
+  const r = readRecords().find((x) => x.huntId === huntId && x.walletFingerprint === fp);
+  return r ? (r.personalThreshold ?? fallback) : undefined;
 }
 
 /** Nombre d'engagements : `baseCount` (données démo) + engagements locaux. */

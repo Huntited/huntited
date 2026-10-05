@@ -167,6 +167,17 @@ describe("hunt-repository (mode registre partagé)", () => {
     expect(getUserHunts(ADDRESS).map((h) => h.huntId)).toEqual(["mine"]);
   });
 
+  it("seuil personnel : envoyé au serveur et mémorisé (privé, sur cet appareil)", async () => {
+    const calls = backend({
+      ...AUTH_ROUTES,
+      "POST /api/hunts/h1/commit": { status: 201, body: { rank: 1, hunt: PUBLIC } },
+    });
+    await commit("h1", ADDRESS, 7);
+    const post = calls.find((c) => c.path === "/api/hunts/h1/commit")!;
+    expect(post.body).toEqual({ personalThreshold: 7 });
+    expect(getMyCommitment(ADDRESS, "h1")?.personalThreshold).toBe(7);
+  });
+
   it("la synchronisation ne fait rien en mode local", async () => {
     vi.stubEnv("VITE_DATA_MODE", "local");
     const calls = backend({});

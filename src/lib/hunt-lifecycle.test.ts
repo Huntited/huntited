@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  canCommit,
-  canOpenChat,
-  canSettle,
-  deriveHuntStatus,
-  isProgressVisible,
-} from "./hunt-lifecycle";
+import { canOpenChat, canSettle, deriveHuntStatus, isProgressVisible } from "./hunt-lifecycle";
 
 const deadline = "2026-10-10T18:00:00Z";
 const before = new Date("2026-10-09T12:00:00Z").getTime();
@@ -35,12 +29,6 @@ describe("deriveHuntStatus", () => {
 });
 
 describe("permissions par statut", () => {
-  it("engagement uniquement en active", () => {
-    expect(canCommit("active")).toBe(true);
-    expect(canCommit("activated")).toBe(false);
-    expect(canCommit("expired")).toBe(false);
-  });
-
   it("chat uniquement après activation", () => {
     expect(canOpenChat("active")).toBe(false);
     expect(canOpenChat("expired")).toBe(false);

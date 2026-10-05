@@ -6,7 +6,10 @@ import type { Hunt, HuntStatus } from "@/lib/types";
 
 interface HuntSettlementPanelProps {
   hunt: Hunt;
+  /** Nombre total d'engagé·es. */
   commitCount: number;
+  /** Taille du groupe retenu (seuils personnels) ; = commitCount sans seuils personnels. */
+  retainedCount?: number;
   status: HuntStatus;
   /** Issue persistée lorsque la chasse est résolue. */
   outcome?: SettlementOutcome | undefined;
@@ -21,6 +24,7 @@ interface HuntSettlementPanelProps {
 export function HuntSettlementPanel({
   hunt,
   commitCount,
+  retainedCount = commitCount,
   status,
   outcome,
   onSettle,
@@ -35,11 +39,16 @@ export function HuntSettlementPanel({
     );
   }
 
-  // Une chasse résolue garde l'issue déterminée par son compteur.
+  // Une chasse résolue garde l'issue déterminée par son groupe retenu.
   const success =
     status === "activated" ||
-    (status === "settled" && (outcome ? outcome === "success" : commitCount >= hunt.threshold));
-  const s = calculateSettlement(commitCount, success ? "success" : "failure");
+    (status === "settled" && (outcome ? outcome === "success" : retainedCount >= hunt.threshold));
+  // Succès : seuls les retenu·es financent ; échec : tous sont remboursés.
+  const s = calculateSettlement(
+    success ? retainedCount : commitCount,
+    success ? "success" : "failure",
+  );
+  const nonRetained = Math.max(0, commitCount - retainedCount);
 
   return (
     <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
@@ -57,6 +66,12 @@ export function HuntSettlementPanel({
             <Row label="Part créateur (95 % des engagements)" value={s.creatorCommitRewardSompi} />
             <Row label="Treasury (5 % des engagements)" value={s.treasurySompi} />
             <Row label="Remboursement par engagé·e" value={s.participantRefundPerCommitSompi} />
+            {nonRetained > 0 && (
+              <Row
+                label={`Remboursement par non-retenu·e (${nonRetained})`}
+                value={s.nonRetainedRefundPerCommitSompi}
+              />
+            )}
           </>
         ) : (
           <>

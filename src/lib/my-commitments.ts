@@ -9,6 +9,8 @@ export const MY_COMMITMENTS_KEY = "huntited:my-commitments";
 export interface MyCommitment {
   /** Position de l'engagement (1 = premier), si connue. */
   rank?: number;
+  /** Seuil personnel choisi (« je viens si au moins N »), si connu. */
+  personalThreshold?: number;
   committedAt: number;
 }
 
@@ -34,11 +36,13 @@ export function rememberCommitment(address: string, huntId: string, c: MyCommitm
   const key = badgeWalletKey(address);
   const prev = all[key]?.[huntId];
   const rank = c.rank ?? prev?.rank;
+  const personalThreshold = c.personalThreshold ?? prev?.personalThreshold;
   all[key] = {
     ...(all[key] ?? {}),
     [huntId]: {
       committedAt: prev ? Math.min(prev.committedAt, c.committedAt) : c.committedAt,
       ...(rank !== undefined ? { rank } : {}),
+      ...(personalThreshold !== undefined ? { personalThreshold } : {}),
     },
   };
   window.localStorage.setItem(MY_COMMITMENTS_KEY, JSON.stringify(all));
