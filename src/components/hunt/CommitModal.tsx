@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { COMMIT_DEPOSIT_TERMS, termsShort, termsFull } from "@/lib/terms";
+import { COMMIT_DEPOSIT_TERMS, COMMIT_REFUND_HIGHLIGHT, termsShort, termsFull } from "@/lib/terms";
 import type { Hunt } from "@/lib/types";
 import type { UseCommitmentResult } from "@/lib/useCommitment";
 
@@ -84,28 +84,33 @@ export function CommitModal({
             Tu es déjà engagé·e dans cette hunt.
           </p>
         ) : (
-          <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
-            <p>
-              <strong>Dépôt :</strong> {hunt.commitDeposit} KAS, verrouillés dans le covenant
-              (simulé).
+          <>
+            <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-700">
+              {COMMIT_REFUND_HIGHLIGHT}
             </p>
-            <p>{COMMIT_DEPOSIT_TERMS}</p>
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Date limite</span>
-              <span className="font-medium">
-                {new Date(hunt.deadline).toLocaleString("fr-FR", {
-                  dateStyle: "long",
-                  timeStyle: "short",
-                })}
-              </span>
-            </div>
-            {walletAddress && (
+            <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
+              <p>
+                <strong>Dépôt :</strong> {hunt.commitDeposit} KAS, verrouillés dans le covenant
+                (simulé).
+              </p>
+              <p>{COMMIT_DEPOSIT_TERMS}</p>
               <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Wallet</span>
-                <code className="text-xs">{shortAddress(walletAddress)}</code>
+                <span className="text-muted-foreground">Date limite</span>
+                <span className="font-medium">
+                  {new Date(hunt.deadline).toLocaleString("fr-FR", {
+                    dateStyle: "long",
+                    timeStyle: "short",
+                  })}
+                </span>
               </div>
-            )}
-          </div>
+              {walletAddress && (
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Wallet</span>
+                  <code className="text-xs">{shortAddress(walletAddress)}</code>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         <div className="space-y-2">

@@ -17,6 +17,7 @@ import {
   isProgressVisible,
 } from "@/lib/hunt-lifecycle";
 import { markHuntSettled } from "@/lib/hunt-state-store";
+import { COMMIT_REFUND_SHORT } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
 import { useHunt } from "@/lib/useHunt";
 import { useWallet } from "@/lib/useWallet";
@@ -197,6 +198,9 @@ function HuntDetailPage() {
           </Button>
         )}
       </div>
+      {canCommit(status) && !commitment.isCommitted && (
+        <p className="mt-2 text-right text-sm font-medium text-green-700">{COMMIT_REFUND_SHORT}</p>
+      )}
 
       {/* Bannières d'état */}
       {isActivated && (

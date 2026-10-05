@@ -7,7 +7,12 @@ import {
   calculateSettlement,
   sompiToKasText,
 } from "./hunt-economics";
-import { COMMIT_DEPOSIT_TERMS, CREATE_DEPOSIT_TERMS } from "./terms";
+import {
+  COMMIT_DEPOSIT_TERMS,
+  COMMIT_REFUND_HIGHLIGHT,
+  COMMIT_REFUND_SHORT,
+  CREATE_DEPOSIT_TERMS,
+} from "./terms";
 
 /** Convertit un texte KAS décimal en sompis sans flottant (pour les attentes). */
 const kas = (whole: bigint, tenths = 0n) => whole * SOMPI_PER_KAS + tenths * (SOMPI_PER_KAS / 10n);
@@ -104,5 +109,16 @@ describe("textes UX des dépôts", () => {
   it("annoncent les montants calculés par l'économie", () => {
     expect(COMMIT_DEPOSIT_TERMS).toContain(`${sompiToKasText(COMMIT_DEPOSIT_SOMPI)} KAS`);
     expect(CREATE_DEPOSIT_TERMS).toContain(`${sompiToKasText(CREATE_DEPOSIT_SOMPI)} KAS`);
+  });
+
+  it("la mise en avant du remboursement correspond à l'économie et ne promet pas la gratuité", () => {
+    // En échec, chaque engagé récupère exactement son dépôt.
+    const refund = calculateSettlement(10, "failure").participantRefundPerCommitSompi;
+    expect(refund).toBe(COMMIT_DEPOSIT_SOMPI);
+    expect(COMMIT_REFUND_HIGHLIGHT).toContain(`${sompiToKasText(refund)} KAS`);
+    for (const text of [COMMIT_REFUND_HIGHLIGHT, COMMIT_REFUND_SHORT]) {
+      expect(text).toMatch(/intégralement/);
+      expect(text).not.toMatch(/gratuit/i);
+    }
   });
 });

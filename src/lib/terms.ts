@@ -14,6 +14,16 @@ export const CREATE_DEPOSIT_TERMS =
   "Le dépôt de création de 30 KAS est remboursé au créateur dans les deux scénarios MVP.";
 
 /**
+ * Argument mis en avant au moment de s'engager : l'échec ne coûte rien.
+ * Ne pas écrire « gratuit » : en cas de succès, l'engagement coûte 5 KAS.
+ */
+export const COMMIT_REFUND_HIGHLIGHT =
+  "Rien à perdre si ça ne se fait pas : si le seuil n'est pas atteint, tes 5 KAS te sont rendus intégralement.";
+
+/** Version courte, sous le bouton d'engagement. */
+export const COMMIT_REFUND_SHORT = "Remboursé intégralement si le seuil n'est pas atteint.";
+
+/**
  * Conditions clés listées dans la modal d'engagement, sous l'encadré qui
  * affiche déjà COMMIT_DEPOSIT_TERMS (non répété ici).
  */
