@@ -32,7 +32,7 @@ export const termsShort: string[] = [
   CREATE_DEPOSIT_TERMS,
   "Pas de remboursement à la demande : une fois engagé, ton dépôt est verrouillé.",
   "Déclenchement atomique : soit la chasse atteint son seuil et s'active, soit elle expire.",
-  "Confidentialité : tes engagements sont protégés (ZK / commitments).",
+  "Confidentialité : ton engagement est enregistré sous une empreinte anonyme, jamais sous ton adresse.",
 ];
 
 /**
@@ -66,9 +66,11 @@ Il n'existe pas d'état intermédiaire où une partie des participants
 serait exposée sans les autres.
 
 4. Confidentialité des engagements
-Le nombre de participants engagés reste caché jusqu'au déclenchement
-(preuves ZK / commitments Merkle). Personne — pas même les opérateurs
-du service — ne peut savoir combien de personnes sont engagées avant
-ce moment.
+Ton engagement est enregistré sous une empreinte anonyme, jamais sous
+ton adresse. Selon le choix du créateur, le nombre d'engagés est
+visible de tous ou masqué jusqu'à l'activation ou la date limite.
+Dans cette version, ce masquage est un simple masquage d'affichage :
+ce n'est pas encore une garantie cryptographique (preuves ZK prévues
+plus tard).
 
 `.trim();

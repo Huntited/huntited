@@ -13,6 +13,8 @@ import {
   COMMIT_REFUND_HIGHLIGHT,
   COMMIT_REFUND_SHORT,
   CREATE_DEPOSIT_TERMS,
+  termsFull,
+  termsShort,
 } from "./terms";
 
 /** Convertit un texte KAS décimal en sompis sans flottant (pour les attentes). */
@@ -138,6 +140,14 @@ describe("textes UX des dépôts", () => {
     expect(CREATE_DEPOSIT_TERMS).toBe(
       "Le dépôt de création de 30 KAS est remboursé au créateur si le seuil est atteint. Sinon, il verse d'abord 1 KAS de bonus à chaque engagé (30 KAS au plus, partagés au-delà de 30 engagés) et le créateur récupère le reste.",
     );
+  });
+
+  it("ne promettent pas une confidentialité cryptographique qui n'existe pas encore", () => {
+    for (const line of termsShort) expect(line).not.toMatch(/\bZK\b/);
+    expect(termsFull).not.toMatch(/ne peut savoir/);
+    expect(termsFull).toMatch(/pas encore une garantie cryptographique/);
+    // Les conditions complètes reprennent la règle d'échec actuelle (bonus).
+    expect(termsFull).toMatch(/bonus de 1 KAS/);
   });
 
   it("annoncent les montants calculés par l'économie", () => {

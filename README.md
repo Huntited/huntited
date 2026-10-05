@@ -2,7 +2,7 @@
 
 **Huntited** est un protocole de coordination décentralisé sur Kaspa, inspiré par Staghunt (hashd.ag). Il permet à des groupes de coordonner des actions collectives (manifestations, blocus, rassemblements) de façon :
 
-- **Privée** — les engagements sont anonymisés (commitments SHA-256, compteur caché via ZK à terme), aucune donnée personnelle n'est collectée ni logguée.
+- **Privée** — les engagements sont anonymisés (commitments SHA-256 ; compteur visible ou masqué au choix du créateur, masquage cryptographique via ZK à terme), aucune donnée personnelle n'est collectée ni logguée.
 - **Atomique** — l'action se déclenche pour tout le monde ou pour personne : tant que le seuil n'est pas atteint, personne ne s'expose.
 - **Sans maître** — aucun tiers de confiance : les règles sont portées par des covenants on-chain, pas par un administrateur.
 
@@ -43,7 +43,7 @@ UI → covenants.ts → mock-zk.ts (localStorage)
 
 - **Création de chasse** : titre, description, lieu, date limite, seuil de participants et dépôt fixe de 30 KAS (remboursé en cas de succès ; en cas d'échec, il finance d'abord le bonus des engagés). Parcours en deux temps : formulaire → récapitulatif → création.
 - **Économie d'engagement** : Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement, avec un bonus pouvant aller jusqu'à 1 KAS pris sur le dépôt du créateur. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %. Détails : `docs/economics.md`.
-- **Engagement privé** : commitment = SHA-256(huntId | secret aléatoire). Seule l'empreinte est stockée ; le secret reste sur l'appareil. L'adresse du wallet n'entre jamais dans l'empreinte.
+- **Engagement privé** : commitment = SHA-256(huntId | secret aléatoire). Seule l'empreinte est stockée ; dans ce prototype, le secret n'est pas conservé (il sera géré par le vrai wallet). L'adresse du wallet n'entre jamais dans l'empreinte.
 - **Wallet mocké** : connexion/déconnexion, requis pour s'engager (et plus tard pour payer le dépôt).
 - **Activation atomique** : statut Active / Activée / Expirée calculé depuis le seuil et la date limite.
 - **Gouvernance du MVP** : pas de contestation on-chain ; charte éthique, risques documentés et signalement hors-chaîne.

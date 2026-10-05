@@ -12,7 +12,9 @@ Pour que s'engager soit toujours une bonne décision : si l'action se fait, tu y
 
 ## Mon engagement est-il public ?
 
-Non. Une empreinte anonyme représente l'engagement. L'objectif du protocole ZK est de prouver que le seuil est atteint sans publier le nombre exact d'engagés ni leur identité.
+Non. Une empreinte anonyme représente l'engagement, jamais ton adresse.
+
+Le nombre d'engagés, lui, est visible par défaut. Le créateur peut choisir de le masquer jusqu'à l'activation ou la date limite : s'engager en premier n'expose alors plus. Dans le prototype, ce masquage est un masquage d'affichage ; l'objectif du protocole ZK est de le rendre cryptographique, en prouvant que le seuil est atteint sans publier le nombre exact d'engagés ni leur identité.
 
 ## Une chasse peut-elle être contestée on-chain ?
 
