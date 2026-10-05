@@ -36,3 +36,6 @@ dist-ssr
 backend/.env
 !.env.example
 !backend/.env.example
+
+# Registre local des chasses (données de test, jamais versionnées)
+backend/data/

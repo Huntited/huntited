@@ -17,6 +17,10 @@ const schema = z
     CHAT_DEFAULT_TTL_MS: z.coerce.number().int().positive().default(86_400_000),
     AUTH_JWT_SECRET: z.string().min(32),
     AUTH_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
+    // Durée de la session obtenue par signature (une signature par visite).
+    AUTH_SESSION_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(3600),
+    // Fichier JSON du registre des chasses ; vide = mémoire (perdu au redémarrage).
+    REGISTRY_FILE: z.string().default(""),
     // Seul le testnet est accepté tant qu'aucune transaction réelle n'est prévue.
     KASPA_NETWORK: z.enum(["testnet-10"]).default("testnet-10"),
     // signature = vraie vérification Kaspa ; mock = wallet factice (dev uniquement).

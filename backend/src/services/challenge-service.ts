@@ -7,7 +7,6 @@ import { randomBytes } from "node:crypto";
 export interface Challenge {
   challengeId: string;
   walletAddress: string;
-  huntId: string;
   message: string;
   expiresAt: number;
 }
@@ -30,7 +29,6 @@ export function buildChallengeMessage(c: {
   nonce: string;
   issuedAt: number;
   expiresAt: number;
-  huntId: string;
 }): string {
   return [
     "Huntited wants you to sign in with your Kaspa account:",
@@ -42,7 +40,7 @@ export function buildChallengeMessage(c: {
     `Nonce: ${c.nonce}`,
     `Issued At: ${new Date(c.issuedAt).toISOString()}`,
     `Expiration Time: ${new Date(c.expiresAt).toISOString()}`,
-    `Purpose: Access Huntited chat for hunt ${c.huntId}`,
+    "Purpose: Sign in to Huntited (session of 1 hour)",
     "",
     "This signature does not send any KAS.",
   ].join("\n");
@@ -60,7 +58,7 @@ export class ChallengeService {
     this.now = options.now ?? Date.now;
   }
 
-  issue(input: { walletAddress: string; huntId: string }): Challenge {
+  issue(input: { walletAddress: string }): Challenge {
     this.purgeExpired();
     while (this.pending.size >= this.maxPending) {
       const oldest = this.pending.keys().next().value;
@@ -73,7 +71,6 @@ export class ChallengeService {
     const challenge: Challenge = {
       challengeId,
       walletAddress: input.walletAddress,
-      huntId: input.huntId,
       expiresAt,
       message: buildChallengeMessage({
         walletAddress: input.walletAddress,
@@ -82,7 +79,6 @@ export class ChallengeService {
         nonce: challengeId,
         issuedAt,
         expiresAt,
-        huntId: input.huntId,
       }),
     };
     this.pending.set(challengeId, challenge);
@@ -92,14 +88,14 @@ export class ChallengeService {
   /**
    * Consomme un défi : il est retiré quoi qu'il arrive (usage unique, même
    * en cas d'échec de la vérification qui suit). Renvoie undefined s'il est
-   * inconnu, expiré, ou ne correspond pas à l'adresse et à la chasse.
+   * inconnu, expiré, ou ne correspond pas à l'adresse.
    */
-  consume(input: { challengeId: string; walletAddress: string; huntId: string }) {
+  consume(input: { challengeId: string; walletAddress: string }) {
     const c = this.pending.get(input.challengeId);
     if (!c) return undefined;
     this.pending.delete(input.challengeId);
     if (c.expiresAt <= this.now()) return undefined;
-    if (c.walletAddress !== input.walletAddress || c.huntId !== input.huntId) return undefined;
+    if (c.walletAddress !== input.walletAddress) return undefined;
     return c;
   }
 

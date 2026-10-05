@@ -5,7 +5,7 @@ import { AuthService } from "./services/auth-service.js";
 import { ChallengeService } from "./services/challenge-service.js";
 import { ChatService } from "./services/chat-service.js";
 import { MemoryChatStore } from "./services/chat-store.js";
-import { MockHuntAccessStore } from "./services/hunt-access-store.js";
+import { HuntRegistry } from "./services/hunt-registry.js";
 import { createMatrixService } from "./services/matrix-service.js";
 import { createSignatureVerifier } from "./services/wallet-auth.js";
 
@@ -15,8 +15,13 @@ const chat = new ChatService(
 );
 const app = createApp({
   chat,
-  auth: new AuthService(env.AUTH_JWT_SECRET, env.AUTH_TOKEN_TTL_SECONDS),
-  access: new MockHuntAccessStore(),
+  auth: new AuthService(
+    env.AUTH_JWT_SECRET,
+    env.AUTH_TOKEN_TTL_SECONDS,
+    Date.now,
+    env.AUTH_SESSION_TTL_SECONDS,
+  ),
+  registry: new HuntRegistry(env.REGISTRY_FILE ? { file: env.REGISTRY_FILE } : {}),
   challenges: new ChallengeService({ appUri: env.CORS_ORIGIN, network: env.KASPA_NETWORK }),
   verifySignature: createSignatureVerifier(env.WALLET_AUTH_MODE, env.KASPA_NETWORK),
   corsOrigin: env.CORS_ORIGIN,

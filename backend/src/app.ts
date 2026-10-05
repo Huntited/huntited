@@ -6,19 +6,21 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { requestId } from "./middleware/request-id.js";
 import { authRouter, type WalletSignatureVerifier } from "./routes/auth.js";
 import { chatRouter } from "./routes/chat.js";
+import { huntsRouter } from "./routes/hunts.js";
 import type { AuthService } from "./services/auth-service.js";
 import type { ChallengeService } from "./services/challenge-service.js";
 import type { ChatService } from "./services/chat-service.js";
-import type { MockHuntAccessStore } from "./services/hunt-access-store.js";
+import type { HuntRegistry } from "./services/hunt-registry.js";
 
 export interface AppDeps {
   chat: ChatService;
   auth: AuthService;
-  access: MockHuntAccessStore;
+  registry: HuntRegistry;
   challenges: ChallengeService;
   verifySignature: WalletSignatureVerifier;
   corsOrigin: string;
   nodeEnv: "development" | "test" | "production";
+  now?: () => number;
 }
 
 export function createApp(d: AppDeps) {
@@ -39,13 +41,21 @@ export function createApp(d: AppDeps) {
     "/api/auth",
     authRouter({
       auth: d.auth,
-      store: d.access,
+      access: d.registry,
       challenges: d.challenges,
       verifySignature: d.verifySignature,
-      isProduction: d.nodeEnv === "production",
     }),
   );
-  app.use("/api/chats", chatRouter(d.chat, d.auth, d.access, d.nodeEnv !== "production"));
+  app.use(
+    "/api/hunts",
+    huntsRouter({
+      registry: d.registry,
+      auth: d.auth,
+      isDevelopment: d.nodeEnv !== "production",
+      ...(d.now ? { now: d.now } : {}),
+    }),
+  );
+  app.use("/api/chats", chatRouter(d.chat, d.auth, d.registry, d.nodeEnv !== "production"));
 
   // Erreurs : réponse générique, aucun détail interne ni secret.
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

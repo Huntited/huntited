@@ -1,36 +1,9 @@
-// Tests d'autorisation de l'accès au chat (app Express réelle, port éphémère).
-// Les wallets sont de vraies clés Schnorr : chaque accès passe par un défi
-// signé et vérifié comme le ferait Kastle.
-import type { AddressInfo } from "node:net";
+// Authentification (défi signé → session) et accès au chat via le registre.
 import type { Server } from "node:http";
-import { schnorr } from "@noble/curves/secp256k1.js";
-import { bytesToHex } from "@noble/hashes/utils.js";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { createApp } from "../app.js";
-import { AuthService, fingerprintWallet } from "../services/auth-service.js";
-import { ChallengeService } from "../services/challenge-service.js";
-import { ChatService } from "../services/chat-service.js";
-import { MemoryChatStore } from "../services/chat-store.js";
-import { MockHuntAccessStore } from "../services/hunt-access-store.js";
-import { encodeKaspaAddress, personalMessageHash } from "../services/kaspa-signature.js";
-import { MockMatrixService } from "../services/matrix-service.js";
-import { createSignatureVerifier } from "../services/wallet-auth.js";
-
-const SECRET = "x".repeat(40);
-
-interface TestWallet {
-  address: string;
-  secret: Uint8Array;
-}
-
-function makeWallet(prefix = "kaspatest"): TestWallet {
-  const secret = schnorr.utils.randomSecretKey();
-  return { secret, address: encodeKaspaAddress(prefix, 0, schnorr.getPublicKey(secret)) };
-}
-
-const sign = (w: TestWallet, message: string) =>
-  bytesToHex(schnorr.sign(personalMessageHash(message), w.secret));
+import { fingerprintWallet } from "../services/auth-service.js";
+import { makeWallet, signWith, startApp } from "../test-helpers.js";
 
 const CREATOR = makeWallet();
 const PART = makeWallet();
@@ -39,70 +12,10 @@ const OUTSIDER = makeWallet();
 let server: Server | undefined;
 afterEach(() => server?.close());
 
-async function setup(now: () => number = Date.now) {
-  const access = new MockHuntAccessStore();
-  access.seedHunt({ huntId: "h_on", status: "activated" });
-  access.seedHunt({ huntId: "h_other", status: "activated" });
-  access.seedHunt({ huntId: "h_active", status: "active" });
-  for (const id of ["h_on", "h_other", "h_active"]) {
-    access.seedRole({
-      huntId: id,
-      walletFingerprint: fingerprintWallet(CREATOR.address),
-      role: "creator",
-    });
-    access.seedRole({
-      huntId: id,
-      walletFingerprint: fingerprintWallet(PART.address),
-      role: "participant",
-    });
-  }
-  const auth = new AuthService(SECRET, 900, now);
-  const app = createApp({
-    chat: new ChatService(new MemoryChatStore(), new MockMatrixService("https://matrix.test")),
-    auth,
-    access,
-    challenges: new ChallengeService({ appUri: "http://localhost", network: "testnet-10", now }),
-    verifySignature: createSignatureVerifier("signature", "testnet-10"),
-    corsOrigin: "http://localhost",
-    nodeEnv: "test",
-  });
-  server = app.listen(0);
-  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  const post = (path: string, body: unknown, token?: string) =>
-    fetch(base + path, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(body),
-    });
-  const get = (path: string, token?: string) =>
-    fetch(base + path, token ? { headers: { Authorization: `Bearer ${token}` } } : {});
-
-  const challenge = async (huntId: string, walletAddress: string) => {
-    const r = await post("/api/auth/challenge", { huntId, walletAddress });
-    return {
-      status: r.status,
-      body: (await r.json()) as { challengeId: string; message: string; expiresAt: number },
-    };
-  };
-  const access_ = async (body: Record<string, unknown>) => {
-    const r = await post("/api/auth/chat-access", body);
-    return { status: r.status, body: (await r.json()) as Record<string, unknown> };
-  };
-  /** Parcours complet : défi → signature → jeton. */
-  const tokenFor = async (huntId: string, w: TestWallet) => {
-    const c = await challenge(huntId, w.address);
-    if (c.status !== 200) return { status: c.status, body: {} as Record<string, unknown> };
-    return access_({
-      huntId,
-      walletAddress: w.address,
-      challengeId: c.body.challengeId,
-      signature: sign(w, c.body.message),
-    });
-  };
-  return { post, get, challenge, access: access_, tokenFor, auth };
+async function setup(now?: () => number) {
+  const app = await startApp(now ? { now } : {});
+  server = app.server;
+  return app;
 }
 
 const chatBody = (huntId: string) => ({
@@ -111,170 +24,155 @@ const chatBody = (huntId: string) => ({
   expiresAt: Date.now() + 3_600_000,
 });
 
-describe("défi signé", () => {
-  it("le message à signer est rédigé par le serveur et précise l'intention", async () => {
-    const { challenge } = await setup();
-    const c = await challenge("h_on", CREATOR.address);
+/** Chasse activée : créée par CREATOR (seuil 1), PART engagé·e. */
+async function activatedHunt(app: Awaited<ReturnType<typeof setup>>) {
+  const tc = await app.login(CREATOR);
+  const tp = await app.login(PART);
+  const id = (await app.createHunt(tc, { threshold: 1 })).body["id"] as string;
+  await app.post(`/api/hunts/${id}/commit`, {}, tp);
+  return { id, tc, tp };
+}
+
+describe("défi signé et session", () => {
+  it("le message à signer est rédigé par le serveur", async () => {
+    const { post } = await setup();
+    const c = await post("/api/auth/challenge", { walletAddress: CREATOR.address });
     expect(c.status).toBe(200);
-    expect(c.body.challengeId).toMatch(/^[0-9a-f]{32}$/);
     for (const part of [
       CREATOR.address,
       "URI: http://localhost",
       "Network: kaspa:testnet-10",
-      `Nonce: ${c.body.challengeId}`,
-      "Purpose: Access Huntited chat for hunt h_on",
+      `Nonce: ${c.body["challengeId"]}`,
+      "Purpose: Sign in to Huntited",
       "This signature does not send any KAS.",
     ]) {
-      expect(c.body.message).toContain(part);
+      expect(c.body["message"]).toContain(part);
     }
   });
 
-  it("aucun défi pour une hunt active ou inconnue", async () => {
-    const { challenge } = await setup();
-    expect((await challenge("h_active", CREATOR.address)).status).toBe(409);
-    expect((await challenge("h_inconnue", CREATOR.address)).status).toBe(404);
+  it("une signature valide donne une session", async () => {
+    const { login } = await setup();
+    expect(typeof (await login(CREATOR))).toBe("string");
   });
 
-  it("une signature valide donne un jeton", async () => {
-    const { tokenFor } = await setup();
-    const r = await tokenFor("h_on", CREATOR);
-    expect(r.status).toBe(200);
-    expect(typeof r.body["accessToken"]).toBe("string");
+  it("refuse la signature d'un autre wallet, un message altéré et le rejeu", async () => {
+    const { post } = await setup();
+    const c = await post("/api/auth/challenge", { walletAddress: CREATOR.address });
+    const base = { walletAddress: CREATOR.address, challengeId: c.body["challengeId"] };
+    const msg = c.body["message"] as string;
+    expect(
+      (await post("/api/auth/session", { ...base, signature: signWith(OUTSIDER, msg) })).status,
+    ).toBe(401);
+    // Défi consommé par la tentative précédente : même une bonne signature est refusée.
+    expect(
+      (await post("/api/auth/session", { ...base, signature: signWith(CREATOR, msg) })).status,
+    ).toBe(401);
+
+    const c2 = await post("/api/auth/challenge", { walletAddress: CREATOR.address });
+    const ok = { walletAddress: CREATOR.address, challengeId: c2.body["challengeId"] };
+    expect(
+      (await post("/api/auth/session", { ...ok, signature: signWith(CREATOR, msg + "!") })).status,
+    ).toBe(401);
   });
 
-  it("refuse la signature d'un autre wallet (adresse usurpée)", async () => {
-    const { challenge, access } = await setup();
-    const c = await challenge("h_on", CREATOR.address);
-    const r = await access({
-      huntId: "h_on",
-      walletAddress: CREATOR.address,
-      challengeId: c.body.challengeId,
-      signature: sign(OUTSIDER, c.body.message),
-    });
-    expect(r.status).toBe(401);
-  });
-
-  it("refuse une signature sur un autre message que celui du serveur", async () => {
-    const { challenge, access } = await setup();
-    const c = await challenge("h_on", CREATOR.address);
-    const r = await access({
-      huntId: "h_on",
-      walletAddress: CREATOR.address,
-      challengeId: c.body.challengeId,
-      signature: sign(CREATOR, c.body.message.replace("h_on", "h_other")),
-    });
-    expect(r.status).toBe(401);
-  });
-
-  it("un défi ne sert qu'une fois (rejeu refusé, même après échec)", async () => {
-    const { challenge, access } = await setup();
-    const c = await challenge("h_on", CREATOR.address);
-    const body = {
-      huntId: "h_on",
-      walletAddress: CREATOR.address,
-      challengeId: c.body.challengeId,
-      signature: sign(CREATOR, c.body.message),
-    };
-    expect((await access(body)).status).toBe(200);
-    expect((await access(body)).status).toBe(401);
-
-    const c2 = await challenge("h_on", CREATOR.address);
-    const bad = { ...body, challengeId: c2.body.challengeId, signature: "00".repeat(64) };
-    expect((await access(bad)).status).toBe(401);
-    const retry = { ...bad, signature: sign(CREATOR, c2.body.message) };
-    expect((await access(retry)).status).toBe(401);
-  });
-
-  it("refuse un défi expiré", async () => {
+  it("refuse un défi expiré et une adresse mainnet", async () => {
     let now = Date.now();
-    const { challenge, access } = await setup(() => now);
-    const c = await challenge("h_on", CREATOR.address);
+    const { post, login } = await setup(() => now);
+    const c = await post("/api/auth/challenge", { walletAddress: CREATOR.address });
     now += 5 * 60_000 + 1;
-    const r = await access({
-      huntId: "h_on",
+    const r = await post("/api/auth/session", {
       walletAddress: CREATOR.address,
-      challengeId: c.body.challengeId,
-      signature: sign(CREATOR, c.body.message),
+      challengeId: c.body["challengeId"],
+      signature: signWith(CREATOR, c.body["message"] as string),
     });
     expect(r.status).toBe(401);
+    expect(await login(makeWallet("kaspa"))).toBeUndefined();
   });
 
-  it("refuse un défi utilisé pour une autre hunt", async () => {
-    const { challenge, access } = await setup();
-    const c = await challenge("h_on", CREATOR.address);
-    const r = await access({
-      huntId: "h_other",
-      walletAddress: CREATOR.address,
-      challengeId: c.body.challengeId,
-      signature: sign(CREATOR, c.body.message),
-    });
-    expect(r.status).toBe(401);
-  });
-
-  it("refuse une adresse mainnet, même correctement signée", async () => {
-    const { tokenFor } = await setup();
-    expect((await tokenFor("h_on", makeWallet("kaspa"))).status).toBe(401);
+  it("un jeton de session n'est pas un jeton de chat, et inversement", async () => {
+    const app = await setup();
+    const { id, tc } = await activatedHunt(app);
+    // Session utilisée comme jeton de chat : refusée.
+    expect((await app.get(`/api/chats/${id}`, tc)).status).toBe(401);
+    const chat = (await app.post("/api/auth/chat-access", { huntId: id }, tc)).body[
+      "accessToken"
+    ] as string;
+    // Jeton de chat utilisé comme session : refusé.
+    expect((await app.createHunt(chat)).status).toBe(401);
   });
 });
 
 describe("accès au chat", () => {
-  it("refusé pour une hunt active", async () => {
-    const { tokenFor } = await setup();
-    expect((await tokenFor("h_active", CREATOR)).status).toBe(409);
+  it("refusé tant que la chasse n'est pas activée", async () => {
+    const app = await setup();
+    const tc = await app.login(CREATOR);
+    const id = (await app.createHunt(tc, { threshold: 5 })).body["id"] as string;
+    expect((await app.post("/api/auth/chat-access", { huntId: id }, tc)).status).toBe(409);
+    expect((await app.post("/api/auth/chat-access", { huntId: "inconnue" }, tc)).status).toBe(404);
   });
 
-  it("refusé pour un wallet sans rôle", async () => {
-    const { tokenFor } = await setup();
-    expect((await tokenFor("h_on", OUTSIDER)).status).toBe(401);
+  it("refusé sans session et pour un wallet sans rôle", async () => {
+    const app = await setup();
+    const { id } = await activatedHunt(app);
+    expect((await app.post("/api/auth/chat-access", { huntId: id })).status).toBe(401);
+    const to = await app.login(OUTSIDER);
+    expect((await app.post("/api/auth/chat-access", { huntId: id }, to)).status).toBe(401);
   });
 
-  it("jeton expiré refusé", async () => {
+  it("jeton de chat expiré refusé", async () => {
     let now = Date.now();
-    const { tokenFor, get } = await setup(() => now);
-    const t = (await tokenFor("h_on", CREATOR)).body["accessToken"] as string;
+    const app = await setup(() => now);
+    const { id, tc } = await activatedHunt(app);
+    const t = (await app.post("/api/auth/chat-access", { huntId: id }, tc)).body[
+      "accessToken"
+    ] as string;
     now += 901_000;
-    expect((await get("/api/chats/h_on", t)).status).toBe(401);
+    expect((await app.get(`/api/chats/${id}`, t)).status).toBe(401);
   });
 
   it("un·e engagé·e ne peut pas créer de room, mais peut lire une room active", async () => {
-    const { tokenFor, post, get } = await setup();
-    const tp = (await tokenFor("h_on", PART)).body["accessToken"] as string;
-    expect((await post("/api/chats", chatBody("h_on"), tp)).status).toBe(403);
-    const tc = (await tokenFor("h_on", CREATOR)).body["accessToken"] as string;
-    expect((await post("/api/chats", chatBody("h_on"), tc)).status).toBe(201);
-    const r = await get("/api/chats/h_on", tp);
+    const app = await setup();
+    const { id, tc, tp } = await activatedHunt(app);
+    const chatP = (await app.post("/api/auth/chat-access", { huntId: id }, tp)).body[
+      "accessToken"
+    ] as string;
+    const chatC = (await app.post("/api/auth/chat-access", { huntId: id }, tc)).body[
+      "accessToken"
+    ] as string;
+    expect((await app.post("/api/chats", chatBody(id), chatP)).status).toBe(403);
+    expect((await app.post("/api/chats", chatBody(id), chatC)).status).toBe(201);
+    const r = await app.get(`/api/chats/${id}`, chatP);
     expect(r.status).toBe(200);
-    expect(((await r.json()) as { isActive: boolean }).isActive).toBe(true);
+    expect(r.body["isActive"]).toBe(true);
   });
 
-  it("le jeton d'une hunt ne permet pas d'en lire une autre", async () => {
-    const { tokenFor, get, post } = await setup();
-    const t = (await tokenFor("h_on", CREATOR)).body["accessToken"] as string;
-    expect((await get("/api/chats/h_other", t)).status).toBe(401);
-    expect((await post("/api/chats", chatBody("h_other"), t)).status).toBe(401);
+  it("le jeton d'une chasse ne permet pas d'en lire une autre", async () => {
+    const app = await setup();
+    const { id, tc } = await activatedHunt(app);
+    const other = await activatedHunt(app);
+    const t = (await app.post("/api/auth/chat-access", { huntId: id }, tc)).body[
+      "accessToken"
+    ] as string;
+    expect((await app.get(`/api/chats/${other.id}`, t)).status).toBe(401);
+    expect((await app.post("/api/chats", chatBody(other.id), t)).status).toBe(401);
   });
 
-  it("sans jeton : 401", async () => {
-    const { post } = await setup();
-    expect((await post("/api/chats", chatBody("h_on"))).status).toBe(401);
-  });
-
-  it("aucune réponse publique ne contient fingerprint, roomId ou token Matrix", async () => {
-    const { tokenFor, post, get } = await setup();
-    const auth = await tokenFor("h_on", CREATOR);
+  it("aucune réponse publique ne contient empreinte, adresse, roomId ou token Matrix", async () => {
+    const app = await setup();
+    const { id, tc } = await activatedHunt(app);
+    const auth = await app.post("/api/auth/chat-access", { huntId: id }, tc);
     expect(Object.keys(auth.body).sort()).toEqual(["accessToken", "expiresAt"]);
     const t = auth.body["accessToken"] as string;
     const texts = [
-      JSON.stringify(auth.body),
-      await (await post("/api/chats", chatBody("h_on"), t)).text(),
-      await (await get("/api/chats/h_on", t)).text(),
+      (await app.post("/api/chats", chatBody(id), t)).text,
+      (await app.get(`/api/chats/${id}`, t)).text,
+      (await app.get("/api/hunts")).text,
+      (await app.get(`/api/hunts/${id}`)).text,
     ];
     const fp = fingerprintWallet(CREATOR.address);
-    for (const txt of texts.slice(1)) {
+    for (const txt of texts) {
       expect(txt).not.toContain("roomId");
       expect(txt).not.toContain("!mock_");
-    }
-    for (const txt of texts) {
       expect(txt).not.toContain(fp);
       expect(txt).not.toContain(CREATOR.address);
     }
@@ -282,7 +180,8 @@ describe("accès au chat", () => {
 });
 
 describe("mode mock (développement)", () => {
-  it("n'accepte que les signatures du wallet factice", () => {
+  it("n'accepte que les signatures du wallet factice", async () => {
+    const { createSignatureVerifier } = await import("../services/wallet-auth.js");
     const verify = createSignatureVerifier("mock", "testnet-10");
     const base = { message: "m", walletAddress: "kaspa:mockabc" };
     expect(verify({ ...base, signature: `mocksig_${"ab".repeat(32)}` })).toBe(true);
