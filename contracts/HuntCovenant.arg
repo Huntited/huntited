@@ -22,6 +22,8 @@
 // ---------------------------------------------------------------------------
 const CREATE_DEPOSIT_SOMPI  = 30 * 10^8;   // dépôt de création d'une chasse
 const COMMIT_DEPOSIT_SOMPI  = 5 * 10^8;    // dépôt d'engagement
+const FAILURE_BONUS_PER_COMMIT_SOMPI = 1 * 10^8; // bonus d'échec par engagé, pris
+                                                 // sur le dépôt de création (plafonné)
 const CREATOR_SHARE_PERCENT = 95;
 const TREASURY_SHARE_PERCENT = 5;
 const TREASURY_ADDRESS = treasury_multisig_hash;
@@ -54,6 +56,9 @@ struct HuntCovenant {
 
   // Fonds bloqués dans le covenant
   balance: amount;            // somme des dépôts bloqués
+
+  // Fixé à l'expiration : bonus d'échec versé à chaque engagé.
+  failure_bonus_per_commit: amount;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,7 +105,8 @@ fn create_hunt(deadline: timestamp, threshold: u64) -> HuntCovenant {
     creator: tx.sender,
     commitments_root: 0,
     commit_count_hidden: 0,
-    balance: tx.value
+    balance: tx.value,
+    failure_bonus_per_commit: 0
   };
 }
 
@@ -154,11 +160,26 @@ fn expire(covenant: HuntCovenant) {
   require(covenant.state == State.Active, "chasse déjà close");
   require(now() >= covenant.deadline, "la date limite n'est pas passée");
 
+  // Bonus d'échec : 1 KAS par engagé, total plafonné au dépôt de création
+  // (partagé à parts égales au-delà, arrondi inférieur ; le reste au créateur).
+  let n = covenant.commit_count_hidden;
+  if (n == 0) {
+    // Aucun engagé à rembourser : le créateur récupère tout de suite ses 30 KAS
+    // (sinon personne ne déclencherait jamais distribute_deposit_on_expire).
+    covenant.failure_bonus_per_commit = 0;
+    send(covenant.creator, CREATE_DEPOSIT_SOMPI);
+    covenant.balance = 0;
+  } else if (n * FAILURE_BONUS_PER_COMMIT_SOMPI <= CREATE_DEPOSIT_SOMPI) {
+    covenant.failure_bonus_per_commit = FAILURE_BONUS_PER_COMMIT_SOMPI;
+  } else {
+    covenant.failure_bonus_per_commit = CREATE_DEPOSIT_SOMPI / n;
+  }
+
   covenant.state = State.Expired;
 }
 
 // distribute_deposit_on_expire : restitue les dépôts après expiration.
-// Chaque engagé réclame son dépôt avec une preuve ZK de membership.
+// Chaque engagé réclame son dépôt + le bonus d'échec avec une preuve ZK de membership.
 fn distribute_deposit_on_expire(covenant: HuntCovenant, zk_proof: bytes) {
   require(covenant.state == State.Expired, "la chasse n'est pas expirée");
   require(verify_zk_membership(zk_proof, covenant.commitments_root),
@@ -166,12 +187,16 @@ fn distribute_deposit_on_expire(covenant: HuntCovenant, zk_proof: bytes) {
 
   // Restitue le dépôt d'engagement au réclamant (adresse de sortie fournie
   // dans la transaction, jamais liée au commitment).
-  send(tx.recipient, COMMIT_DEPOSIT_SOMPI);
-  covenant.balance -= COMMIT_DEPOSIT_SOMPI;
+  let payout = COMMIT_DEPOSIT_SOMPI + covenant.failure_bonus_per_commit;
+  send(tx.recipient, payout);
+  covenant.balance -= payout;
 
-  // Le dépôt de création est restitué au créateur quand le covenant est vide.
-  if (covenant.balance == CREATE_DEPOSIT_SOMPI) {
-    send(covenant.creator, CREATE_DEPOSIT_SOMPI);
+  // Le reste du dépôt de création revient au créateur quand tous les
+  // engagés ont été remboursés.
+  let creator_rest = CREATE_DEPOSIT_SOMPI
+    - covenant.commit_count_hidden * covenant.failure_bonus_per_commit;
+  if (covenant.balance == creator_rest) {
+    send(covenant.creator, creator_rest);
     covenant.balance = 0;
   }
 }

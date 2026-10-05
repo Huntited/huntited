@@ -1,8 +1,8 @@
 # Économie de Huntited (MVP)
 
-> Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %.
+> Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement, avec un bonus pouvant aller jusqu'à 1 KAS pris sur le dépôt du créateur. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %.
 >
-> Le dépôt de création de 30 KAS est remboursé au créateur dans les deux scénarios MVP.
+> Le dépôt de création de 30 KAS est remboursé au créateur si le seuil est atteint. Sinon, il verse d'abord 1 KAS de bonus à chaque engagé (30 KAS au plus, partagés au-delà de 30 engagés) et le créateur récupère le reste.
 
 ## Cycle de vie d'une chasse
 
@@ -36,16 +36,24 @@ Le dépôt de création n'entre jamais dans la répartition 95/5.
 
 ## Échec (seuil non atteint)
 
-- Le créateur récupère 100 % de ses 30 KAS.
-- Chaque engagé récupère 100 % de ses 5 KAS.
+- Chaque engagé récupère 100 % de ses 5 KAS **plus un bonus d'échec de 1 KAS**.
+- Le bonus est pris sur le dépôt de création : son total est plafonné à 30 KAS.
+  Au-delà de 30 engagés, les 30 KAS sont partagés à parts égales (arrondi au
+  sompi inférieur ; le reste revient au créateur).
+- Le créateur récupère ce qui reste de ses 30 KAS.
 - La treasury reçoit 0 KAS.
+
+Pourquoi : s'engager devient avantageux même si la chasse échoue (principe du
+« contrat d'assurance dominant »), et un créateur ne lance que des chasses
+auxquelles il croit, puisqu'un échec lui coûte jusqu'à 30 KAS.
 
 ## Exemples
 
-| Engagés | Engagements | Succès : créateur | Succès : treasury | Échec |
-|---|---|---|---|---|
-| 10 | 50 KAS | 30 + 47,5 = 77,5 KAS | 2,5 KAS | 30 KAS au créateur, 5 KAS à chaque engagé |
-| 20 | 100 KAS | 30 + 95 = 125 KAS | 5 KAS | 30 KAS au créateur, 5 KAS à chaque engagé |
+| Engagés | Engagements | Succès : créateur    | Succès : treasury | Échec : par engagé | Échec : créateur |
+| ------- | ----------- | -------------------- | ----------------- | ------------------ | ---------------- |
+| 10      | 50 KAS      | 30 + 47,5 = 77,5 KAS | 2,5 KAS           | 5 + 1 = 6 KAS      | 20 KAS           |
+| 20      | 100 KAS     | 30 + 95 = 125 KAS    | 5 KAS             | 5 + 1 = 6 KAS      | 10 KAS           |
+| 60      | 300 KAS     | 30 + 285 = 315 KAS   | 15 KAS            | 5 + 0,5 = 5,5 KAS  | 0 KAS            |
 
 Tous les calculs sont faits en sompis (1 KAS = 10^8 sompis), sans nombre à virgule.
 

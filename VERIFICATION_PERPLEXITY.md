@@ -207,6 +207,12 @@ Les tests (`wallet.test.ts`, 9 tests avec une fausse `window.kastle`) couvrent :
 
 ## 4. Économie MVP — à vérifier (logique et arrondis)
 
+> **Mise à jour (5 octobre 2026) :** la règle d'échec a changé depuis l'envoi
+> de ce document. En cas d'échec, chaque engagé récupère ses 5 KAS **plus un
+> bonus de 1 KAS** pris sur le dépôt de création du créateur (total plafonné à
+> 30 KAS, partagé au-delà de 30 engagés). Voir `docs/economics.md`. La section
+> ci-dessous décrit l'ancienne règle.
+
 Règles :
 - Dépôt de création : **30 KAS** ; dépôt d'engagement : **5 KAS** par engagé.
 - **Succès** (seuil atteint avant la deadline) : créateur récupère 30 KAS ; les dépôts d'engagement (5 × N KAS) vont **95 % au créateur, 5 % à la treasury** ; engagés : 0 KAS.

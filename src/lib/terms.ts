@@ -8,20 +8,21 @@
  * Les montants sont vérifiés contre hunt-economics.ts dans les tests.
  */
 export const COMMIT_DEPOSIT_TERMS =
-  "Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %.";
+  "Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement, avec un bonus pouvant aller jusqu'à 1 KAS pris sur le dépôt du créateur. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %.";
 
 export const CREATE_DEPOSIT_TERMS =
-  "Le dépôt de création de 30 KAS est remboursé au créateur dans les deux scénarios MVP.";
+  "Le dépôt de création de 30 KAS est remboursé au créateur si le seuil est atteint. Sinon, il verse d'abord 1 KAS de bonus à chaque engagé (30 KAS au plus, partagés au-delà de 30 engagés) et le créateur récupère le reste.";
 
 /**
- * Argument mis en avant au moment de s'engager : l'échec ne coûte rien.
- * Ne pas écrire « gratuit » : en cas de succès, l'engagement coûte 5 KAS.
+ * Argument mis en avant au moment de s'engager : l'échec rapporte même un
+ * bonus. Ne pas écrire « gratuit » : en cas de succès, l'engagement coûte 5 KAS.
  */
 export const COMMIT_REFUND_HIGHLIGHT =
-  "Rien à perdre si ça ne se fait pas : si le seuil n'est pas atteint, tes 5 KAS te sont rendus intégralement.";
+  "Gagnant même si ça ne se fait pas : si le seuil n'est pas atteint, tes 5 KAS te sont rendus intégralement, avec un bonus pouvant aller jusqu'à 1 KAS.";
 
 /** Version courte, sous le bouton d'engagement. */
-export const COMMIT_REFUND_SHORT = "Remboursé intégralement si le seuil n'est pas atteint.";
+export const COMMIT_REFUND_SHORT =
+  "Si le seuil n'est pas atteint : remboursé intégralement + jusqu'à 1 KAS de bonus.";
 
 /**
  * Conditions clés listées dans la modal d'engagement, sous l'encadré qui
@@ -53,8 +54,10 @@ demande. Il n'est libéré que selon les règles du protocole :
 - si la chasse réussit, le créateur récupère ses 30 KAS et le total
   des dépôts d'engagement est réparti 95 % au créateur, 5 % à la
   treasury Huntited ; les engagés ne récupèrent pas leur dépôt ;
-- si la chasse échoue, le créateur récupère ses 30 KAS et chaque
-  engagé récupère ses 5 KAS ; la treasury ne reçoit rien.
+- si la chasse échoue, chaque engagé récupère ses 5 KAS plus un
+  bonus de 1 KAS pris sur le dépôt de création du créateur (bonus total
+  plafonné à 30 KAS, partagé à parts égales au-delà de 30 engagés) ;
+  le créateur récupère le reste de ses 30 KAS ; la treasury ne reçoit rien.
 
 3. Déclenchement atomique
 Le déclenchement est atomique : soit le seuil est atteint et l'action

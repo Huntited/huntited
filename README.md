@@ -8,11 +8,11 @@
 
 ## Stack
 
-| Couche | Technologie |
-| --- | --- |
-| Front | React 19 + TypeScript + Tailwind (TanStack Start, routage par fichiers) |
+| Couche       | Technologie                                                                                                    |
+| ------------ | -------------------------------------------------------------------------------------------------------------- |
+| Front        | React 19 + TypeScript + Tailwind (TanStack Start, routage par fichiers)                                        |
 | Backend chat | Express + TypeScript (ES modules), Matrix (Synapse auto-hébergé, sans fédération, E2EE) — mocké pour l'instant |
-| On-chain | Covenants Kaspa (pseudo-code Argent/Silverscript dans `contracts/`) |
+| On-chain     | Covenants Kaspa (pseudo-code Argent/Silverscript dans `contracts/`)                                            |
 
 ## Architecture
 
@@ -41,8 +41,8 @@ UI → covenants.ts → mock-zk.ts (localStorage)
 
 ## Fonctionnalités MVP (mockées)
 
-- **Création de chasse** : titre, description, lieu, date limite, seuil de participants et dépôt fixe de 30 KAS, remboursé au créateur. Parcours en deux temps : formulaire → récapitulatif → création.
-- **Économie d'engagement** : Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %. Le dépôt de création de 30 KAS est remboursé au créateur dans les deux scénarios MVP. Détails : `docs/economics.md`.
+- **Création de chasse** : titre, description, lieu, date limite, seuil de participants et dépôt fixe de 30 KAS (remboursé en cas de succès ; en cas d'échec, il finance d'abord le bonus des engagés). Parcours en deux temps : formulaire → récapitulatif → création.
+- **Économie d'engagement** : Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement, avec un bonus pouvant aller jusqu'à 1 KAS pris sur le dépôt du créateur. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %. Détails : `docs/economics.md`.
 - **Engagement privé** : commitment = SHA-256(huntId | secret aléatoire). Seule l'empreinte est stockée ; le secret reste sur l'appareil. L'adresse du wallet n'entre jamais dans l'empreinte.
 - **Wallet mocké** : connexion/déconnexion, requis pour s'engager (et plus tard pour payer le dépôt).
 - **Activation atomique** : statut Active / Activée / Expirée calculé depuis le seuil et la date limite.

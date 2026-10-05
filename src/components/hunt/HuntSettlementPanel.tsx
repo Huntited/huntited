@@ -61,6 +61,7 @@ export function HuntSettlementPanel({
         ) : (
           <>
             <Row label="Remboursement par engagé·e" value={s.participantRefundPerCommitSompi} />
+            <Row label="Bonus d'échec par engagé·e" value={s.participantBonusPerCommitSompi} />
             <Row label="Treasury" value={s.treasurySompi} />
           </>
         )}

@@ -57,11 +57,14 @@ describe("matrix-mock", () => {
 });
 
 describe("règlement", () => {
-  it("échec : treasury 0 et 5 KAS remboursés par engagé", () => {
+  it("échec : treasury 0, 5 KAS + 1 KAS de bonus par engagé, reste au créateur", () => {
     const s = calculateSettlement(2, "failure");
     expect(s.treasurySompi).toBe(0n);
     expect(s.participantRefundPerCommitSompi).toBe(COMMIT_DEPOSIT_SOMPI);
-    expect(s.creatorCreationRefundSompi).toBe(CREATE_DEPOSIT_SOMPI);
+    expect(s.participantBonusPerCommitSompi).toBe(COMMIT_DEPOSIT_SOMPI / 5n);
+    expect(s.creatorCreationRefundSompi).toBe(
+      CREATE_DEPOSIT_SOMPI - (2n * COMMIT_DEPOSIT_SOMPI) / 5n,
+    );
   });
 
   it("succès : treasury 5 %, créateur 30 KAS + 95 %", () => {
