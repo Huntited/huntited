@@ -78,6 +78,14 @@ describe("wallet en mode Kastle", () => {
     expect(w.getWalletState().isConnected).toBe(false);
   });
 
+  it("un échec de lecture du compte laisse le wallet déconnecté", async () => {
+    const k = fakeKastle();
+    k.getAccount.mockRejectedValue(new Error("locked"));
+    const w = await loadWallet();
+    await expect(w.connectWallet()).rejects.toThrow();
+    expect(w.getWalletState()).toEqual({ isConnected: false, address: null });
+  });
+
   it("se déconnecte si l'extension change de réseau", async () => {
     const k = fakeKastle();
     const w = await loadWallet();

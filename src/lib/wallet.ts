@@ -115,33 +115,41 @@ function randomHex(bytes: number): string {
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+const MSG_WRONG_NETWORK = "Passe Kastle sur le réseau testnet-10 pour continuer.";
+
 async function connectKastle(): Promise<string> {
   const kastle = requireKastle();
   bindKastle();
 
-  let connected: boolean;
   try {
-    connected = await kastle.connect();
-  } catch {
-    connected = false;
-  }
-  if (!connected) throw new WalletError("Connexion refusée dans Kastle.");
-
-  try {
-    if ((await kastle.getNetwork()) !== KASTLE_NETWORK) {
-      await kastle.switchNetwork(KASTLE_NETWORK);
+    let connected: boolean;
+    try {
+      connected = await kastle.connect();
+    } catch {
+      connected = false;
     }
-  } catch {
-    throw new WalletError("Passe Kastle sur le réseau testnet-10 pour continuer.");
-  }
-  if ((await kastle.getNetwork()) !== KASTLE_NETWORK) {
-    throw new WalletError("Passe Kastle sur le réseau testnet-10 pour continuer.");
-  }
+    if (!connected) throw new WalletError("Connexion refusée dans Kastle.");
 
-  const { address } = await kastle.getAccount();
-  if (!address) throw new WalletError("Aucun compte disponible dans Kastle.");
-  setState({ isConnected: true, address });
-  return address;
+    try {
+      if ((await kastle.getNetwork()) !== KASTLE_NETWORK) {
+        await kastle.switchNetwork(KASTLE_NETWORK);
+      }
+    } catch {
+      throw new WalletError(MSG_WRONG_NETWORK);
+    }
+
+    // Relecture finale : réseau et compte doivent être valides ensemble.
+    const [network, account] = await Promise.all([kastle.getNetwork(), kastle.getAccount()]);
+    if (network !== KASTLE_NETWORK) throw new WalletError(MSG_WRONG_NETWORK);
+    if (!account.address) throw new WalletError("Aucun compte disponible dans Kastle.");
+
+    setState({ isConnected: true, address: account.address });
+    return account.address;
+  } catch (e) {
+    // Aucun état partiel : tout échec laisse le wallet déconnecté.
+    setState(DISCONNECTED);
+    throw e;
+  }
 }
 
 /** Connecte le wallet et renvoie son adresse. */
