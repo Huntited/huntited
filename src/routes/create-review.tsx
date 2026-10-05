@@ -1,0 +1,130 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS, createHuntCovenant } from "@/lib/covenants";
+import { clearCreateHuntDraft, getCreateHuntDraft } from "@/lib/create-hunt-store";
+import { addUserHunt } from "@/lib/user-hunts";
+import { useWallet } from "@/lib/useWallet";
+import type { HuntFormData } from "@/lib/types";
+
+export const Route = createFileRoute("/create-review")({
+  head: () => ({
+    meta: [
+      { title: "Vérifier ma chasse — Huntited" },
+      { name: "description", content: "Relis ta chasse avant de la créer et de verrouiller le dépôt." },
+      { property: "og:title", content: "Vérifier ma chasse — Huntited" },
+      { property: "og:description", content: "Relis ta chasse avant de la créer et de verrouiller le dépôt." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: CreateReviewPage,
+});
+
+/**
+ * Récapitulatif avant création : le brouillon est lu depuis l'appareil.
+ * Sans brouillon, on renvoie vers le formulaire.
+ */
+function CreateReviewPage() {
+  const navigate = useNavigate();
+  const { address } = useWallet();
+  const [draft, setDraft] = useState<HuntFormData | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Lecture après montage (localStorage indisponible côté serveur)
+  useEffect(() => {
+    const data = getCreateHuntDraft();
+    if (!data) {
+      navigate({ to: "/create", replace: true });
+      return;
+    }
+    setDraft(data);
+  }, [navigate]);
+
+  if (!draft) {
+    return <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">Chargement…</div>;
+  }
+
+  const handleConfirm = async () => {
+    setIsCreating(true);
+    setError(null);
+    try {
+      // Création via la couche covenant (mock). Aucun log du contenu.
+      const receipt = await createHuntCovenant(draft);
+
+      // Mémorise la chasse dans l'historique local du créateur
+      // (références uniquement, stockées sur l'appareil).
+      if (address) {
+        addUserHunt(address, {
+          huntId: receipt.huntId,
+          title: draft.title,
+          location: draft.location,
+          deadline: new Date(draft.deadline).toISOString(),
+          threshold: draft.threshold,
+        });
+      }
+
+      clearCreateHuntDraft();
+      navigate({ to: "/hunt/$id", params: { id: receipt.huntId } });
+    } catch {
+      setError("Une erreur est survenue lors de la création de la chasse. Réessaie.");
+      setIsCreating(false);
+    }
+  };
+
+  const deadlineFr = new Date(draft.deadline).toLocaleString("fr-FR", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+
+  const rows: Array<[string, string]> = [
+    ["Lieu", draft.location],
+    ["Date limite", deadlineFr],
+    ["Seuil", `${draft.threshold} participants`],
+    ["Dépôt de création", `${CREATE_DEPOSIT_KAS} KAS`],
+    ["Dépôt par engagement", `${COMMIT_DEPOSIT_KAS} KAS`],
+  ];
+
+  return (
+    <div className="mx-auto max-w-xl px-4 py-10">
+      <h1 className="text-2xl font-semibold tracking-tight">Récapitulatif de ta chasse</h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Vérifie les informations. Une fois créée, la chasse ne pourra plus être modifiée.
+      </p>
+
+      <div className="mt-6 space-y-4 rounded-lg border p-5 text-sm">
+        <div>
+          <div className="text-muted-foreground">Titre</div>
+          <div className="font-medium">{draft.title}</div>
+        </div>
+        <div>
+          <div className="text-muted-foreground">Description</div>
+          <p className="whitespace-pre-line">{draft.description}</p>
+        </div>
+        {rows.map(([label, value]) => (
+          <div key={label} className="flex justify-between gap-4">
+            <span className="text-muted-foreground">{label}</span>
+            <span className="text-right font-medium">{value}</span>
+          </div>
+        ))}
+      </div>
+
+      {error && (
+        <p className="mt-4 text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      )}
+
+      <div className="mt-6 flex justify-end gap-3">
+        <Button variant="outline" disabled={isCreating} onClick={() => navigate({ to: "/create" })}>
+          Retour
+        </Button>
+        <Button disabled={isCreating} onClick={handleConfirm}>
+          {isCreating ? "Création en cours…" : "Confirmer et créer la chasse"}
+        </Button>
+      </div>
+    </div>
+  );
+}

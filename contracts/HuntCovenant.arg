@@ -1,0 +1,183 @@
+// ============================================================================
+// HuntCovenant.arg — Covenant de chasse Huntited (pseudo-code Argent/Silverscript)
+// ----------------------------------------------------------------------------
+// Un covenant de chasse bloque les dépôts des engagés et applique les règles
+// de coordination de façon autonome : aucun tiers de confiance, aucun
+// administrateur. Les règles ci-dessous sont exécutées on-chain.
+//
+// Principes :
+//   - Privacy  : les engagements sont des commitments (empreintes), jamais
+//                des identités. Le compteur réel est caché via ZK ; seule la
+//                preuve "seuil atteint / non atteint" est publique.
+//   - Atomique : l'action se déclenche pour tous ou pour personne.
+//   - Sans maître : personne ne peut modifier les règles après création.
+//
+// NOTE : ce fichier est un pseudo-code de spécification. Les helpers
+// verify_zk_* et merkle_insert sont mockés en attendant l'implémentation
+// réelle des circuits ZK et de l'arbre de Merkle on-chain.
+// ============================================================================
+
+// ---------------------------------------------------------------------------
+// Constantes du protocole (en sompis, 1 KAS = 10^8 sompis)
+// ---------------------------------------------------------------------------
+const CREATE_DEPOSIT_SOMPI  = 30 * 10^8;   // dépôt de création d'une chasse
+const COMMIT_DEPOSIT_SOMPI  = 5 * 10^8;    // dépôt d'engagement
+const CREATOR_SHARE_PERCENT = 95;
+const TREASURY_SHARE_PERCENT = 5;
+const TREASURY_ADDRESS = treasury_multisig_hash;
+
+// ---------------------------------------------------------------------------
+// États du covenant
+// ---------------------------------------------------------------------------
+enum State {
+  Active,      // chasse ouverte, engagements acceptés
+  Activated,   // seuil atteint : action déclenchée, dépôts restituables
+  Expired      // date limite passée sans atteindre le seuil
+}
+
+// ---------------------------------------------------------------------------
+// Données portées par le covenant (état on-chain)
+// ---------------------------------------------------------------------------
+struct HuntCovenant {
+  state: State;
+
+  // Paramètres fixés à la création (immuables ensuite)
+  deadline: timestamp;        // date limite d'engagement
+  threshold: u64;             // seuil de participants
+  creator: pubkey_hash;       // créateur (reçoit la redistribution éventuelle)
+
+  // Engagements : arbre de Merkle de commitments anonymes.
+  // La taille réelle de l'arbre n'est JAMAIS publiée en clair :
+  // elle n'est révélée que via une preuve ZK (seuil atteint ou non).
+  commitments_root: hash;     // racine Merkle des commitments
+  commit_count_hidden: u64;   // compteur interne, non exposé publiquement
+
+  // Fonds bloqués dans le covenant
+  balance: amount;            // somme des dépôts bloqués
+}
+
+// ---------------------------------------------------------------------------
+// Helpers mockés — à remplacer par les vraies primitives ZK / Merkle
+// ----------------------------------------------------------------------------
+
+// Vérifie une preuve ZK "je connais un secret dont le commitment est dans
+// l'arbre" SANS révéler lequel. MOCK : accepte toute preuve non vide.
+fn verify_zk_membership(proof: bytes, root: hash) -> bool {
+  // MOCK — remplacer par la vérification du circuit ZK réel
+  return proof.length > 0 && root != 0;
+}
+
+// Vérifie une preuve ZK "le compteur caché est >= threshold" SANS révéler
+// le compteur. MOCK : compare le compteur interne directement.
+fn verify_zk_threshold_reached(covenant: HuntCovenant, proof: bytes) -> bool {
+  // MOCK — remplacer par la vérification du circuit ZK réel
+  require(proof.length > 0, "preuve ZK requise");
+  return covenant.commit_count_hidden >= covenant.threshold;
+}
+
+// Insère un commitment dans l'arbre de Merkle et renvoie la nouvelle racine.
+// MOCK : empreinte de l'ancienne racine concaténée au commitment.
+fn merkle_insert(root: hash, commitment: hash) -> hash {
+  // MOCK — remplacer par un vrai insert Merkle (ou arbre append-only)
+  return sha256(root || commitment);
+}
+
+// ---------------------------------------------------------------------------
+// Entrées du covenant
+// ---------------------------------------------------------------------------
+
+// create_hunt : crée le covenant et bloque le dépôt de création.
+// Le créateur fixe deadline et threshold ; ils sont immuables ensuite.
+fn create_hunt(deadline: timestamp, threshold: u64) -> HuntCovenant {
+  require(deadline > now(), "la date limite doit être dans le futur");
+  require(threshold >= 1, "le seuil doit être au moins 1");
+  require(tx.value >= CREATE_DEPOSIT_SOMPI, "dépôt de création de 30 KAS requis");
+
+  return HuntCovenant {
+    state: State.Active,
+    deadline: deadline,
+    threshold: threshold,
+    creator: tx.sender,
+    commitments_root: 0,
+    commit_count_hidden: 0,
+    balance: tx.value
+  };
+}
+
+// commit : un participant s'engage. Il dépose 5 KAS et soumet un commitment
+// anonyme (SHA-256(huntId | secret)) accompagné d'une preuve ZK de validité.
+// Aucune identité n'est liée au commitment : privacy-first.
+fn commit(covenant: HuntCovenant, commitment: hash, zk_proof: bytes) {
+  require(covenant.state == State.Active, "la chasse n'est pas ouverte");
+  require(now() < covenant.deadline, "la date limite est passée");
+  require(tx.value >= COMMIT_DEPOSIT_SOMPI, "dépôt d'engagement de 5 KAS requis");
+  require(commitment != 0, "commitment invalide");
+  require(verify_zk_membership(zk_proof, covenant.commitments_root)
+          || covenant.commit_count_hidden == 0,
+          "preuve ZK invalide");
+
+  covenant.commitments_root = merkle_insert(covenant.commitments_root, commitment);
+  covenant.commit_count_hidden += 1;   // compteur interne, jamais publié en clair
+  covenant.balance += tx.value;
+}
+
+// activate : déclenche l'action collective quand le seuil est atteint.
+// N'importe qui peut appeler cette entrée avec une preuve ZK valide :
+// la preuve atteste "seuil atteint" SANS révéler le nombre d'engagés.
+fn activate(covenant: HuntCovenant, zk_proof: bytes) {
+  require(covenant.state == State.Active, "chasse déjà close");
+  require(now() < covenant.deadline, "la date limite est passée");
+  require(verify_zk_threshold_reached(covenant, zk_proof),
+          "seuil non atteint (preuve ZK invalide)");
+
+  covenant.state = State.Activated;
+}
+
+// distribute_deposit_on_success : applique automatiquement l'économie du MVP.
+// Le dépôt de création revient intégralement au créateur ; les dépôts
+// d'engagement financent le créateur (95 %) et le treasury (5 %).
+fn distribute_deposit_on_success(covenant: HuntCovenant) {
+  require(covenant.state == State.Activated, "la chasse n'est pas activée");
+
+  let commit_total = covenant.commit_count_hidden * COMMIT_DEPOSIT_SOMPI;
+  let creator_share = (commit_total * CREATOR_SHARE_PERCENT) / 100;
+  let treasury_share = commit_total - creator_share;
+
+  send(covenant.creator, CREATE_DEPOSIT_SOMPI + creator_share);
+  send(TREASURY_ADDRESS, treasury_share);
+  covenant.balance = 0;
+}
+
+// expire : clôture la chasse si la date limite est passée sans activation.
+// N'importe qui peut l'appeler ; les dépôts deviennent restituables.
+fn expire(covenant: HuntCovenant) {
+  require(covenant.state == State.Active, "chasse déjà close");
+  require(now() >= covenant.deadline, "la date limite n'est pas passée");
+
+  covenant.state = State.Expired;
+}
+
+// distribute_deposit_on_expire : restitue les dépôts après expiration.
+// Chaque engagé réclame son dépôt avec une preuve ZK de membership.
+fn distribute_deposit_on_expire(covenant: HuntCovenant, zk_proof: bytes) {
+  require(covenant.state == State.Expired, "la chasse n'est pas expirée");
+  require(verify_zk_membership(zk_proof, covenant.commitments_root),
+          "preuve d'engagement invalide");
+
+  // Restitue le dépôt d'engagement au réclamant (adresse de sortie fournie
+  // dans la transaction, jamais liée au commitment).
+  send(tx.recipient, COMMIT_DEPOSIT_SOMPI);
+  covenant.balance -= COMMIT_DEPOSIT_SOMPI;
+
+  // Le dépôt de création est restitué au créateur quand le covenant est vide.
+  if (covenant.balance == CREATE_DEPOSIT_SOMPI) {
+    send(covenant.creator, CREATE_DEPOSIT_SOMPI);
+    covenant.balance = 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Garde temporelle globale : une chasse Active dont la deadline est passée
+// ne peut plus recevoir d'engagement ni être activée — seulement expirée.
+// Cette règle est appliquée par le covenant lui-même, pas par un serveur.
+// ---------------------------------------------------------------------------
