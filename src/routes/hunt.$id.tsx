@@ -5,6 +5,7 @@ import { ChatPanel } from "@/components/hunt/ChatPanel";
 import { HuntSettlementPanel } from "@/components/hunt/HuntSettlementPanel";
 import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
 import { CommitModal } from "@/components/hunt/CommitModal";
+import { ShareHuntButton } from "@/components/hunt/ShareHuntButton";
 import { Button } from "@/components/ui/button";
 import Countdown from "@/components/ui/Countdown";
 import { Separator } from "@/components/ui/separator";
@@ -88,8 +89,9 @@ function HuntDetailPage() {
 
       <h1 className="mt-4 text-2xl font-semibold tracking-tight">{hunt.title}</h1>
 
-      <div className="mt-2">
+      <div className="mt-2 flex items-center justify-between gap-3">
         <HuntStatusBadge status={status} />
+        <ShareHuntButton hunt={hunt} />
       </div>
 
       {/* Infos de la chasse */}
