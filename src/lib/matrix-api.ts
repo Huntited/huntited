@@ -39,7 +39,9 @@ export async function createChat(
 
 export async function getChatStatus(huntId: string, token: string): Promise<PublicChatResponse> {
   try {
-    return await parse(await fetch(`${baseUrl()}/api/chats/${encodeURIComponent(huntId)}`, { headers: auth(token) }));
+    return await parse(
+      await fetch(`${baseUrl()}/api/chats/${encodeURIComponent(huntId)}`, { headers: auth(token) }),
+    );
   } catch (e) {
     if (e instanceof ChatApiError) throw e;
     throw new ChatApiError("Le chat est temporairement indisponible.");

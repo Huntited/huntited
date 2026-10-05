@@ -8,8 +8,6 @@ import type { MatrixPublicConfig } from "./matrix-types";
  * avec l'API d'administration Matrix.
  */
 export const matrixConfig: MatrixPublicConfig = {
-  homeserverUrl:
-    import.meta.env["VITE_MATRIX_HOMESERVER_URL"] ??
-    "https://matrix.huntited.org",
+  homeserverUrl: import.meta.env["VITE_MATRIX_HOMESERVER_URL"] ?? "https://matrix.huntited.org",
   defaultRoomTtlMs: 24 * 60 * 60 * 1000, // durée de vie ajoutée à la date limite de la chasse : expiresAt = huntDeadline + defaultRoomTtlMs
 };

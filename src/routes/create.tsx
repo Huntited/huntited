@@ -27,9 +27,8 @@ function CreateHuntPage() {
     <div className="mx-auto max-w-xl px-4 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">Créer une chasse</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Définissez l'action collective et le seuil de participants. Aucun
-        organisateur central : la chasse se déclenche d'elle-même quand le
-        seuil est atteint.
+        Définissez l'action collective et le seuil de participants. Aucun organisateur central : la
+        chasse se déclenche d'elle-même quand le seuil est atteint.
       </p>
 
       <div className="mt-8">

@@ -24,7 +24,8 @@ export function chatRouter(
   isDevelopment: boolean,
 ): Router {
   const router = Router();
-  const stillAllowed = (id: string) => isChatAllowed(access.getHuntStatus(id), access.getHuntOutcome(id));
+  const stillAllowed = (id: string) =>
+    isChatAllowed(access.getHuntStatus(id), access.getHuntOutcome(id));
 
   router.post("/cleanup", async (_req, res, next) => {
     if (!isDevelopment) return res.status(404).json({ error: "Introuvable." });
@@ -49,7 +50,9 @@ export function chatRouter(
         if (req.chatAccess?.role !== "creator") {
           const existing = await service.getChatStatus(parsed.data.huntId);
           if (existing.isActive) return res.json(existing);
-          return res.status(403).json({ error: "Seul·e le créateur ou la créatrice peut ouvrir le chat." });
+          return res
+            .status(403)
+            .json({ error: "Seul·e le créateur ou la créatrice peut ouvrir le chat." });
         }
         return res.status(201).json(await service.createChat(parsed.data));
       } catch (e) {

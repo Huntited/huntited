@@ -78,7 +78,10 @@ export function hasMockCommitment(huntId: string, walletAddress: string): boolea
  * Enregistre un engagement mocké (5 KAS simulés).
  * Lève une erreur si ce wallet est déjà engagé dans la chasse.
  */
-export async function mockCommit(huntId: string, walletAddress: string): Promise<MockCommitReceipt> {
+export async function mockCommit(
+  huntId: string,
+  walletAddress: string,
+): Promise<MockCommitReceipt> {
   if (!walletAddress) throw new Error("Wallet non connecté.");
   if (hasMockCommitment(huntId, walletAddress)) {
     throw new Error("Tu es déjà engagé·e dans cette hunt.");

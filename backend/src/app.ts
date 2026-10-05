@@ -22,7 +22,13 @@ export function createApp(d: AppDeps) {
   const app = express();
   app.disable("x-powered-by");
   app.use(requestId);
-  app.use(cors({ origin: d.corsOrigin, methods: ["GET", "POST"], allowedHeaders: ["Content-Type", "Authorization"] }));
+  app.use(
+    cors({
+      origin: d.corsOrigin,
+      methods: ["GET", "POST"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    }),
+  );
   app.use(express.json({ limit: "16kb" }));
 
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
@@ -33,7 +39,9 @@ export function createApp(d: AppDeps) {
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     const isJson = err instanceof SyntaxError;
     console.error(`[server] ${isJson ? "invalid_json" : "internal_error"}`);
-    res.status(isJson ? 400 : 500).json({ error: isJson ? "Requête invalide." : "Erreur serveur." });
+    res
+      .status(isJson ? 400 : 500)
+      .json({ error: isJson ? "Requête invalide." : "Erreur serveur." });
   });
   return app;
 }

@@ -12,13 +12,13 @@ function isDraft(value: unknown): value is HuntFormData {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
   return (
-    typeof v['title'] === "string" &&
-    typeof v['description'] === "string" &&
-    typeof v['location'] === "string" &&
-    typeof v['deadline'] === "string" &&
-    typeof v['threshold'] === "number" &&
-    typeof v['deposit'] === "number" &&
-    typeof v['commitDeposit'] === "number"
+    typeof v["title"] === "string" &&
+    typeof v["description"] === "string" &&
+    typeof v["location"] === "string" &&
+    typeof v["deadline"] === "string" &&
+    typeof v["threshold"] === "number" &&
+    typeof v["deposit"] === "number" &&
+    typeof v["commitDeposit"] === "number"
   );
 }
 

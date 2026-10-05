@@ -25,16 +25,12 @@ export interface HuntSettlement {
   participantRefundPerCommitSompi: bigint;
 }
 
-export function calculateSettlement(
-  commitCount: number,
-  outcome: HuntOutcome,
-): HuntSettlement {
+export function calculateSettlement(commitCount: number, outcome: HuntOutcome): HuntSettlement {
   if (!Number.isSafeInteger(commitCount) || commitCount < 0) {
     throw new Error("Nombre d'engagements invalide.");
   }
 
-  const totalCommitDepositsSompi =
-    BigInt(commitCount) * COMMIT_DEPOSIT_SOMPI;
+  const totalCommitDepositsSompi = BigInt(commitCount) * COMMIT_DEPOSIT_SOMPI;
 
   if (outcome === "failure") {
     return {
@@ -46,8 +42,7 @@ export function calculateSettlement(
   }
 
   const treasurySompi = totalCommitDepositsSompi / 20n; // 5 %
-  const creatorCommitRewardSompi =
-    totalCommitDepositsSompi - treasurySompi; // 95 %
+  const creatorCommitRewardSompi = totalCommitDepositsSompi - treasurySompi; // 95 %
 
   return {
     creatorCreationRefundSompi: CREATE_DEPOSIT_SOMPI,

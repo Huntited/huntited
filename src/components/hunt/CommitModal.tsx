@@ -31,7 +31,9 @@ interface CommitModalProps {
 /** Forme courte d'une adresse : 6 premiers + 4 derniers caractères. */
 export function shortAddress(address: string): string {
   // Le préfixe "kaspa:" n'est pas compté dans les 6 premiers caractères.
-  const [prefix, body] = address.includes(":") ? address.split(":", 2) as [string, string] : ["", address];
+  const [prefix, body] = address.includes(":")
+    ? (address.split(":", 2) as [string, string])
+    : ["", address];
   const short = body.length <= 10 ? body : `${body.slice(0, 6)}…${body.slice(-4)}`;
   return prefix ? `${prefix}:${short}` : short;
 }
@@ -84,13 +86,17 @@ export function CommitModal({
         ) : (
           <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
             <p>
-              <strong>Dépôt :</strong> {hunt.commitDeposit} KAS, verrouillés dans le covenant (simulé).
+              <strong>Dépôt :</strong> {hunt.commitDeposit} KAS, verrouillés dans le covenant
+              (simulé).
             </p>
             <p>{COMMIT_DEPOSIT_TERMS}</p>
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Date limite</span>
               <span className="font-medium">
-                {new Date(hunt.deadline).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}
+                {new Date(hunt.deadline).toLocaleString("fr-FR", {
+                  dateStyle: "long",
+                  timeStyle: "short",
+                })}
               </span>
             </div>
             {walletAddress && (
@@ -113,7 +119,9 @@ export function CommitModal({
 
         <details className="text-xs text-muted-foreground">
           <summary className="cursor-pointer font-medium">Voir les conditions complètes</summary>
-          <div className="mt-2 max-h-40 overflow-auto whitespace-pre-line rounded border p-2">{termsFull}</div>
+          <div className="mt-2 max-h-40 overflow-auto whitespace-pre-line rounded border p-2">
+            {termsFull}
+          </div>
         </details>
 
         <Separator />
@@ -126,7 +134,10 @@ export function CommitModal({
             disabled={isCommitted}
             className="mt-0.5"
           />
-          <span>J'ai compris que mon dépôt reste verrouillé jusqu'au succès ou à l'expiration de la chasse.</span>
+          <span>
+            J'ai compris que mon dépôt reste verrouillé jusqu'au succès ou à l'expiration de la
+            chasse.
+          </span>
         </label>
 
         {error && (

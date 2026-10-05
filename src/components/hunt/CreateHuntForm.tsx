@@ -10,7 +10,6 @@ import { COMMIT_DEPOSIT_TERMS, CREATE_DEPOSIT_TERMS } from "@/lib/terms";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
 import { validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
 
-
 interface CreateHuntFormValues {
   title: string;
   description: string;
@@ -40,11 +39,11 @@ export function CreateHuntForm() {
   // erreurs de validation champ par champ.
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  const setField = (field: keyof CreateHuntFormValues) => (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setValues((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const setField =
+    (field: keyof CreateHuntFormValues) =>
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      setValues((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const toFormData = (): HuntFormData => ({
     title: values.title,
@@ -185,8 +184,7 @@ export function CreateHuntForm() {
         <Label htmlFor="deposit">Dépôt de création</Label>
         <Input id="deposit" value={`${CREATE_DEPOSIT_KAS} KAS`} readOnly disabled />
         <p className="text-xs text-muted-foreground">
-          Montant fixe pour le MVP, verrouillé dans le covenant de la chasse.{" "}
-          {CREATE_DEPOSIT_TERMS}
+          Montant fixe pour le MVP, verrouillé dans le covenant de la chasse. {CREATE_DEPOSIT_TERMS}
         </p>
       </div>
 
@@ -194,9 +192,7 @@ export function CreateHuntForm() {
       <div className="space-y-2">
         <Label htmlFor="commit-deposit">Dépôt par engagement</Label>
         <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
-        <p className="text-xs text-muted-foreground">
-          {COMMIT_DEPOSIT_TERMS}
-        </p>
+        <p className="text-xs text-muted-foreground">{COMMIT_DEPOSIT_TERMS}</p>
       </div>
 
       {/* Erreur globale de création (distincte des erreurs de validation) */}

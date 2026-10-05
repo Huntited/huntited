@@ -24,7 +24,11 @@ async function setup(now: () => number = Date.now) {
   access.seedHunt({ huntId: "h_active", status: "active" });
   for (const id of ["h_on", "h_other", "h_active"]) {
     access.seedRole({ huntId: id, walletFingerprint: fingerprintWallet(CREATOR), role: "creator" });
-    access.seedRole({ huntId: id, walletFingerprint: fingerprintWallet(PART), role: "participant" });
+    access.seedRole({
+      huntId: id,
+      walletFingerprint: fingerprintWallet(PART),
+      role: "participant",
+    });
   }
   const auth = new AuthService(SECRET, 900, now);
   const app = createApp({
@@ -39,7 +43,10 @@ async function setup(now: () => number = Date.now) {
   const post = (path: string, body: unknown, token?: string) =>
     fetch(base + path, {
       method: "POST",
-      headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify(body),
     });
   const get = (path: string, token?: string) =>
@@ -50,7 +57,11 @@ async function setup(now: () => number = Date.now) {
   };
   return { post, get, tokenFor, auth };
 }
-const chatBody = (huntId: string) => ({ huntId, huntName: "Test", expiresAt: Date.now() + 3_600_000 });
+const chatBody = (huntId: string) => ({
+  huntId,
+  huntName: "Test",
+  expiresAt: Date.now() + 3_600_000,
+});
 
 describe("accès au chat", () => {
   it("refusé pour une hunt active", async () => {

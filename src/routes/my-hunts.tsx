@@ -7,9 +7,15 @@ export const Route = createFileRoute("/my-hunts")({
   head: () => ({
     meta: [
       { title: "Mes chasses — Huntited" },
-      { name: "description", content: "Retrouve les chasses que tu as créées depuis cet appareil." },
+      {
+        name: "description",
+        content: "Retrouve les chasses que tu as créées depuis cet appareil.",
+      },
       { property: "og:title", content: "Mes chasses — Huntited" },
-      { property: "og:description", content: "Retrouve les chasses que tu as créées depuis cet appareil." },
+      {
+        property: "og:description",
+        content: "Retrouve les chasses que tu as créées depuis cet appareil.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -49,9 +55,7 @@ function MyHuntsPage() {
       </p>
 
       {hunts.length === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">
-          Tu n'as pas encore créé de chasse.
-        </p>
+        <p className="mt-6 text-sm text-muted-foreground">Tu n'as pas encore créé de chasse.</p>
       ) : (
         <ul className="mt-6 space-y-3">
           {hunts.map((hunt) => (

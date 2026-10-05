@@ -45,6 +45,11 @@ describe("engagements mockés", () => {
     expect(dump).not.toContain(WALLET_A);
     expect(dump).not.toContain("qpwalletaaaa");
     const records = JSON.parse(localStorage.getItem("huntited:mock-commitments") ?? "[]");
-    expect(Object.keys(records[0]).sort()).toEqual(["commitment", "createdAt", "huntId", "walletFingerprint"]);
+    expect(Object.keys(records[0]).sort()).toEqual([
+      "commitment",
+      "createdAt",
+      "huntId",
+      "walletFingerprint",
+    ]);
   });
 });

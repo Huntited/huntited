@@ -10,7 +10,11 @@ import { isChatAllowed, type MockHuntAccessStore } from "../services/hunt-access
 const huntId = z.string().regex(/^[\w-]{1,64}$/);
 const walletAddress = z.string().min(8).max(128);
 
-export function authRouter(auth: AuthService, store: MockHuntAccessStore, isProduction: boolean): Router {
+export function authRouter(
+  auth: AuthService,
+  store: MockHuntAccessStore,
+  isProduction: boolean,
+): Router {
   const router = Router();
 
   router.post("/chat-access", (req, res) => {
@@ -26,7 +30,9 @@ export function authRouter(auth: AuthService, store: MockHuntAccessStore, isProd
     const role = store.getWalletRole(parsed.data.huntId, fp);
     if (!role) return res.status(401).json({ error: "Non autorisé." });
 
-    return res.json(auth.issueChatAccessToken({ walletFingerprint: fp, huntId: parsed.data.huntId, role }));
+    return res.json(
+      auth.issueChatAccessToken({ walletFingerprint: fp, huntId: parsed.data.huntId, role }),
+    );
   });
 
   // --- DEV uniquement : synchronise l'état mocké du front vers le backend ---
@@ -43,9 +49,17 @@ export function authRouter(auth: AuthService, store: MockHuntAccessStore, isProd
       .safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: "Requête invalide." });
     const d = parsed.data;
-    store.seedHunt(d.outcome ? { huntId: d.huntId, status: d.status, outcome: d.outcome } : { huntId: d.huntId, status: d.status });
+    store.seedHunt(
+      d.outcome
+        ? { huntId: d.huntId, status: d.status, outcome: d.outcome }
+        : { huntId: d.huntId, status: d.status },
+    );
     if (d.walletAddress && d.role) {
-      store.seedRole({ huntId: d.huntId, walletFingerprint: fingerprintWallet(d.walletAddress), role: d.role });
+      store.seedRole({
+        huntId: d.huntId,
+        walletFingerprint: fingerprintWallet(d.walletAddress),
+        role: d.role,
+      });
     }
     return res.status(204).end();
   });

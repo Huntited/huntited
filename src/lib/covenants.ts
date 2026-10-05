@@ -8,11 +8,7 @@
  */
 
 import { mockHunts } from "./mock-hunts";
-import {
-  getMockCommitCount,
-  mockCommit,
-  onCommitmentsChange,
-} from "./mock-zk";
+import { getMockCommitCount, mockCommit, onCommitmentsChange } from "./mock-zk";
 import { SOMPI_PER_KAS } from "./hunt-economics";
 import type { Hunt, HuntFormData } from "./types";
 
@@ -159,18 +155,12 @@ function readCreatedHunts(): Hunt[] {
           location: candidate.location,
           deadline: candidate.deadline,
           threshold: candidate.threshold,
-          deposit:
-            typeof candidate.deposit === "number"
-              ? candidate.deposit
-              : CREATE_DEPOSIT_KAS,
+          deposit: typeof candidate.deposit === "number" ? candidate.deposit : CREATE_DEPOSIT_KAS,
           commitDeposit:
             typeof candidate.commitDeposit === "number"
               ? candidate.commitDeposit
               : COMMIT_DEPOSIT_KAS,
-          commitCount:
-            typeof candidate.commitCount === "number"
-              ? candidate.commitCount
-              : 0,
+          commitCount: typeof candidate.commitCount === "number" ? candidate.commitCount : 0,
           // Anciennes chasses sans statut : considérées comme "active".
           status: candidate.status === "settled" ? "settled" : "active",
         },
@@ -194,9 +184,7 @@ function saveCreatedHunts(hunts: Hunt[]): void {
 /**
  * Crée une chasse dans le mock local.
  */
-export async function createHuntCovenant(
-  data: HuntFormData,
-): Promise<HuntCovenantReceipt> {
+export async function createHuntCovenant(data: HuntFormData): Promise<HuntCovenantReceipt> {
   await delay(500);
 
   const huntId = randomHex(12);
@@ -229,10 +217,7 @@ export async function createHuntCovenant(
  * La version réelle demandera la signature du wallet, enverra 5 KAS
  * et ajoutera le commitment dans le covenant Kaspa.
  */
-export async function commitToHunt(
-  huntId: string,
-  walletAddress: string,
-): Promise<CommitReceipt> {
+export async function commitToHunt(huntId: string, walletAddress: string): Promise<CommitReceipt> {
   const hunt = getHunt(huntId);
 
   if (!hunt) {
@@ -274,8 +259,7 @@ export function getCommitCount(hunt: Hunt): number {
  */
 export function getHunt(id: string): Hunt | undefined {
   return (
-    mockHunts.find((hunt) => hunt.id === id) ??
-    readCreatedHunts().find((hunt) => hunt.id === id)
+    mockHunts.find((hunt) => hunt.id === id) ?? readCreatedHunts().find((hunt) => hunt.id === id)
   );
 }
 

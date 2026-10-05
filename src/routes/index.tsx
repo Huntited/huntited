@@ -20,9 +20,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Huntited — Chasses actives" },
-      { name: "description", content: "Rejoins des actions collectives de façon privée et atomique : tout le monde ensemble, ou personne." },
+      {
+        name: "description",
+        content:
+          "Rejoins des actions collectives de façon privée et atomique : tout le monde ensemble, ou personne.",
+      },
       { property: "og:title", content: "Huntited — Chasses actives" },
-      { property: "og:description", content: "Coordination décentralisée d'actions collectives, engagements privés." },
+      {
+        property: "og:description",
+        content: "Coordination décentralisée d'actions collectives, engagements privés.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -81,13 +88,20 @@ function Index() {
       <header className="flex items-center justify-between gap-4">
         <h1 className="text-3xl font-semibold tracking-tight">Huntited</h1>
         <div className="flex items-center gap-3">
-          <Link to="/my-hunts" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
+          <Link
+            to="/my-hunts"
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
             Mes chasses
           </Link>
           {isConnected && address ? (
             <div className="flex items-center gap-2">
-              <code className="hidden text-xs text-muted-foreground sm:inline">{shortAddress(address)}</code>
-              <Button variant="outline" size="sm" onClick={disconnectWallet}>Déconnecter</Button>
+              <code className="hidden text-xs text-muted-foreground sm:inline">
+                {shortAddress(address)}
+              </code>
+              <Button variant="outline" size="sm" onClick={disconnectWallet}>
+                Déconnecter
+              </Button>
             </div>
           ) : (
             <Button size="sm" onClick={() => connectWallet()} disabled={isLoading}>
@@ -98,12 +112,14 @@ function Index() {
       </header>
 
       <p className="mt-3 text-muted-foreground">
-        Coordination décentralisée d'actions collectives : engagements privés,
-        déclenchement atomique, aucun organisateur central.
+        Coordination décentralisée d'actions collectives : engagements privés, déclenchement
+        atomique, aucun organisateur central.
       </p>
 
       <div className="mt-6">
-        <Button asChild><Link to="/create">Créer une chasse</Link></Button>
+        <Button asChild>
+          <Link to="/create">Créer une chasse</Link>
+        </Button>
       </div>
 
       {/* Filtres : recherche + statut */}
@@ -153,9 +169,14 @@ function Index() {
                   <div className="font-medium">{h.title}</div>
                   <div className="mt-1 text-sm text-muted-foreground">
                     {h.location} · avant le{" "}
-                    {new Date(h.deadline).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}
+                    {new Date(h.deadline).toLocaleString("fr-FR", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
                   </div>
-                  <div className="mt-1 text-sm">{getCommitCount(h)} sur {h.threshold} engagés</div>
+                  <div className="mt-1 text-sm">
+                    {getCommitCount(h)} sur {h.threshold} engagés
+                  </div>
                 </Link>
               </li>
             ))}

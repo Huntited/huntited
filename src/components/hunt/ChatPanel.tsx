@@ -58,8 +58,7 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
     try {
       // Le salon reste ouvert 24 h après la date limite de la chasse
       // (expiresAt = huntDeadline + defaultRoomTtlMs).
-      const expiresAt =
-        new Date(hunt.deadline).getTime() + matrixConfig.defaultRoomTtlMs;
+      const expiresAt = new Date(hunt.deadline).getTime() + matrixConfig.defaultRoomTtlMs;
       setChat(await openChat(hunt, expiresAt, status, outcome, token));
     } catch {
       setError("Le chat est temporairement indisponible.");
@@ -88,7 +87,8 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
         <p className="text-sm text-muted-foreground">
           {access.isLoading
             ? "Vérification de l'accès…"
-            : (access.error ?? "Connecte ton wallet pour accéder au chat (réservé au créateur et aux engagé·es).")}
+            : (access.error ??
+              "Connecte ton wallet pour accéder au chat (réservé au créateur et aux engagé·es).")}
         </p>
       )}
 
@@ -118,11 +118,16 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
         </>
       )}
 
-      {status === "activated" && access.isAuthorized && access.role === "participant" && !chat && !isLoading && (
-        <p className="text-sm text-muted-foreground">
-          {error ?? "Le chat n'est pas encore ouvert. La personne qui a créé la chasse va l'activer."}
-        </p>
-      )}
+      {status === "activated" &&
+        access.isAuthorized &&
+        access.role === "participant" &&
+        !chat &&
+        !isLoading && (
+          <p className="text-sm text-muted-foreground">
+            {error ??
+              "Le chat n'est pas encore ouvert. La personne qui a créé la chasse va l'activer."}
+          </p>
+        )}
 
       {status === "activated" && access.isAuthorized && access.role === "creator" && !chat && (
         <>
@@ -140,7 +145,9 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
         </>
       )}
 
-      <p className="text-xs text-muted-foreground">(Démonstration — Matrix auto-hébergé, intégration réelle à venir)</p>
+      <p className="text-xs text-muted-foreground">
+        (Démonstration — Matrix auto-hébergé, intégration réelle à venir)
+      </p>
     </section>
   );
 }

@@ -11,9 +11,15 @@ export const Route = createFileRoute("/create-review")({
   head: () => ({
     meta: [
       { title: "Vérifier ma chasse — Huntited" },
-      { name: "description", content: "Relis ta chasse avant de la créer et de verrouiller le dépôt." },
+      {
+        name: "description",
+        content: "Relis ta chasse avant de la créer et de verrouiller le dépôt.",
+      },
       { property: "og:title", content: "Vérifier ma chasse — Huntited" },
-      { property: "og:description", content: "Relis ta chasse avant de la créer et de verrouiller le dépôt." },
+      {
+        property: "og:description",
+        content: "Relis ta chasse avant de la créer et de verrouiller le dépôt.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -44,7 +50,9 @@ function CreateReviewPage() {
   }, [navigate]);
 
   if (!draft) {
-    return <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">Chargement…</div>;
+    return (
+      <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">Chargement…</div>
+    );
   }
 
   const handleConfirm = async () => {

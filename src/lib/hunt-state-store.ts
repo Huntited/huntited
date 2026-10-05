@@ -82,7 +82,10 @@ export function deriveAndPersistHuntState(
 }
 
 /** Résolution simulée. Sans effet si la chasse est déjà résolue. */
-export function markHuntSettled(huntId: string, outcome: SettlementOutcome): StoredHuntState | undefined {
+export function markHuntSettled(
+  huntId: string,
+  outcome: SettlementOutcome,
+): StoredHuntState | undefined {
   const prev = getStoredHuntState(huntId);
   if (prev?.status === "settled") return prev;
   const iso = new Date().toISOString();

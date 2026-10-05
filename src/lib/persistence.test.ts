@@ -44,9 +44,15 @@ describe("matrix-mock", () => {
   });
 
   it("refuse la création si la hunt est active ou expirée", async () => {
-    await expect(mockCreateChat(hunt.id, Date.now() + 1000, "active", undefined, { delayMs: 0 })).rejects.toThrow();
-    await expect(mockCreateChat(hunt.id, Date.now() + 1000, "expired", undefined, { delayMs: 0 })).rejects.toThrow();
-    await expect(mockCreateChat(hunt.id, Date.now() + 1000, "settled", "failure", { delayMs: 0 })).rejects.toThrow();
+    await expect(
+      mockCreateChat(hunt.id, Date.now() + 1000, "active", undefined, { delayMs: 0 }),
+    ).rejects.toThrow();
+    await expect(
+      mockCreateChat(hunt.id, Date.now() + 1000, "expired", undefined, { delayMs: 0 }),
+    ).rejects.toThrow();
+    await expect(
+      mockCreateChat(hunt.id, Date.now() + 1000, "settled", "failure", { delayMs: 0 }),
+    ).rejects.toThrow();
   });
 });
 

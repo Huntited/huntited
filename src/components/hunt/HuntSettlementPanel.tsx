@@ -18,13 +18,19 @@ interface HuntSettlementPanelProps {
  * Résolution économique d'une chasse — mock pur, aucun KAS n'est transféré.
  * Les paiements réels seront exécutés par le covenant Kaspa.
  */
-export function HuntSettlementPanel({ hunt, commitCount, status, outcome, onSettle }: HuntSettlementPanelProps) {
+export function HuntSettlementPanel({
+  hunt,
+  commitCount,
+  status,
+  outcome,
+  onSettle,
+}: HuntSettlementPanelProps) {
   if (status === "active" || status === "draft") {
     return (
       <section className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
         <h2 className="mb-1 font-semibold text-foreground">Résolution</h2>
-        La résolution n'est pas encore disponible : elle aura lieu quand le seuil sera atteint ou
-        à la date limite.
+        La résolution n'est pas encore disponible : elle aura lieu quand le seuil sera atteint ou à
+        la date limite.
       </section>
     );
   }
@@ -63,9 +69,7 @@ export function HuntSettlementPanel({ hunt, commitCount, status, outcome, onSett
       <p className="text-xs text-muted-foreground">
         {COMMIT_DEPOSIT_TERMS} {CREATE_DEPOSIT_TERMS}
       </p>
-      <p className="text-xs font-medium">
-        Simulation locale — Aucun KAS transféré.
-      </p>
+      <p className="text-xs font-medium">Simulation locale — Aucun KAS transféré.</p>
 
       {import.meta.env.DEV && onSettle && status !== "settled" && (
         <Button variant="outline" size="sm" onClick={onSettle}>

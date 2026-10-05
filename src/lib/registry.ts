@@ -2,7 +2,13 @@
 // Aujourd'hui : démos + chasses créées localement (via covenants.ts).
 // Demain : indexeur on-chain Kaspa — seule cette couche changera.
 
-import { getCovenantStatus, getCommitCount, getHunt, listHunts, type CovenantStatus } from "./covenants";
+import {
+  getCovenantStatus,
+  getCommitCount,
+  getHunt,
+  listHunts,
+  type CovenantStatus,
+} from "./covenants";
 import type { Hunt } from "./types";
 
 export interface HuntFilters {
@@ -15,7 +21,11 @@ export interface HuntFilters {
 /** Statut courant d'une chasse (deadline + compteur). */
 export function getHuntStatus(hunt: Hunt, now = Date.now()): CovenantStatus {
   return getCovenantStatus(
-    { deadline: new Date(hunt.deadline).getTime(), commitCount: getCommitCount(hunt), threshold: hunt.threshold },
+    {
+      deadline: new Date(hunt.deadline).getTime(),
+      commitCount: getCommitCount(hunt),
+      threshold: hunt.threshold,
+    },
     now,
   );
 }
@@ -25,7 +35,9 @@ export function getHunts(filters: HuntFilters = {}): Hunt[] {
   const q = filters.search?.trim().toLowerCase();
   return listHunts()
     .filter((h) => !filters.status || getHuntStatus(h) === filters.status)
-    .filter((h) => !q || [h.title, h.description, h.location].some((t) => t.toLowerCase().includes(q)))
+    .filter(
+      (h) => !q || [h.title, h.description, h.location].some((t) => t.toLowerCase().includes(q)),
+    )
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
 }
 

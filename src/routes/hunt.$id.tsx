@@ -47,9 +47,7 @@ function HuntDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">
-        Chargement…
-      </div>
+      <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">Chargement…</div>
     );
   }
 
@@ -157,7 +155,8 @@ function HuntDetailPage() {
           <p className="text-3xl font-semibold">
             {commitCount}
             <span className="text-base font-normal text-muted-foreground">
-              {" "}sur {hunt.threshold} requis
+              {" "}
+              sur {hunt.threshold} requis
             </span>
           </p>
         </div>
@@ -184,7 +183,8 @@ function HuntDetailPage() {
       {/* Bannières d'état */}
       {isActivated && (
         <div className="mt-6 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-          Cette chasse a atteint son seuil ({commitCount} / {hunt.threshold}). Le covenant est activé.
+          Cette chasse a atteint son seuil ({commitCount} / {hunt.threshold}). Le covenant est
+          activé.
         </div>
       )}
       {isExpired && !isActivated && (

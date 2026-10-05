@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import { connectWallet as connect, disconnectWallet as disconnect, subscribeWallet, type WalletState } from "./wallet";
+import {
+  connectWallet as connect,
+  disconnectWallet as disconnect,
+  subscribeWallet,
+  type WalletState,
+} from "./wallet";
 
 export interface UseWalletResult {
   isConnected: boolean;

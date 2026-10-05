@@ -9,7 +9,10 @@ export interface HuntAccessStore {
 }
 
 /** true si le chat peut exister : activée, ou résolue en succès. */
-export function isChatAllowed(status: HuntAccessStatus | undefined, outcome?: HuntOutcome): boolean {
+export function isChatAllowed(
+  status: HuntAccessStatus | undefined,
+  outcome?: HuntOutcome,
+): boolean {
   return status === "activated" || (status === "settled" && outcome === "success");
 }
 
@@ -30,7 +33,10 @@ export class MockHuntAccessStore implements HuntAccessStore {
 
   // --- Seeds DEV ---
   seedHunt(h: { huntId: string; status: HuntAccessStatus; outcome?: HuntOutcome }) {
-    this.hunts.set(h.huntId, h.outcome ? { status: h.status, outcome: h.outcome } : { status: h.status });
+    this.hunts.set(
+      h.huntId,
+      h.outcome ? { status: h.status, outcome: h.outcome } : { status: h.status },
+    );
   }
   seedRole(r: { huntId: string; walletFingerprint: string; role: ChatRole }) {
     const key = `${r.huntId}|${r.walletFingerprint}`;

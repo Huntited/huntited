@@ -49,7 +49,13 @@ describe("calculateSettlement", () => {
 
   it("refuse un nombre d'engagements négatif, non entier ou non fini", () => {
     for (const outcome of ["success", "failure"] as const) {
-      for (const bad of [-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1]) {
+      for (const bad of [
+        -1,
+        1.5,
+        Number.NaN,
+        Number.POSITIVE_INFINITY,
+        Number.MAX_SAFE_INTEGER + 1,
+      ]) {
         expect(() => calculateSettlement(bad, outcome)).toThrow("Nombre d'engagements invalide.");
       }
     }

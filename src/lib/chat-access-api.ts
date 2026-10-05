@@ -21,7 +21,10 @@ export function apiBaseUrl(): string {
   return (import.meta.env["VITE_API_BASE_URL"] as string | undefined) ?? "http://localhost:3001";
 }
 
-export async function requestChatAccess(input: { huntId: string; walletAddress: string }): Promise<ChatAccessToken> {
+export async function requestChatAccess(input: {
+  huntId: string;
+  walletAddress: string;
+}): Promise<ChatAccessToken> {
   let res: Response;
   try {
     res = await fetch(`${apiBaseUrl()}/api/auth/chat-access`, {

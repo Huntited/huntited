@@ -32,7 +32,10 @@ export class MockMatrixService implements MatrixService {
 //   - closeRoom : expulser les membres puis oublier le salon.
 // ---------------------------------------------------------------------------
 
-export function createMatrixService(mode: "mock" | "synapse", homeserverUrl: string): MatrixService {
+export function createMatrixService(
+  mode: "mock" | "synapse",
+  homeserverUrl: string,
+): MatrixService {
   if (mode === "synapse") throw new Error("Mode synapse non implémenté.");
   return new MockMatrixService(homeserverUrl);
 }

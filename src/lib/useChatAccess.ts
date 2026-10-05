@@ -4,7 +4,12 @@
 // Aucune demande tant que la chasse n'est pas activée (ou résolue en succès).
 import { useCallback, useEffect, useState } from "react";
 
-import { ChatAccessError, devSeedHuntAccess, requestChatAccess, type ChatAccessToken } from "./chat-access-api";
+import {
+  ChatAccessError,
+  devSeedHuntAccess,
+  requestChatAccess,
+  type ChatAccessToken,
+} from "./chat-access-api";
 import { chatMode } from "./chat-client";
 import type { SettlementOutcome } from "./hunt-state-store";
 import { canCreateRoom } from "./matrix-mock";
@@ -34,7 +39,11 @@ function localRole(huntId: string, address: string): ChatRole | null {
 const MSG_FORBIDDEN = "Le chat est réservé à la personne qui a créé la chasse et aux engagé·es.";
 const MSG_UNAVAILABLE = "Le chat est temporairement indisponible.";
 
-export function useChatAccess(huntId: string, status: HuntStatus, outcome?: SettlementOutcome): UseChatAccessResult {
+export function useChatAccess(
+  huntId: string,
+  status: HuntStatus,
+  outcome?: SettlementOutcome,
+): UseChatAccessResult {
   const { address } = useWallet();
   const [role, setRole] = useState<ChatRole | null>(null);
   const [token, setToken] = useState<ChatAccessToken | null>(null);
@@ -72,7 +81,11 @@ export function useChatAccess(huntId: string, status: HuntStatus, outcome?: Sett
     })()
       .catch((e: unknown) => {
         if (cancelled) return;
-        setError(e instanceof ChatAccessError && e.reason !== "unavailable" ? MSG_FORBIDDEN : MSG_UNAVAILABLE);
+        setError(
+          e instanceof ChatAccessError && e.reason !== "unavailable"
+            ? MSG_FORBIDDEN
+            : MSG_UNAVAILABLE,
+        );
       })
       .finally(() => !cancelled && setIsLoading(false));
     return () => {

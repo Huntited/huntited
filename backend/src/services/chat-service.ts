@@ -9,7 +9,10 @@ import type { MatrixService } from "./matrix-service.js";
 import type { ChatRecord, CreateChatInput, PublicChatResponse } from "../types/chat.js";
 
 export class ChatServiceError extends Error {
-  constructor(public readonly code: "invalid" | "conflict", message: string) {
+  constructor(
+    public readonly code: "invalid" | "conflict",
+    message: string,
+  ) {
     super(message);
   }
 }

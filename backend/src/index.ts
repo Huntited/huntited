@@ -7,7 +7,10 @@ import { MemoryChatStore } from "./services/chat-store.js";
 import { MockHuntAccessStore } from "./services/hunt-access-store.js";
 import { createMatrixService } from "./services/matrix-service.js";
 
-const chat = new ChatService(new MemoryChatStore(), createMatrixService(env.MATRIX_MODE, env.MATRIX_HOMESERVER_URL));
+const chat = new ChatService(
+  new MemoryChatStore(),
+  createMatrixService(env.MATRIX_MODE, env.MATRIX_HOMESERVER_URL),
+);
 const app = createApp({
   chat,
   auth: new AuthService(env.AUTH_JWT_SECRET, env.AUTH_TOKEN_TTL_SECONDS),
