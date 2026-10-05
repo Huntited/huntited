@@ -57,7 +57,10 @@ demande. Il n'est libéré que selon les règles du protocole :
 - si la chasse échoue, chaque engagé récupère ses 5 KAS plus un
   bonus de 1 KAS pris sur le dépôt de création du créateur (bonus total
   plafonné à 30 KAS, partagé à parts égales au-delà de 30 engagés) ;
-  le créateur récupère le reste de ses 30 KAS ; la treasury ne reçoit rien.
+  le créateur récupère le reste de ses 30 KAS ; la treasury ne reçoit rien ;
+- si tu as fixé un seuil personnel (« je viens si au moins N personnes
+  viennent ») et qu'il n'est pas atteint alors que la chasse réussit, tu
+  ne participes pas : tu récupères tes 5 KAS, sans bonus.
 
 3. Déclenchement atomique
 Le déclenchement est atomique : soit le seuil est atteint et l'action

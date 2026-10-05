@@ -34,6 +34,11 @@ Les badges (`src/lib/badges.ts`) et, plus tard, les missions, XP et niveaux sont
 
 Le dépôt de création n'entre jamais dans la répartition 95/5.
 
+**Seuil personnel** (voir `docs/seuil-personnel.md`) : seuls les engagé·es du
+**groupe retenu** (dont la condition « au moins N personnes » est remplie)
+financent la répartition 95/5. Un·e engagé·e non retenu·e récupère ses
+**5 KAS, sans bonus**.
+
 ## Échec (seuil non atteint)
 
 - Chaque engagé récupère 100 % de ses 5 KAS **plus un bonus d'échec de 1 KAS**.

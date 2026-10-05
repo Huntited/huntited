@@ -6,6 +6,10 @@ Le dépôt de création de 30 KAS est remboursé au créateur si le seuil est at
 
 Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement, avec un bonus pouvant aller jusqu'à 1 KAS pris sur le dépôt du créateur. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %. Dans ce cas, les engagé·es ne récupèrent pas leur dépôt.
 
+## Puis-je fixer ma propre condition ?
+
+Oui. En t'engageant, tu peux indiquer « je viens si au moins N personnes viennent » (au minimum le seuil de la chasse). Ta condition reste privée. La chasse se déclenche dès qu'un groupe se forme dans lequel la condition de chacun est remplie ; les engagements restent ouverts jusqu'à la date limite, donc le groupe peut encore grandir et t'inclure. Si ta condition n'est toujours pas remplie à la fin alors que la chasse a réussi, tu ne participes pas et tu récupères tes 5 KAS (sans bonus).
+
 ## Pourquoi un bonus si la chasse échoue ?
 
 Pour que s'engager soit toujours une bonne décision : si l'action se fait, tu y participes ; si elle ne se fait pas, tu récupères ton dépôt et un petit bonus. Le bonus est payé par le créateur, ce qui l'incite à ne lancer que des chasses sérieuses.
