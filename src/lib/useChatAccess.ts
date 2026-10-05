@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ChatAccessError,
   devSeedHuntAccess,
-  requestChatAccess,
+  obtainChatAccess,
   type ChatAccessToken,
 } from "./chat-access-api";
 import { chatMode } from "./chat-client";
@@ -16,6 +16,7 @@ import { canCreateRoom } from "./matrix-mock";
 import { hasMockCommitment } from "./mock-zk";
 import type { HuntStatus } from "./types";
 import { getUserHunts } from "./user-hunts";
+import { signMessage } from "./wallet";
 import { useWallet } from "./useWallet";
 
 export type ChatRole = "creator" | "participant";
@@ -38,6 +39,8 @@ function localRole(huntId: string, address: string): ChatRole | null {
 
 const MSG_FORBIDDEN = "Le chat est réservé à la personne qui a créé la chasse et aux engagé·es.";
 const MSG_UNAVAILABLE = "Le chat est temporairement indisponible.";
+const MSG_SIGNATURE_REFUSED =
+  "Signature refusée : signe le message dans ton wallet pour accéder au chat.";
 
 export function useChatAccess(
   huntId: string,
@@ -74,7 +77,8 @@ export function useChatAccess(
         ...(outcome ? { outcome } : {}),
         ...(r ? { walletAddress: address, role: r } : {}),
       });
-      const t = await requestChatAccess({ huntId, walletAddress: address });
+      // Prouve la possession de l'adresse : signature d'un défi du serveur.
+      const t = await obtainChatAccess({ huntId, walletAddress: address, sign: signMessage });
       if (cancelled) return;
       setToken(t);
       setRole(r);
@@ -82,9 +86,11 @@ export function useChatAccess(
       .catch((e: unknown) => {
         if (cancelled) return;
         setError(
-          e instanceof ChatAccessError && e.reason !== "unavailable"
-            ? MSG_FORBIDDEN
-            : MSG_UNAVAILABLE,
+          !(e instanceof ChatAccessError) || e.reason === "unavailable"
+            ? MSG_UNAVAILABLE
+            : e.reason === "signature_refused"
+              ? MSG_SIGNATURE_REFUSED
+              : MSG_FORBIDDEN,
         );
       })
       .finally(() => !cancelled && setIsLoading(false));

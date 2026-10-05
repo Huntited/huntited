@@ -4,9 +4,10 @@ import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 
 import { requestId } from "./middleware/request-id.js";
-import { authRouter } from "./routes/auth.js";
+import { authRouter, type WalletSignatureVerifier } from "./routes/auth.js";
 import { chatRouter } from "./routes/chat.js";
 import type { AuthService } from "./services/auth-service.js";
+import type { ChallengeService } from "./services/challenge-service.js";
 import type { ChatService } from "./services/chat-service.js";
 import type { MockHuntAccessStore } from "./services/hunt-access-store.js";
 
@@ -14,6 +15,8 @@ export interface AppDeps {
   chat: ChatService;
   auth: AuthService;
   access: MockHuntAccessStore;
+  challenges: ChallengeService;
+  verifySignature: WalletSignatureVerifier;
   corsOrigin: string;
   nodeEnv: "development" | "test" | "production";
 }
@@ -32,7 +35,16 @@ export function createApp(d: AppDeps) {
   app.use(express.json({ limit: "16kb" }));
 
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
-  app.use("/api/auth", authRouter(d.auth, d.access, d.nodeEnv === "production"));
+  app.use(
+    "/api/auth",
+    authRouter({
+      auth: d.auth,
+      store: d.access,
+      challenges: d.challenges,
+      verifySignature: d.verifySignature,
+      isProduction: d.nodeEnv === "production",
+    }),
+  );
   app.use("/api/chats", chatRouter(d.chat, d.auth, d.access, d.nodeEnv !== "production"));
 
   // Erreurs : réponse générique, aucun détail interne ni secret.

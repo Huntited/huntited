@@ -29,6 +29,17 @@ et `master` de `kaspanet/rusty-kaspa`). À relire si la version de Kastle change
 - Valeur renvoyée au site : **64 octets en hexadécimal** (128 caractères).
 - Vérification (`verify_message`) : clé publique **x-only** (32 octets).
 
+## Implémentation dans Huntited
+
+- `backend/src/services/kaspa-signature.ts` : décodage d'adresse + vérification,
+  validés par les vecteurs officiels de rusty-kaspa (signatures identiques
+  octet pour octet).
+- `backend/src/routes/auth.ts` : `POST /api/auth/challenge` (message rédigé par
+  le serveur, usage unique, 5 min) puis `POST /api/auth/chat-access` (signature
+  vérifiée contre la clé contenue dans l'adresse `kaspatest:`).
+- Front : `obtainChatAccess` (src/lib/chat-access-api.ts) fait signer le défi
+  par le wallet connecté.
+
 ## Conséquences pour Huntited (étape « défi signé »)
 
 - Le serveur peut vérifier la signature contre la clé x-only contenue dans

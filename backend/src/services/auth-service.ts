@@ -1,6 +1,5 @@
-// Jetons d'accès courts au chat (JWT HS256).
-// MOCK MVP : l'adresse est simplement déclarée par le client. En production,
-// elle sera prouvée par la signature Kaspa d'un challenge unique.
+// Jetons d'accès courts au chat (JWT HS256), délivrés après vérification
+// de la signature d'un défi unique (routes/auth.ts).
 // Aucun log de jeton ni d'adresse.
 import { createHash } from "node:crypto";
 import jwt from "jsonwebtoken";
