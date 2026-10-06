@@ -23,8 +23,11 @@ personnes avec **deux profils Chrome**.
 Dans un terminal, dossier du projet :
 
 ```bash
-bun run dev:shared
+bun run dev:shared:duo
 ```
+
+`duo` abaisse le seuil minimum à 2 (au lieu de 7) pour pouvoir activer une
+chasse avec seulement deux profils. Ce réglage n'existe qu'en développement.
 
 Deux fenêtres s'ouvrent (backend et front). Si Windows demande d'autoriser
 Node sur le réseau, accepte (réseau privé).

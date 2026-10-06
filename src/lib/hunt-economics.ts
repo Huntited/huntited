@@ -1,15 +1,17 @@
 /**
  * Économie Huntited — source de vérité du MVP.
  *
- * Succès : le créateur récupère ses 30 KAS ; les dépôts d'engagement
- * (5 KAS × N) vont 95 % au créateur, 5 % au treasury ; les engagé·es
- * reçoivent 0 KAS.
- * Échec : chaque engagé récupère ses 5 KAS plus un bonus d'échec de 1 KAS,
- * pris sur le dépôt de création du créateur (bonus total plafonné à 30 KAS,
- * partagé à parts égales au-delà de 30 engagés) ; le créateur récupère le
- * reste de ses 30 KAS ; le treasury reçoit 0.
- * Le bonus rend l'engagement avantageux même si la chasse échoue
- * (contrat d'assurance dominant).
+ * La caution du créateur (30 KAS) est partagée avec les engagé·es :
+ * - Succès : 95 % de la caution est partagée à parts égales entre les
+ *   engagé·es retenu·es, 5 % va à la treasury. Les dépôts d'engagement
+ *   (5 KAS × N retenu·es) vont 95 % au créateur, 5 % à la treasury.
+ * - Échec : chaque engagé récupère ses 5 KAS ; 47,5 % de la caution est
+ *   partagée à parts égales entre tous les engagés, 2,5 % va à la treasury,
+ *   le créateur récupère les 50 % restants.
+ * Les parts sont arrondies au sompi inférieur ; le reste (et toute part sans
+ * destinataire) revient au créateur.
+ * Le seuil minimum (MIN_THRESHOLD) garantit qu'un créateur ne perd pas
+ * d'argent quand son action réussit : 95 % de 7 × 5 KAS ≥ 30 KAS.
  *
  * Montants en sompis (bigint) uniquement. Aucune notion de présence,
  * vérification ou mission n'influence les paiements.
@@ -19,74 +21,84 @@ export const SOMPI_PER_KAS = 100_000_000n;
 
 export const CREATE_DEPOSIT_SOMPI = 30n * SOMPI_PER_KAS;
 export const COMMIT_DEPOSIT_SOMPI = 5n * SOMPI_PER_KAS;
-/** Bonus d'échec versé à chaque engagé, avant plafonnement. */
-export const FAILURE_BONUS_PER_COMMIT_SOMPI = 1n * SOMPI_PER_KAS;
+
+/** Seuil minimum d'une chasse (voir l'en-tête). */
+export const MIN_THRESHOLD = 7;
+
+/** Parts de la caution, en points de base (10 000 = 100 %). */
+const BPS = 10_000n;
+export const SUCCESS_CAUTION_SHARE_BPS = 9_500n; // 95 % aux engagé·es retenu·es
+export const SUCCESS_CAUTION_TREASURY_BPS = 500n; // 5 %
+export const FAILURE_CAUTION_SHARE_BPS = 4_750n; // 47,5 % aux engagé·es
+export const FAILURE_CAUTION_TREASURY_BPS = 250n; // 2,5 %
 
 export type HuntOutcome = "success" | "failure";
 
 export interface HuntSettlement {
-  /** Part du dépôt de création rendue au créateur. */
+  /** Part de la caution rendue au créateur. */
   creatorCreationRefundSompi: bigint;
   creatorCommitRewardSompi: bigint;
+  /** Total treasury : part de la caution + 5 % des engagements (succès). */
   treasurySompi: bigint;
   /** Dépôt d'engagement rendu à chaque engagé (échec uniquement). */
   participantRefundPerCommitSompi: bigint;
-  /** Bonus d'échec versé à chaque engagé (échec uniquement). */
+  /** Part de la caution versée à chaque engagé·e (retenu·e en cas de succès). */
   participantBonusPerCommitSompi: bigint;
   /**
    * Succès uniquement : dépôt rendu à chaque engagé·e NON retenu·e (son seuil
-   * personnel n'est pas atteint), sans bonus — voir docs/seuil-personnel.md.
+   * personnel n'est pas atteint), sans part de la caution — voir
+   * docs/seuil-personnel.md.
    */
   nonRetainedRefundPerCommitSompi: bigint;
 }
 
-/**
- * Bonus d'échec par engagé : 1 KAS, sauf si le total dépasserait le dépôt
- * de création (30 KAS) — il est alors partagé à parts égales, arrondi à
- * l'inférieur au sompi près (le reste revient au créateur).
- */
-export function failureBonusPerCommit(commitCount: number): bigint {
-  if (commitCount === 0) return 0n;
-  const n = BigInt(commitCount);
-  const pool = n * FAILURE_BONUS_PER_COMMIT_SOMPI;
-  return pool <= CREATE_DEPOSIT_SOMPI ? FAILURE_BONUS_PER_COMMIT_SOMPI : CREATE_DEPOSIT_SOMPI / n;
+/** Part de la caution reçue par chacun de `commitCount` engagé·es. */
+export function cautionSharePerCommit(commitCount: number, outcome: HuntOutcome): bigint {
+  if (commitCount <= 0) return 0n;
+  const bps = outcome === "success" ? SUCCESS_CAUTION_SHARE_BPS : FAILURE_CAUTION_SHARE_BPS;
+  return (CREATE_DEPOSIT_SOMPI * bps) / BPS / BigInt(commitCount);
 }
 
 /**
  * Règlement d'une chasse.
  * - Succès : `commitCount` = engagé·es **retenu·es** (leurs dépôts financent
- *   le créateur à 95 % et la treasury à 5 %) ; les non-retenu·es récupèrent
- *   leur dépôt (nonRetainedRefundPerCommitSompi).
- * - Échec : `commitCount` = tous les engagé·es (remboursement + bonus).
+ *   le créateur à 95 % et la treasury à 5 % ; ils se partagent 95 % de la
+ *   caution) ; les non-retenu·es récupèrent leur dépôt
+ *   (nonRetainedRefundPerCommitSompi).
+ * - Échec : `commitCount` = tous les engagé·es (remboursement + part de la caution).
  */
 export function calculateSettlement(commitCount: number, outcome: HuntOutcome): HuntSettlement {
   if (!Number.isSafeInteger(commitCount) || commitCount < 0) {
     throw new Error("Nombre d'engagements invalide.");
   }
 
-  const totalCommitDepositsSompi = BigInt(commitCount) * COMMIT_DEPOSIT_SOMPI;
+  const n = BigInt(commitCount);
+  const share = cautionSharePerCommit(commitCount, outcome);
+  const cautionTreasury =
+    (CREATE_DEPOSIT_SOMPI *
+      (outcome === "success" ? SUCCESS_CAUTION_TREASURY_BPS : FAILURE_CAUTION_TREASURY_BPS)) /
+    BPS;
+  const creatorCreationRefundSompi = CREATE_DEPOSIT_SOMPI - cautionTreasury - share * n;
 
   if (outcome === "failure") {
-    const bonus = failureBonusPerCommit(commitCount);
     return {
-      creatorCreationRefundSompi: CREATE_DEPOSIT_SOMPI - bonus * BigInt(commitCount),
+      creatorCreationRefundSompi,
       creatorCommitRewardSompi: 0n,
-      treasurySompi: 0n,
+      treasurySompi: cautionTreasury,
       participantRefundPerCommitSompi: COMMIT_DEPOSIT_SOMPI,
-      participantBonusPerCommitSompi: bonus,
+      participantBonusPerCommitSompi: share,
       nonRetainedRefundPerCommitSompi: 0n,
     };
   }
 
-  const treasurySompi = totalCommitDepositsSompi / 20n; // 5 %
-  const creatorCommitRewardSompi = totalCommitDepositsSompi - treasurySompi; // 95 %
-
+  const totalCommitDepositsSompi = n * COMMIT_DEPOSIT_SOMPI;
+  const commitTreasury = totalCommitDepositsSompi / 20n; // 5 %
   return {
-    creatorCreationRefundSompi: CREATE_DEPOSIT_SOMPI,
-    creatorCommitRewardSompi,
-    treasurySompi,
+    creatorCreationRefundSompi,
+    creatorCommitRewardSompi: totalCommitDepositsSompi - commitTreasury, // 95 %
+    treasurySompi: cautionTreasury + commitTreasury,
     participantRefundPerCommitSompi: 0n,
-    participantBonusPerCommitSompi: 0n,
+    participantBonusPerCommitSompi: share,
     nonRetainedRefundPerCommitSompi: COMMIT_DEPOSIT_SOMPI,
   };
 }

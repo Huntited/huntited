@@ -28,11 +28,12 @@ export interface AuthRouterDeps {
   access: HuntAccessStore;
   challenges: ChallengeService;
   verifySignature: WalletSignatureVerifier;
+  rateLimitMultiplier?: number;
 }
 
 export function authRouter(d: AuthRouterDeps): Router {
   const router = Router();
-  const limiter = rateLimit({ windowMs: 60_000, max: 30 });
+  const limiter = rateLimit({ windowMs: 60_000, max: 30 * (d.rateLimitMultiplier ?? 1) });
 
   router.post("/challenge", limiter, (req, res) => {
     const parsed = z.object({ walletAddress }).safeParse(req.body);

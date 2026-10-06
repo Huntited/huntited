@@ -1,4 +1,17 @@
+import { MIN_THRESHOLD } from "@/lib/hunt-economics";
 import type { HuntFormData } from "@/lib/types";
+
+/**
+ * Seuil minimum d'une chasse : MIN_THRESHOLD (7). En développement seulement,
+ * VITE_MIN_THRESHOLD peut l'abaisser pour tester à deux navigateurs (le
+ * serveur doit alors avoir le même réglage, MIN_HUNT_THRESHOLD).
+ */
+export function minHuntThreshold(): number {
+  const dev = Number(import.meta.env["VITE_MIN_THRESHOLD"]);
+  return import.meta.env.DEV && Number.isInteger(dev) && dev >= 1 && dev < MIN_THRESHOLD
+    ? dev
+    : MIN_THRESHOLD;
+}
 
 export interface FormErrors {
   title?: string;
@@ -44,6 +57,8 @@ export function validateHuntForm(data: HuntFormData): FormErrors {
     errors.threshold = "Le seuil doit être un nombre strictement positif.";
   } else if (!Number.isInteger(data.threshold)) {
     errors.threshold = "Le seuil doit être un nombre entier.";
+  } else if (data.threshold < minHuntThreshold()) {
+    errors.threshold = `Le seuil doit être d'au moins ${minHuntThreshold()} personnes.`;
   } else if (data.threshold > 100000) {
     errors.threshold = "Le seuil est trop élevé.";
   }

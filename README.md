@@ -41,8 +41,9 @@ UI → covenants.ts → mock-zk.ts (localStorage)
 
 ## Fonctionnalités MVP (mockées)
 
-- **Création de chasse** : titre, description, lieu, date limite, seuil de participants et dépôt fixe de 30 KAS (remboursé en cas de succès ; en cas d'échec, il finance d'abord le bonus des engagés). Parcours en deux temps : formulaire → récapitulatif → création.
-- **Économie d'engagement** : Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement, avec un bonus pouvant aller jusqu'à 1 KAS pris sur le dépôt du créateur. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %. Détails : `docs/economics.md`.
+- **Création de chasse** : titre, description, lieu, date limite, seuil de participants (7 au moins) et caution fixe de 30 KAS, partagée avec les engagés. Parcours en deux temps : formulaire → récapitulatif → création.
+- **Économie d'engagement** : un engagement coûte 5 KAS. Succès : les engagements vont 95 % au créateur, 5 % à la treasury ; 95 % de la caution est partagée entre les engagés, 5 % à la treasury. Échec : chaque engagé récupère ses 5 KAS ; 47,5 % de la caution est partagée entre les engagés, 2,5 % à la treasury, le créateur récupère la moitié. Détails : `docs/economics.md`.
+- **Répondre à un tweet** : on colle l'adresse d'un tweet, X s'ouvre sur une réponse préremplie avec le lien de la chasse (aucune API X, l'utilisateur publie lui-même). Les liens de chasse ont un aperçu riche (titre, seuil, date limite ; image si `VITE_SITE_URL` est défini).
 - **Engagement privé** : commitment = SHA-256(huntId | secret aléatoire). Seule l'empreinte est stockée ; dans ce prototype, le secret n'est pas conservé (il sera géré par le vrai wallet). L'adresse du wallet n'entre jamais dans l'empreinte.
 - **Wallet mocké** : connexion/déconnexion, requis pour s'engager (et plus tard pour payer le dépôt).
 - **Activation atomique** : statut Active / Activée / Expirée calculé depuis le seuil et la date limite.

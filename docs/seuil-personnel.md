@@ -44,17 +44,18 @@ Exemple, T = 3, seuils : 3, 3, 4, 10.
 ## 3. Économie
 
 > **Décidé le 6 octobre 2026 :** en cas de succès, un·e engagé·e non retenu·e
-> récupère ses 5 KAS **sans bonus** (le bonus reste réservé aux échecs, et un
-> seuil personnel inatteignable ne doit pas rapporter de bonus garanti).
+> récupère ses 5 KAS **sans part de la caution** (un seuil personnel
+> inatteignable ne doit pas rapporter de gain garanti).
 
-Inchangée dans son principe, appliquée **au groupe retenu** :
+Appliquée **au groupe retenu** (règles complètes : `docs/economics.md`) :
 
 - **Succès** : les dépôts des membres du groupe retenu vont 95 % au créateur,
-  5 % à la treasury ; le créateur récupère ses 30 KAS ; les engagé·es **non
-  retenu·es** récupèrent leurs 5 KAS (sans bonus : la chasse a réussi).
-- **Échec** (groupe retenu < T à la date limite) : comme aujourd'hui, chaque
-  engagé·e récupère 5 KAS + bonus d'échec (jusqu'à 1 KAS), pris sur le dépôt
-  du créateur.
+  5 % à la treasury ; 95 % de la caution est partagée entre les membres du
+  groupe retenu, 5 % va à la treasury ; les engagé·es **non retenu·es**
+  récupèrent leurs 5 KAS (sans part de la caution).
+- **Échec** (groupe retenu < T à la date limite) : chaque engagé·e récupère
+  5 KAS + sa part des 47,5 % de la caution ; 2,5 % va à la treasury ; le
+  créateur récupère la moitié de sa caution.
 
 ## 4. Confidentialité
 

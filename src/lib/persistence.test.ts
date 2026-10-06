@@ -57,22 +57,21 @@ describe("matrix-mock", () => {
 });
 
 describe("règlement", () => {
-  it("échec : treasury 0, 5 KAS + 1 KAS de bonus par engagé, reste au créateur", () => {
+  it("échec : 2,5 % de la caution à la treasury, 47,5 % aux engagés, moitié au créateur", () => {
     const s = calculateSettlement(2, "failure");
-    expect(s.treasurySompi).toBe(0n);
+    expect(s.treasurySompi).toBe((CREATE_DEPOSIT_SOMPI * 25n) / 1000n);
     expect(s.participantRefundPerCommitSompi).toBe(COMMIT_DEPOSIT_SOMPI);
-    expect(s.participantBonusPerCommitSompi).toBe(COMMIT_DEPOSIT_SOMPI / 5n);
-    expect(s.creatorCreationRefundSompi).toBe(
-      CREATE_DEPOSIT_SOMPI - (2n * COMMIT_DEPOSIT_SOMPI) / 5n,
-    );
+    expect(s.participantBonusPerCommitSompi).toBe((CREATE_DEPOSIT_SOMPI * 475n) / 1000n / 2n);
+    expect(s.creatorCreationRefundSompi).toBe(CREATE_DEPOSIT_SOMPI / 2n);
   });
 
-  it("succès : treasury 5 %, créateur 30 KAS + 95 %", () => {
+  it("succès : treasury 5 % (engagements et caution), créateur 95 % des engagements", () => {
     const s = calculateSettlement(10, "success");
     const commits = COMMIT_DEPOSIT_SOMPI * 10n;
-    expect(s.treasurySompi).toBe((commits * 5n) / 100n);
+    expect(s.treasurySompi).toBe((commits * 5n) / 100n + (CREATE_DEPOSIT_SOMPI * 5n) / 100n);
     expect(s.creatorCommitRewardSompi).toBe(commits - (commits * 5n) / 100n);
-    expect(s.creatorCreationRefundSompi).toBe(CREATE_DEPOSIT_SOMPI);
+    expect(s.participantBonusPerCommitSompi).toBe((CREATE_DEPOSIT_SOMPI * 95n) / 100n / 10n);
+    expect(s.creatorCreationRefundSompi).toBe(0n);
     expect(s.participantRefundPerCommitSompi).toBe(0n);
   });
 });

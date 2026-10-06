@@ -28,6 +28,8 @@ const app = createApp({
   corsOrigin: env.CORS_ORIGIN,
   nodeEnv: env.NODE_ENV,
   trustProxy: env.TRUST_PROXY,
+  rateLimitMultiplier: env.RATE_LIMIT_MULTIPLIER,
+  minThreshold: env.MIN_HUNT_THRESHOLD,
 });
 
 // Nettoyage périodique des salons expirés.

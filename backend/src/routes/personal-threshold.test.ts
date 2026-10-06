@@ -114,9 +114,11 @@ describe("seuil personnel", () => {
         progressVisibility: "hidden",
       })
     ).body["id"] as string;
-    await join(app, id, 42);
+    await join(app, id, 4_242);
     const text = (await app.get(`/api/hunts/${id}`)).text;
-    expect(text).not.toContain("42");
+    // Comparaison des valeurs, pas du texte : la date ou l'identifiant
+    // pourraient contenir les mêmes chiffres par hasard.
+    expect(Object.values(JSON.parse(text) as Record<string, unknown>)).not.toContain(4_242);
     expect(text).not.toContain("personalThreshold");
     expect(await hunt(app, id)).toMatchObject({
       commitCount: null,

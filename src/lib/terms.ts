@@ -8,21 +8,22 @@
  * Les montants sont vérifiés contre hunt-economics.ts dans les tests.
  */
 export const COMMIT_DEPOSIT_TERMS =
-  "S'engager coûte 5 KAS. Si l'action n'a pas lieu (pas assez de monde à la date limite), tu récupères tes 5 KAS, plus jusqu'à 1 KAS de bonus. Si elle a lieu, tes 5 KAS sont dépensés : 95 % pour le créateur de la chasse, 5 % pour Huntited.";
+  "S'engager coûte 5 KAS. Si l'action a lieu, tes 5 KAS vont au créateur (95 %) et à Huntited (5 %), et tu reçois ta part des 28,5 KAS de la caution du créateur. Si elle n'a pas lieu (pas assez de monde à la date limite), tu récupères tes 5 KAS, plus ta part des 14,25 KAS de la caution.";
 
 export const CREATE_DEPOSIT_TERMS =
-  "Le créateur bloque une caution de 30 KAS. Si l'action a lieu, il la récupère. Sinon, elle sert d'abord à donner 1 KAS de bonus à chaque engagé (30 KAS au plus au total, partagés s'il y a plus de 30 engagés), et le créateur récupère le reste.";
+  "Le créateur bloque une caution de 30 KAS, partagée avec les engagés. Si l'action a lieu, 95 % de la caution (28,5 KAS) est partagée entre les engagés et 5 % va à Huntited. Sinon, 47,5 % (14,25 KAS) est partagée entre les engagés, 2,5 % va à Huntited et le créateur récupère la moitié.";
 
 /**
- * Argument mis en avant au moment de s'engager : l'échec rapporte même un
- * bonus. Ne pas écrire « gratuit » : en cas de succès, l'engagement coûte 5 KAS.
+ * Argument mis en avant au moment de s'engager : l'échec rapporte même une
+ * part de la caution. Ne pas écrire « gratuit » : en cas de succès,
+ * l'engagement coûte 5 KAS.
  */
 export const COMMIT_REFUND_HIGHLIGHT =
-  "Tu ne perds rien si ça ne se fait pas : tes 5 KAS te sont rendus intégralement, plus jusqu'à 1 KAS de bonus.";
+  "Tu ne perds rien si ça ne se fait pas : tes 5 KAS te sont rendus intégralement, plus ta part des 14,25 KAS de la caution du créateur. Et si ça se fait, tu reçois ta part des 28,5 KAS.";
 
 /** Version courte, sous le bouton d'engagement. */
 export const COMMIT_REFUND_SHORT =
-  "Si ça ne se fait pas : remboursé intégralement + jusqu'à 1 KAS de bonus.";
+  "Si ça ne se fait pas : remboursé intégralement + une part de la caution du créateur.";
 
 /**
  * Conditions clés listées dans la modal d'engagement, sous l'encadré qui
@@ -49,16 +50,18 @@ atteint ou date limite passée). Tu ne peux pas les reprendre avant.
 
 2. Ce qui se passe à la fin
 - L'action a lieu (seuil atteint) : tes 5 KAS sont dépensés, 95 % pour
-  le créateur et 5 % pour Huntited. Le créateur récupère ses 30 KAS
-  de caution.
+  le créateur et 5 % pour Huntited. En échange, 95 % de la caution de
+  30 KAS du créateur (28,5 KAS) est partagée à parts égales entre les
+  engagés ; les 5 % restants vont à Huntited.
 - L'action n'a pas lieu (seuil pas atteint à la date limite) : tu
-  récupères tes 5 KAS, plus un bonus de 1 KAS pris sur la caution du
-  créateur (30 KAS de bonus au total au maximum, partagés à parts
-  égales s'il y a plus de 30 engagés). Le créateur récupère le reste ;
-  Huntited ne prend rien.
+  récupères tes 5 KAS. 47,5 % de la caution (14,25 KAS) est partagée à
+  parts égales entre les engagés, 2,5 % va à Huntited et le créateur
+  récupère la moitié (15 KAS).
 - Tu as fixé un seuil personnel (« je viens si au moins N personnes
   viennent ») et il n'est pas atteint alors que l'action a lieu : tu
-  ne participes pas et tu récupères tes 5 KAS, sans bonus.
+  ne participes pas et tu récupères tes 5 KAS, sans part de la caution.
+Les parts sont arrondies au plus petit montant possible (le sompi) ;
+ce qui reste revient au créateur.
 
 3. Tout le monde ou personne
 L'action se déclenche pour tous les participants en même temps, ou

@@ -38,6 +38,8 @@ export default defineConfig({
         WALLET_AUTH_MODE: "mock",
         KASPA_NETWORK: "testnet-10",
         REGISTRY_FILE: "",
+        // Une dizaine de personnes simulées depuis la même machine (même IP).
+        RATE_LIMIT_MULTIPLIER: "10",
       },
     },
     {

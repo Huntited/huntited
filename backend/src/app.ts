@@ -24,6 +24,10 @@ export interface AppDeps {
   now?: () => number;
   /** Nombre de proxys de confiance (hébergeur) pour l'IP du visiteur. */
   trustProxy?: number;
+  /** Seuil minimum d'une chasse (défaut : MIN_HUNT_THRESHOLD ; abaissé dans les tests unitaires). */
+  minThreshold?: number;
+  /** Multiplie toutes les limites de fréquence (1 par défaut). */
+  rateLimitMultiplier?: number;
 }
 
 export function createApp(d: AppDeps) {
@@ -48,6 +52,7 @@ export function createApp(d: AppDeps) {
       access: d.registry,
       challenges: d.challenges,
       verifySignature: d.verifySignature,
+      ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
     }),
   );
   app.use(
@@ -57,9 +62,18 @@ export function createApp(d: AppDeps) {
       auth: d.auth,
       isDevelopment: d.nodeEnv !== "production",
       ...(d.now ? { now: d.now } : {}),
+      ...(d.minThreshold !== undefined ? { minThreshold: d.minThreshold } : {}),
+      ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
     }),
   );
-  app.use("/api/me", meRouter({ registry: d.registry, auth: d.auth }));
+  app.use(
+    "/api/me",
+    meRouter({
+      registry: d.registry,
+      auth: d.auth,
+      ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
+    }),
+  );
   app.use("/api/chats", chatRouter(d.chat, d.auth, d.registry, d.nodeEnv !== "production"));
 
   // Erreurs : réponse générique, aucun détail interne ni secret.

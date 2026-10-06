@@ -36,6 +36,18 @@ describe("création", () => {
     expect(ok.body).toMatchObject({ status: "active", threshold: 2, progressVisibility: "hidden" });
   });
 
+  it("refuse un seuil inférieur au minimum de 7 personnes, avec un message clair", async () => {
+    const app = await setup({ minThreshold: "default" });
+    const t = await app.login(CREATOR);
+    const low = await app.createHunt(t, { threshold: 6 });
+    expect(low.status).toBe(400);
+    expect(low.body).toMatchObject({
+      code: "threshold_too_low",
+      error: "Le seuil doit être d'au moins 7 personnes.",
+    });
+    expect((await app.createHunt(t, { threshold: 7 })).status).toBe(201);
+  });
+
   it("une chasse créée est visible par tout le monde, sans session", async () => {
     const app = await setup();
     const t = await app.login(CREATOR);

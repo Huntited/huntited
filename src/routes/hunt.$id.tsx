@@ -5,6 +5,7 @@ import { ChatPanel } from "@/components/hunt/ChatPanel";
 import { HuntSettlementPanel } from "@/components/hunt/HuntSettlementPanel";
 import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
 import { CommitModal } from "@/components/hunt/CommitModal";
+import { ReplyOnXButton } from "@/components/hunt/ReplyOnXButton";
 import { ShareHuntButton } from "@/components/hunt/ShareHuntButton";
 import { Button } from "@/components/ui/button";
 import Countdown from "@/components/ui/Countdown";
@@ -15,6 +16,7 @@ import {
   getSettlementOutcome,
   isProgressVisible,
 } from "@/lib/hunt-lifecycle";
+import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
 import { getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
 import { COMMIT_REFUND_SHORT } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
@@ -22,21 +24,10 @@ import { useHunt } from "@/lib/useHunt";
 import { useWallet } from "@/lib/useWallet";
 
 export const Route = createFileRoute("/hunt/$id")({
-  head: () => ({
-    meta: [
-      { title: "Chasse — Huntited" },
-      {
-        name: "description",
-        content:
-          "Détails d'une chasse : lieu, date limite, seuil de participants et dépôt. Engagez-vous en privé : tout le monde ou personne.",
-      },
-      { property: "og:title", content: "Chasse — Huntited" },
-      {
-        property: "og:description",
-        content:
-          "Détails d'une chasse : lieu, date limite, seuil et dépôt. Engagement privé : tout le monde ou personne.",
-      },
-    ],
+  // Aperçu riche du lien (rendu serveur) : informations publiques uniquement.
+  loader: ({ params }) => fetchHuntPreview(params.id),
+  head: ({ loaderData, params }) => ({
+    meta: huntPreviewMeta(loaderData ?? null, params.id),
   }),
   component: HuntDetailPage,
 });
@@ -115,7 +106,10 @@ function HuntDetailPage() {
 
       <div className="mt-2 flex items-center justify-between gap-3">
         <HuntStatusBadge status={status} />
-        <ShareHuntButton hunt={hunt} />
+        <div className="flex flex-wrap justify-end gap-2">
+          <ReplyOnXButton hunt={hunt} />
+          <ShareHuntButton hunt={hunt} />
+        </div>
       </div>
 
       {/* Infos de la chasse */}

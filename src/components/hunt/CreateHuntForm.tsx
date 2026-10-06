@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { HuntFormData } from "@/lib/types";
 import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
-import { validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
+import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
 
 interface CreateHuntFormValues {
   title: string;
@@ -110,7 +110,8 @@ export function CreateHuntForm() {
     msg ? <p className="text-xs text-destructive">{msg}</p> : null;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    // noValidate : nos messages (en français, avec la raison) plutôt que ceux du navigateur.
+    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {/* Titre */}
       <div className="space-y-2">
         <Label htmlFor="title">Titre</Label>
@@ -172,14 +173,15 @@ export function CreateHuntForm() {
         <Input
           id="threshold"
           type="number"
-          min={1}
+          min={minHuntThreshold()}
           value={values.threshold}
           onChange={setField("threshold")}
           placeholder="Ex. 50"
         />
         <ErrorText msg={errors.threshold} />
         <p className="text-xs text-muted-foreground">
-          Nombre minimum de personnes pour que l'action ait lieu.
+          Nombre minimum de personnes pour que l'action ait lieu ({minHuntThreshold()} au moins : en
+          dessous, tu perdrais de l'argent même si l'action réussit).
         </p>
       </div>
 
@@ -207,9 +209,9 @@ export function CreateHuntForm() {
         <Label htmlFor="deposit">Ta caution</Label>
         <Input id="deposit" value={`${CREATE_DEPOSIT_KAS} KAS`} readOnly disabled />
         <p className="text-xs text-muted-foreground">
-          Tu bloques {CREATE_DEPOSIT_KAS} KAS en créant la chasse. Si l'action a lieu, tu les
-          récupères. Sinon, ils offrent d'abord 1 KAS de bonus à chaque engagé ({CREATE_DEPOSIT_KAS}{" "}
-          KAS au plus au total) et tu récupères le reste.
+          Tu bloques {CREATE_DEPOSIT_KAS} KAS en créant la chasse, et ils sont partagés avec les
+          engagés. Si l'action a lieu, 95 % (28,5 KAS) vont aux engagés et 5 % à Huntited. Sinon,
+          47,5 % (14,25 KAS) vont aux engagés, 2,5 % à Huntited, et tu récupères la moitié (15 KAS).
         </p>
       </div>
 

@@ -29,7 +29,14 @@ export const signWith = (w: TestWallet, message: string) =>
 
 export const SECRET = "x".repeat(40);
 
-export async function startApp(opts: { now?: () => number; registry?: HuntRegistry } = {}) {
+export async function startApp(
+  opts: {
+    now?: () => number;
+    registry?: HuntRegistry;
+    /** Seuil minimum ; 1 par défaut (petits scénarios), "default" = règle réelle. */
+    minThreshold?: number | "default";
+  } = {},
+) {
   const now = opts.now ?? Date.now;
   const registry = opts.registry ?? new HuntRegistry({ now });
   const auth = new AuthService(SECRET, 900, now, 3600);
@@ -42,6 +49,7 @@ export async function startApp(opts: { now?: () => number; registry?: HuntRegist
     corsOrigin: "http://localhost",
     nodeEnv: "test",
     now,
+    ...(opts.minThreshold === "default" ? {} : { minThreshold: opts.minThreshold ?? 1 }),
   });
   const server: Server = app.listen(0);
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;

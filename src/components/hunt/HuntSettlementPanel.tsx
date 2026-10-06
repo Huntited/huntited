@@ -60,12 +60,12 @@ export function HuntSettlementPanel({
       </div>
 
       <dl className="space-y-1">
-        <Row label="Remboursement création (créateur)" value={s.creatorCreationRefundSompi} />
         {success ? (
           <>
-            <Row label="Part créateur (95 % des engagements)" value={s.creatorCommitRewardSompi} />
-            <Row label="Treasury (5 % des engagements)" value={s.treasurySompi} />
-            <Row label="Remboursement par engagé·e" value={s.participantRefundPerCommitSompi} />
+            <Row label="Part de la caution par engagé·e" value={s.participantBonusPerCommitSompi} />
+            <Row label="Créateur (95 % des engagements)" value={s.creatorCommitRewardSompi} />
+            <Row label="Caution rendue au créateur" value={s.creatorCreationRefundSompi} />
+            <Row label="Huntited (5 %)" value={s.treasurySompi} />
             {nonRetained > 0 && (
               <Row
                 label={`Remboursement par non-retenu·e (${nonRetained})`}
@@ -76,8 +76,9 @@ export function HuntSettlementPanel({
         ) : (
           <>
             <Row label="Remboursement par engagé·e" value={s.participantRefundPerCommitSompi} />
-            <Row label="Bonus d'échec par engagé·e" value={s.participantBonusPerCommitSompi} />
-            <Row label="Treasury" value={s.treasurySompi} />
+            <Row label="Part de la caution par engagé·e" value={s.participantBonusPerCommitSompi} />
+            <Row label="Caution rendue au créateur" value={s.creatorCreationRefundSompi} />
+            <Row label="Huntited (2,5 % de la caution)" value={s.treasurySompi} />
           </>
         )}
       </dl>

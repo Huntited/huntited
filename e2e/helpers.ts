@@ -1,6 +1,40 @@
 // Actions de parcours réutilisables (une « personne » = un contexte de
 // navigateur isolé : son propre stockage, donc son propre wallet factice).
-import { expect, type Browser, type Page } from "@playwright/test";
+import { randomBytes } from "node:crypto";
+
+import { expect, type APIRequestContext, type Browser, type Page } from "@playwright/test";
+
+export const API = "http://localhost:3099";
+
+/**
+ * Participant « de remplissage » engagé directement par l'API (wallet
+ * factice : même format d'adresse et de signature que le wallet mock du
+ * front). Sert à atteindre le seuil minimum de 7 sans ouvrir 7 navigateurs.
+ */
+export async function apiCommit(
+  request: APIRequestContext,
+  huntId: string,
+  personalThreshold?: number,
+) {
+  const walletAddress = `kaspa:mock${randomBytes(20).toString("hex")}`;
+  const challenge = await (
+    await request.post(`${API}/api/auth/challenge`, { data: { walletAddress } })
+  ).json();
+  const session = await (
+    await request.post(`${API}/api/auth/session`, {
+      data: {
+        walletAddress,
+        challengeId: challenge.challengeId,
+        signature: `mocksig_${randomBytes(32).toString("hex")}`,
+      },
+    })
+  ).json();
+  const res = await request.post(`${API}/api/hunts/${huntId}/commit`, {
+    headers: { Authorization: `Bearer ${session.accessToken}` },
+    data: personalThreshold === undefined ? {} : { personalThreshold },
+  });
+  expect(res.status()).toBe(201);
+}
 
 export async function newPerson(browser: Browser): Promise<Page> {
   const context = await browser.newContext();
@@ -53,8 +87,8 @@ export function localDeadline(msFromNow: number): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-/** Remplit le formulaire de création et arrive sur le récapitulatif. */
-export async function fillCreateForm(
+/** Remplit le formulaire de création (sans l'envoyer). */
+export async function fillCreateFields(
   page: Page,
   opts: { title: string; threshold: number; hideProgress?: boolean },
 ) {
@@ -68,6 +102,14 @@ export async function fillCreateForm(
   await page.getByPlaceholder("Ex. 50").fill(String(opts.threshold));
   if (opts.hideProgress)
     await page.getByRole("checkbox", { name: "Masquer la progression" }).click();
+}
+
+/** Remplit le formulaire de création et arrive sur le récapitulatif. */
+export async function fillCreateForm(
+  page: Page,
+  opts: { title: string; threshold: number; hideProgress?: boolean },
+) {
+  await fillCreateFields(page, opts);
   await page.getByRole("button", { name: "Vérifier ma chasse" }).click();
   await expect(page).toHaveURL(/\/create-review$/);
   await page.waitForLoadState("networkidle");

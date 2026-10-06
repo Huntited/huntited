@@ -16,16 +16,29 @@ import { RegistryError, type HuntRegistry } from "../services/hunt-registry.js";
 const huntIdSchema = z.string().regex(/^[\w-]{1,64}$/);
 const MAX_DEADLINE_MS = 366 * 24 * 3600 * 1000;
 
+/**
+ * Seuil minimum d'une chasse : en dessous, un créateur perdrait de l'argent
+ * même quand son action réussit (95 % de 7 × 5 KAS ≥ 30 KAS de caution).
+ * Même valeur que MIN_THRESHOLD côté front (src/lib/hunt-economics.ts).
+ */
+export const MIN_HUNT_THRESHOLD = 7;
+
 export function huntsRouter(deps: {
   registry: HuntRegistry;
   auth: AuthService;
   isDevelopment: boolean;
   now?: () => number;
+  minThreshold?: number;
+  rateLimitMultiplier?: number;
 }): Router {
   const { registry, auth } = deps;
+  const minThreshold = deps.minThreshold ?? MIN_HUNT_THRESHOLD;
   const now = deps.now ?? Date.now;
   const router = Router();
-  const writeLimiter = rateLimit({ windowMs: 60_000, max: 20 });
+  const writeLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 20 * (deps.rateLimitMultiplier ?? 1),
+  });
 
   const createSchema = z.object({
     title: z.string().trim().min(1).max(120),
@@ -38,7 +51,11 @@ export function huntsRouter(deps: {
         const t = Date.parse(d);
         return t > now() && t < now() + MAX_DEADLINE_MS;
       }, "Date limite invalide."),
-    threshold: z.number().int().min(1).max(100_000),
+    threshold: z
+      .number()
+      .int()
+      .min(minThreshold, `Le seuil doit être d'au moins ${minThreshold} personnes.`)
+      .max(100_000),
     progressVisibility: z.enum(["visible", "hidden"]).default("visible"),
   });
 
@@ -66,7 +83,19 @@ export function huntsRouter(deps: {
 
   router.post("/", writeLimiter, requireSession(auth), (req, res) => {
     const parsed = createSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ error: "Requête invalide." });
+    if (!parsed.success) {
+      const tooLow = parsed.error.issues.some(
+        (i) => i.path[0] === "threshold" && i.code === "too_small",
+      );
+      return res.status(400).json(
+        tooLow
+          ? {
+              error: `Le seuil doit être d'au moins ${minThreshold} personnes.`,
+              code: "threshold_too_low",
+            }
+          : { error: "Requête invalide." },
+      );
+    }
     const hunt = registry.create(
       { ...parsed.data, deadline: new Date(parsed.data.deadline).toISOString() },
       req.session!.walletKey,

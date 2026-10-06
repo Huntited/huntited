@@ -34,6 +34,7 @@ Navigateur ──HTTPS──► Front (site statique / worker)
 | `WALLET_AUTH_MODE`         | `signature`                              | `mock` est refusé en production                                      |
 | `REGISTRY_FILE`            | `/app/data/registry.json`                | déjà fixé dans l'image                                               |
 | `TRUST_PROXY`              | `1`                                      | derrière le proxy de l'hébergeur (limites de fréquence par visiteur) |
+| `RATE_LIMIT_MULTIPLIER`    | `1`                                      | à augmenter si beaucoup de monde partage une IP (box, 4G)            |
 | `MATRIX_MODE`              | `mock`                                   | Synapse réel pas encore branché                                      |
 | `MATRIX_HOMESERVER_URL`    | URL publique prévue                      |                                                                      |
 

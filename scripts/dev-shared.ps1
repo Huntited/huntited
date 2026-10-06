@@ -6,6 +6,7 @@
 .EXAMPLE
   ./scripts/dev-shared.ps1                 # wallet Kastle (signatures réelles, testnet-10)
   ./scripts/dev-shared.ps1 -Wallet mock    # wallet factice (téléphones sans extension)
+  ./scripts/dev-shared.ps1 -MinThreshold 2 # seuil minimum abaissé (tester à 2 navigateurs)
 
 .NOTES
   Les réglages sont passés aux deux serveurs le temps de la session : tes
@@ -16,7 +17,10 @@ param(
   [ValidateSet("kastle", "mock")]
   [string]$Wallet = "kastle",
   [int]$FrontPort = 5173,
-  [int]$ApiPort = 3001
+  [int]$ApiPort = 3001,
+  # Seuil minimum d'une chasse (7 = règle réelle ; plus bas pour tester à peu).
+  [ValidateRange(1, 7)]
+  [int]$MinThreshold = 7
 )
 
 $ErrorActionPreference = "Stop"
@@ -36,6 +40,7 @@ $backend = @"
 `$env:CORS_ORIGIN='http://localhost:$FrontPort,http://${ip}:$FrontPort'
 `$env:WALLET_AUTH_MODE='$authMode'
 `$env:REGISTRY_FILE='data/registry.json'
+`$env:MIN_HUNT_THRESHOLD='$MinThreshold'
 Set-Location '$root\backend'
 bun run dev
 "@
@@ -46,6 +51,7 @@ $front = @"
 `$env:VITE_MATRIX_MODE='api'
 `$env:VITE_WALLET_MODE='$Wallet'
 `$env:VITE_API_BASE_URL='http://${ip}:$ApiPort'
+`$env:VITE_MIN_THRESHOLD='$MinThreshold'
 Set-Location '$root'
 bun x vite dev --host --port $FrontPort --strictPort
 "@
@@ -54,7 +60,7 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", $backend -WindowSt
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $front -WindowStyle Normal
 
 Write-Host ""
-Write-Host "Huntited — registre partagé (wallet : $Wallet)" -ForegroundColor Green
+Write-Host "Huntited — registre partagé (wallet : $Wallet, seuil minimum : $MinThreshold)" -ForegroundColor Green
 Write-Host "  Sur ce PC          : http://localhost:$FrontPort"
 Write-Host "  Autres appareils   : http://${ip}:$FrontPort  (même Wi-Fi)"
 Write-Host "  Backend            : http://${ip}:$ApiPort/health"

@@ -27,7 +27,7 @@ beforeEach(() => {
     description: "Description de test.",
     location: "Lieu de test",
     deadline: new Date(Date.now() + 86_400_000).toISOString().slice(0, 16),
-    threshold: 2,
+    threshold: 7,
     deposit: 30,
     commitDeposit: 5,
   });

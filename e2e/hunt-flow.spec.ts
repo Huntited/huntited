@@ -3,53 +3,65 @@
 import { expect, test } from "@playwright/test";
 
 import {
+  API,
+  apiCommit,
   commit,
   connectWallet,
   createHunt,
+  fillCreateFields,
   fillCreateForm,
   newPerson,
   open,
   reload,
 } from "./helpers";
 
-const API = "http://localhost:3099";
-
 test("création impossible sans wallet", async ({ page }) => {
-  await fillCreateForm(page, { title: "Sans wallet", threshold: 2 });
+  await fillCreateForm(page, { title: "Sans wallet", threshold: 7 });
   await expect(page.getByRole("button", { name: "Connecter le wallet" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Confirmer et créer la chasse" })).toHaveCount(0);
 });
 
-test("parcours à 4 : progression masquée, seuils personnels, activation, chat", async ({
+test("seuil minimum de 7 personnes à la création", async ({ page }) => {
+  await fillCreateFields(page, { title: "Trop petite", threshold: 6 });
+  await page.getByRole("button", { name: "Vérifier ma chasse" }).click();
+  await expect(page.getByText("Le seuil doit être d'au moins 7 personnes.")).toBeVisible();
+  await expect(page).toHaveURL(/\/create$/);
+});
+
+test("parcours : progression masquée, seuils personnels, activation, chat", async ({
   browser,
   request,
 }) => {
-  // Alice crée une chasse à seuil 2, progression masquée, et s'engage.
+  // Alice crée une chasse à seuil 7, progression masquée, et s'engage.
   const alice = await newPerson(browser);
   await open(alice, "/");
   await connectWallet(alice);
   const url = await createHunt(alice, {
     title: "Parcours automatique",
-    threshold: 2,
+    threshold: 7,
     hideProgress: true,
   });
   const huntId = url.split("/").pop()!;
   await commit(alice);
   await expect(alice.getByText("Progression masquée")).toBeVisible();
 
-  // Bruno ouvre le lien partagé (autre appareil) et exige au moins 3 personnes.
+  // Cinq autres personnes s'engagent (par l'API) : 6 engagés.
+  for (let i = 0; i < 5; i += 1) await apiCommit(request, huntId);
+
+  // Bruno ouvre le lien partagé (autre appareil) et exige au moins 8 personnes.
   const bruno = await newPerson(browser);
   await open(bruno, url);
   await connectWallet(bruno);
-  await commit(bruno, 3);
+  await commit(bruno, 8);
   await expect(bruno.getByRole("status").filter({ hasText: "Ta condition" })).toContainText(
     "en attente",
   );
+  // 7 engagés mais seulement 6 acceptent un groupe de 7 : pas encore activée.
   // Le serveur ne révèle pas le compteur d'une chasse masquée encore active.
   const masked = await (await request.get(`${API}/api/hunts/${huntId}`)).json();
   expect(masked).toMatchObject({ status: "active", commitCount: null, retainedCount: null });
 
-  // Chloé s'engage : le groupe {2, 3, 2} se forme, la chasse s'active, Bruno est retenu.
+  // Chloé s'engage : 8 personnes acceptent un groupe de 8, la chasse s'active, Bruno est retenu.
   const chloe = await newPerson(browser);
   await open(chloe, url);
   await connectWallet(chloe);
@@ -60,15 +72,16 @@ test("parcours à 4 : progression masquée, seuils personnels, activation, chat"
     "remplie",
   );
 
-  // David s'engage après l'activation (engagements ouverts) mais exige 10 : non retenu.
+  // David s'engage après l'activation (engagements ouverts) mais exige 20 : non retenu.
   const david = await newPerson(browser);
   await open(david, url);
   await connectWallet(david);
-  await commit(david, 10);
+  await commit(david, 20);
   await expect(david.getByRole("status").filter({ hasText: "Ta condition" })).toContainText(
     "en attente",
   );
   await expect(david.getByText("Remboursement par non-retenu·e (1)")).toBeVisible();
+  await expect(david.getByText("Part de la caution par engagé·e")).toBeVisible();
 
   // Alice (créatrice) ouvre le chat ; Bruno (retenu) le voit ; David (non retenu) non.
   await reload(alice);
@@ -88,8 +101,40 @@ test("parcours à 4 : progression masquée, seuils personnels, activation, chat"
   expect(pub).not.toContain("creatorKey");
   expect(JSON.parse(pub)).toMatchObject({
     status: "activated",
-    commitCount: 4,
-    retainedCount: 3,
+    commitCount: 9,
+    retainedCount: 8,
     commitsOpen: true,
   });
+
+  // Aperçu riche du lien, rendu par le serveur (sans exécuter la page).
+  const html = await (await request.get(url)).text();
+  expect(html).toContain('property="og:title" content="Parcours automatique — Huntited"');
+  expect(html).toContain("il faut au moins 7 personnes avant le");
+});
+
+test("répondre à un tweet ouvre X avec une réponse préremplie", async ({ browser }) => {
+  const alice = await newPerson(browser);
+  await open(alice, "/");
+  await connectWallet(alice);
+  const url = await createHunt(alice, { title: "Réponse X", threshold: 7 });
+
+  // L'ouverture de X est interceptée : aucun accès réseau à x.com.
+  await alice
+    .context()
+    .route("https://x.com/**", (route) => route.fulfill({ status: 200, body: "ok" }));
+  await alice.getByRole("button", { name: "Répondre à un tweet" }).click();
+  await alice.getByLabel("Adresse du tweet").fill("pas un tweet");
+  await alice.getByRole("button", { name: "Ouvrir la réponse sur X" }).click();
+  await expect(alice.getByRole("alert")).toContainText("Colle l'adresse d'un tweet");
+
+  await alice.getByLabel("Adresse du tweet").fill("https://x.com/quelquun/status/1234567890");
+  const [popup] = await Promise.all([
+    alice.waitForEvent("popup"),
+    alice.getByRole("button", { name: "Ouvrir la réponse sur X" }).click(),
+  ]);
+  const intent = new URL(popup.url());
+  expect(intent.origin + intent.pathname).toBe("https://x.com/intent/tweet");
+  expect(intent.searchParams.get("in_reply_to")).toBe("1234567890");
+  expect(intent.searchParams.get("url")).toBe(url);
+  expect(intent.searchParams.get("text")).toContain("« Réponse X »");
 });

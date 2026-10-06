@@ -38,6 +38,16 @@ const schema = z
     KASPA_NETWORK: z.enum(["testnet-10"]).default("testnet-10"),
     // signature = vraie vérification Kaspa ; mock = wallet factice (dev uniquement).
     WALLET_AUTH_MODE: z.enum(["signature", "mock"]).default("signature"),
+    // Multiplie les limites de fréquence par IP (ex. beaucoup de monde derrière
+    // une même box ou un même opérateur mobile, ou tests automatiques).
+    RATE_LIMIT_MULTIPLIER: z.coerce.number().int().min(1).max(100).default(1),
+    // Seuil minimum d'une chasse. Abaissable en développement uniquement
+    // (tests à 2 navigateurs) ; toujours 7 en production.
+    MIN_HUNT_THRESHOLD: z.coerce.number().int().min(1).max(7).default(7),
+  })
+  .refine((e) => e.NODE_ENV !== "production" || e.MIN_HUNT_THRESHOLD === 7, {
+    message: "MIN_HUNT_THRESHOLD ne peut pas être abaissé en production",
+    path: ["MIN_HUNT_THRESHOLD"],
   })
   .refine((e) => e.MATRIX_MODE === "mock" || e.MATRIX_ACCESS_TOKEN.length > 0, {
     message: "MATRIX_ACCESS_TOKEN requis en mode synapse",
