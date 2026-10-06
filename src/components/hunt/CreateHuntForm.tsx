@@ -9,6 +9,8 @@ import type { HuntFormData } from "@/lib/types";
 import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
 import { CityInput } from "@/components/hunt/CityInput";
+import { TemplatePicker } from "@/components/hunt/TemplatePicker";
+import { suggestedDeadline, templateText, type HuntTemplate } from "@/lib/hunt-templates";
 import { guessCountry, sortedCountries } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
@@ -148,6 +150,30 @@ export function CreateHuntForm() {
     });
   }, []);
 
+  // Modèle appliqué (et valeurs d'avant, pour pouvoir annuler).
+  const [applied, setApplied] = useState<{
+    template: HuntTemplate;
+    previous: CreateHuntFormValues;
+  } | null>(null);
+
+  const applyTemplate = (template: HuntTemplate) => {
+    const text = templateText(template.id, locale);
+    setApplied({ template, previous: applied?.previous ?? values });
+    setValues((prev) => ({
+      ...prev,
+      title: text.title,
+      description: text.description,
+      deadline: suggestedDeadline(template.days),
+      threshold: String(Math.max(template.threshold, minHuntThreshold())),
+      hideProgress: template.hideProgress,
+    }));
+  };
+
+  const undoTemplate = () => {
+    if (applied) setValues(applied.previous);
+    setApplied(null);
+  };
+
   // Les erreurs ne s'affichent qu'après une première tentative d'envoi
   const errors: FormErrors = submitted ? validateHuntForm(toFormData(), locale) : {};
 
@@ -169,178 +195,202 @@ export function CreateHuntForm() {
     ) : null;
   const describe = (id: keyof FormErrors) => (errors[id] ? `${id}-error` : undefined);
 
+  const appliedText = applied ? templateText(applied.template.id, locale) : null;
+
   return (
-    // noValidate : nos messages (traduits, avec la raison) plutôt que ceux du navigateur.
-    <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
-        <legend className="float-left w-full border-b pb-2 text-base font-semibold">
-          {t("form.section.action")}
-        </legend>
-        <div className="space-y-2">
-          <Label htmlFor="title">{t("form.title")}</Label>
-          <Input
-            id="title"
-            aria-invalid={errors.title ? true : undefined}
-            aria-describedby={describe("title")}
-            value={values.title}
-            onChange={setField("title")}
-            placeholder={t("form.title.placeholder")}
-          />
-          <ErrorText id="title" msg={errors.title} />
+    <div className="space-y-6">
+      <TemplatePicker selected={applied?.template.id ?? null} onPick={applyTemplate} />
+      {applied && appliedText && (
+        <div
+          role="status"
+          className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
+        >
+          <div className="space-y-1">
+            <p className="font-medium">{t("tpl.applied", { name: appliedText.name })}</p>
+            <p>
+              {t("tpl.why", {
+                count: Math.max(applied.template.threshold, minHuntThreshold()),
+                why: appliedText.why,
+              })}
+            </p>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={undoTemplate}>
+            {t("tpl.undo")}
+          </Button>
         </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <Label htmlFor="description">{t("form.description")}</Label>
-          <Textarea
-            id="description"
-            aria-invalid={errors.description ? true : undefined}
-            aria-describedby={describe("description")}
-            value={values.description}
-            onChange={setField("description")}
-            placeholder={t("form.description.placeholder")}
-            rows={4}
-          />
-          <ErrorText id="description" msg={errors.description} />
-        </div>
-
-        {/* Lieu — texte libre, aucune donnée de géoloc */}
-        <div className="space-y-2">
-          <Label htmlFor="location">{t("hunt.location")}</Label>
-          <CityInput
-            id="location"
-            invalid={!!errors.location}
-            describedBy={describe("location")}
-            value={values.location}
-            onChange={(text) => setValues((prev) => ({ ...prev, location: text }))}
-            // Ville choisie : elle remplit le lieu et le pays.
-            onPick={(city) =>
-              setValues((prev) => ({ ...prev, location: city.name, country: city.country }))
-            }
-            placeholder={t("form.location.placeholder")}
-          />
-          <ErrorText id="location" msg={errors.location} />
-          <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
-        </div>
-
-        {/* Pays : liste native (recherche au clavier, confortable sur mobile) */}
-        <div className="space-y-2">
-          <Label htmlFor="country">{t("form.country")}</Label>
-          <select
-            id="country"
-            value={values.country}
-            onChange={(e) => setValues((prev) => ({ ...prev, country: e.target.value }))}
-            aria-invalid={errors.country ? true : undefined}
-            aria-describedby={describe("country")}
-            data-filled={values.country ? "true" : "false"}
-            className="hf-field flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
-          >
-            <option value="">{t("form.country.placeholder")}</option>
-            {countryOptions.map((c) => (
-              <option key={c.code} value={c.code}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <ErrorText id="country" msg={errors.country} />
-        </div>
-
-        {/* Date/heure limite */}
-        <div className="space-y-2">
-          <Label htmlFor="deadline">{t("form.deadline")}</Label>
-          <Input
-            id="deadline"
-            aria-invalid={errors.deadline ? true : undefined}
-            aria-describedby={describe("deadline")}
-            type="datetime-local"
-            value={values.deadline}
-            onChange={setField("deadline")}
-          />
-          <ErrorText id="deadline" msg={errors.deadline} />
-          <p className="text-xs text-muted-foreground">{t("form.deadline.help")}</p>
-        </div>
-      </fieldset>
-
-      <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
-        <legend className="float-left w-full border-b pb-2 text-base font-semibold">
-          {t("form.section.people")}
-        </legend>
-        <div className="space-y-2">
-          <Label htmlFor="threshold">{t("form.threshold")}</Label>
-          <Input
-            id="threshold"
-            aria-invalid={errors.threshold ? true : undefined}
-            aria-describedby={describe("threshold")}
-            type="number"
-            min={minHuntThreshold()}
-            value={values.threshold}
-            onChange={setField("threshold")}
-            placeholder={t("form.threshold.placeholder")}
-          />
-          <ErrorText id="threshold" msg={errors.threshold} />
-          <p className="text-xs text-muted-foreground">
-            {t("form.threshold.help", { min: minHuntThreshold() })}
-          </p>
-        </div>
-
-        {/* Visibilité de la progression */}
-        <div className="space-y-2">
-          <label className="flex cursor-pointer items-start gap-3 text-sm">
-            <Checkbox
-              id="hide-progress"
-              checked={values.hideProgress}
-              onCheckedChange={(checked) =>
-                setValues((prev) => ({ ...prev, hideProgress: checked === true }))
-              }
-              className="mt-0.5"
-            />
-            <span>{t("form.hide")}</span>
-          </label>
-          <p className="text-xs text-muted-foreground">{t("form.hide.help")}</p>
-          <p className="text-xs font-medium text-green-700 dark:text-green-400">
-            {t("form.hide.recommended")}
-          </p>
-        </div>
-      </fieldset>
-
-      <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
-        <legend className="float-left w-full border-b pb-2 text-base font-semibold">
-          {t("form.section.money")}
-        </legend>
-        <div className="space-y-2">
-          <Label htmlFor="deposit">{t("form.caution.label")}</Label>
-          <Input
-            id="deposit"
-            aria-invalid={errors.deposit ? true : undefined}
-            aria-describedby={describe("deposit")}
-            type="number"
-            min={MIN_CAUTION_KAS}
-            step={1}
-            value={values.deposit}
-            onChange={setField("deposit")}
-          />
-          <ErrorText id="deposit" msg={errors.deposit} />
-          <CautionBreakdown deposit={Number(values.deposit)} />
-        </div>
-
-        {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
-        <div className="space-y-2">
-          <Label htmlFor="commit-deposit">{t("form.commitDeposit")}</Label>
-          <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
-          <p className="text-xs text-muted-foreground">{t("form.commitDeposit.help")}</p>
-        </div>
-      </fieldset>
-
-      {/* Erreur globale (distincte des erreurs de validation) */}
-      {globalError && (
-        <p className="text-sm text-destructive" role="alert">
-          {globalError}
-        </p>
       )}
+      {/* noValidate : nos messages (traduits, avec la raison) plutôt que ceux du navigateur. */}
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
+          <legend className="float-left w-full border-b pb-2 text-base font-semibold">
+            {t("form.section.action")}
+          </legend>
+          <div className="space-y-2">
+            <Label htmlFor="title">{t("form.title")}</Label>
+            <Input
+              id="title"
+              aria-invalid={errors.title ? true : undefined}
+              aria-describedby={describe("title")}
+              value={values.title}
+              onChange={setField("title")}
+              placeholder={t("form.title.placeholder")}
+            />
+            <ErrorText id="title" msg={errors.title} />
+          </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitDisabled}>
-        {isSubmitting ? t("common.loading") : t("form.submit")}
-      </Button>
-    </form>
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description">{t("form.description")}</Label>
+            <Textarea
+              id="description"
+              aria-invalid={errors.description ? true : undefined}
+              aria-describedby={describe("description")}
+              value={values.description}
+              onChange={setField("description")}
+              placeholder={t("form.description.placeholder")}
+              rows={4}
+            />
+            <ErrorText id="description" msg={errors.description} />
+          </div>
+
+          {/* Lieu — texte libre, aucune donnée de géoloc */}
+          <div className="space-y-2">
+            <Label htmlFor="location">{t("hunt.location")}</Label>
+            <CityInput
+              id="location"
+              invalid={!!errors.location}
+              describedBy={describe("location")}
+              value={values.location}
+              onChange={(text) => setValues((prev) => ({ ...prev, location: text }))}
+              // Ville choisie : elle remplit le lieu et le pays.
+              onPick={(city) =>
+                setValues((prev) => ({ ...prev, location: city.name, country: city.country }))
+              }
+              placeholder={t("form.location.placeholder")}
+            />
+            <ErrorText id="location" msg={errors.location} />
+            <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
+          </div>
+
+          {/* Pays : liste native (recherche au clavier, confortable sur mobile) */}
+          <div className="space-y-2">
+            <Label htmlFor="country">{t("form.country")}</Label>
+            <select
+              id="country"
+              value={values.country}
+              onChange={(e) => setValues((prev) => ({ ...prev, country: e.target.value }))}
+              aria-invalid={errors.country ? true : undefined}
+              aria-describedby={describe("country")}
+              data-filled={values.country ? "true" : "false"}
+              className="hf-field flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+            >
+              <option value="">{t("form.country.placeholder")}</option>
+              {countryOptions.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <ErrorText id="country" msg={errors.country} />
+          </div>
+
+          {/* Date/heure limite */}
+          <div className="space-y-2">
+            <Label htmlFor="deadline">{t("form.deadline")}</Label>
+            <Input
+              id="deadline"
+              aria-invalid={errors.deadline ? true : undefined}
+              aria-describedby={describe("deadline")}
+              type="datetime-local"
+              value={values.deadline}
+              onChange={setField("deadline")}
+            />
+            <ErrorText id="deadline" msg={errors.deadline} />
+            <p className="text-xs text-muted-foreground">{t("form.deadline.help")}</p>
+          </div>
+        </fieldset>
+
+        <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
+          <legend className="float-left w-full border-b pb-2 text-base font-semibold">
+            {t("form.section.people")}
+          </legend>
+          <div className="space-y-2">
+            <Label htmlFor="threshold">{t("form.threshold")}</Label>
+            <Input
+              id="threshold"
+              aria-invalid={errors.threshold ? true : undefined}
+              aria-describedby={describe("threshold")}
+              type="number"
+              min={minHuntThreshold()}
+              value={values.threshold}
+              onChange={setField("threshold")}
+              placeholder={t("form.threshold.placeholder")}
+            />
+            <ErrorText id="threshold" msg={errors.threshold} />
+            <p className="text-xs text-muted-foreground">
+              {t("form.threshold.help", { min: minHuntThreshold() })}
+            </p>
+          </div>
+
+          {/* Visibilité de la progression */}
+          <div className="space-y-2">
+            <label className="flex cursor-pointer items-start gap-3 text-sm">
+              <Checkbox
+                id="hide-progress"
+                checked={values.hideProgress}
+                onCheckedChange={(checked) =>
+                  setValues((prev) => ({ ...prev, hideProgress: checked === true }))
+                }
+                className="mt-0.5"
+              />
+              <span>{t("form.hide")}</span>
+            </label>
+            <p className="text-xs text-muted-foreground">{t("form.hide.help")}</p>
+            <p className="text-xs font-medium text-green-700 dark:text-green-400">
+              {t("form.hide.recommended")}
+            </p>
+          </div>
+        </fieldset>
+
+        <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
+          <legend className="float-left w-full border-b pb-2 text-base font-semibold">
+            {t("form.section.money")}
+          </legend>
+          <div className="space-y-2">
+            <Label htmlFor="deposit">{t("form.caution.label")}</Label>
+            <Input
+              id="deposit"
+              aria-invalid={errors.deposit ? true : undefined}
+              aria-describedby={describe("deposit")}
+              type="number"
+              min={MIN_CAUTION_KAS}
+              step={1}
+              value={values.deposit}
+              onChange={setField("deposit")}
+            />
+            <ErrorText id="deposit" msg={errors.deposit} />
+            <CautionBreakdown deposit={Number(values.deposit)} />
+          </div>
+
+          {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
+          <div className="space-y-2">
+            <Label htmlFor="commit-deposit">{t("form.commitDeposit")}</Label>
+            <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
+            <p className="text-xs text-muted-foreground">{t("form.commitDeposit.help")}</p>
+          </div>
+        </fieldset>
+
+        {/* Erreur globale (distincte des erreurs de validation) */}
+        {globalError && (
+          <p className="text-sm text-destructive" role="alert">
+            {globalError}
+          </p>
+        )}
+
+        <Button type="submit" className="w-full" disabled={isSubmitDisabled}>
+          {isSubmitting ? t("common.loading") : t("form.submit")}
+        </Button>
+      </form>
+    </div>
   );
 }

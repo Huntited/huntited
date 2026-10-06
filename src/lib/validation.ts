@@ -1,5 +1,6 @@
 import { MAX_CAUTION_KAS, MIN_CAUTION_KAS, MIN_THRESHOLD } from "@/lib/hunt-economics";
 import { isCountryCode } from "@/lib/countries";
+import { hasPlaceholder } from "@/lib/hunt-templates";
 import { translate, type Locale } from "@/lib/i18n";
 import type { HuntFormData } from "@/lib/types";
 
@@ -36,12 +37,16 @@ export function validateHuntForm(data: HuntFormData, locale: Locale = "fr"): For
     errors.title = m("val.title.required");
   } else if (data.title.length > 80) {
     errors.title = m("val.title.long");
+  } else if (hasPlaceholder(data.title)) {
+    errors.title = m("val.placeholder");
   }
 
   if (!data.description || data.description.trim().length === 0) {
     errors.description = m("val.description.required");
   } else if (data.description.length > 1000) {
     errors.description = m("val.description.long");
+  } else if (hasPlaceholder(data.description)) {
+    errors.description = m("val.placeholder");
   }
 
   if (!data.location || data.location.trim().length === 0) {
