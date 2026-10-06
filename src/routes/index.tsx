@@ -1,7 +1,7 @@
-// ============= Full file contents =============
-
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+
+import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,24 +11,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { filterHuntViews, type HuntFilters } from "@/lib/registry";
 import type { CovenantStatus } from "@/lib/covenants";
 import { isProgressVisible } from "@/lib/hunt-lifecycle";
 import { listHuntViews, onHuntsChange, type HuntView } from "@/lib/hunt-repository";
-import { useWallet } from "@/lib/useWallet";
+import { useI18n, type MessageKey } from "@/lib/i18n";
+import { filterHuntViews, type HuntFilters } from "@/lib/registry";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Huntited — Chasses actives" },
+      { title: "Huntited — Agir ensemble, sans y aller seul" },
       {
         name: "description",
         content: "Rejoins des actions collectives en privé : tout le monde ensemble, ou personne.",
       },
-      { property: "og:title", content: "Huntited — Chasses actives" },
+      { property: "og:title", content: "Huntited" },
       {
         property: "og:description",
-        content: "Coordination décentralisée d'actions collectives, engagements privés.",
+        content: "Rejoins des actions collectives en privé : tout le monde ensemble, ou personne.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -37,29 +37,24 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-/** Tronque une adresse pour l'affichage (kaspa:abcd…wxyz). */
-const shortAddress = (a: string) => `${a.slice(0, 10)}…${a.slice(-4)}`;
-
 /** Valeur du sélecteur de statut : "all" (aucun filtre) ou un statut. */
 type StatusFilter = CovenantStatus | "all";
 
-/** Titre de la section de liste, adapté au filtre de statut choisi. */
-function sectionTitle(status: StatusFilter, search: string): string {
-  if (search.trim()) return "Résultats";
-  switch (status) {
-    case "active":
-      return "Chasses actives";
-    case "activated":
-      return "Chasses activées";
-    case "expired":
-      return "Chasses expirées";
-    case "all":
-      return "Toutes les chasses";
-  }
-}
+const SECTION_TITLE: Record<StatusFilter, MessageKey> = {
+  all: "home.section.all",
+  active: "home.section.active",
+  activated: "home.section.activated",
+  expired: "home.section.expired",
+};
+
+const STEPS: { title: MessageKey; text: MessageKey }[] = [
+  { title: "home.step1.title", text: "home.step1.text" },
+  { title: "home.step2.title", text: "home.step2.text" },
+  { title: "home.step3.title", text: "home.step3.text" },
+];
 
 function Index() {
-  const { isConnected, address, isLoading, connectWallet, disconnectWallet } = useWallet();
+  const { t, date } = useI18n();
 
   // Filtres contrôlés : recherche plein texte + statut.
   const [search, setSearch] = useState("");
@@ -102,86 +97,67 @@ function Index() {
   const hasNoResults = hunts !== null && hunts.length === 0;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
-      <header className="flex items-center justify-between gap-4">
-        <h1 className="text-3xl font-semibold tracking-tight">Huntited</h1>
-        <div className="flex items-center gap-3">
-          <Link
-            to="/my-hunts"
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-          >
-            Mes chasses
-          </Link>
-          <Link
-            to="/pass"
-            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
-          >
-            Mon pass
-          </Link>
-          {isConnected && address ? (
-            <div className="flex items-center gap-2">
-              <code className="hidden text-xs text-muted-foreground sm:inline">
-                {shortAddress(address)}
-              </code>
-              <Button variant="outline" size="sm" onClick={disconnectWallet}>
-                Déconnecter
-              </Button>
-            </div>
-          ) : (
-            <Button size="sm" onClick={() => connectWallet()} disabled={isLoading}>
-              {isLoading ? "Connexion…" : "Connecter le wallet"}
-            </Button>
-          )}
-        </div>
-      </header>
-
-      <p className="mt-3 text-muted-foreground">
-        Des actions collectives sans risque d'y aller seul : chacun s'engage en privé, et l'action
-        n'a lieu que si assez de monde suit. Sinon, tout le monde est remboursé.
-      </p>
-
-      <div className="mt-6">
-        <Button asChild>
-          <Link to="/create">Créer une chasse</Link>
+    <div className="mx-auto max-w-3xl px-4 py-10">
+      {/* Présentation */}
+      <section>
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("home.title")}</h1>
+        <p className="mt-3 max-w-2xl text-muted-foreground">{t("home.lead")}</p>
+        <Button asChild className="mt-5">
+          <Link to="/create">{t("home.create")}</Link>
         </Button>
-      </div>
+        <ol className="mt-8 grid gap-4 sm:grid-cols-3">
+          {STEPS.map((step, i) => (
+            <li key={step.title} className="flex gap-3 sm:flex-col sm:gap-2">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
+                {i + 1}
+              </span>
+              <div>
+                <p className="text-sm font-semibold">{t(step.title)}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">{t(step.text)}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       {/* Filtres : recherche + statut */}
-      <section className="mt-10">
+      <section className="mt-12">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           {/* Recherche plein texte (titre, lieu, description) — filtrage
               local uniquement, rien n'est envoyé nulle part. */}
           <Input
             type="search"
-            placeholder="Rechercher une chasse…"
+            placeholder={t("home.search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="flex-1"
-            aria-label="Rechercher une chasse"
+            aria-label={t("home.search")}
           />
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-            <SelectTrigger className="w-full sm:w-44" aria-label="Filtrer par statut">
-              <SelectValue placeholder="Statut" />
+            <SelectTrigger className="w-full sm:w-44" aria-label={t("home.filter")}>
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
-              <SelectItem value="active">Actives</SelectItem>
-              <SelectItem value="activated">Activées</SelectItem>
-              <SelectItem value="expired">Expirées</SelectItem>
+              <SelectItem value="all">{t("home.filter.all")}</SelectItem>
+              <SelectItem value="active">{t("home.filter.active")}</SelectItem>
+              <SelectItem value="activated">{t("home.filter.activated")}</SelectItem>
+              <SelectItem value="expired">{t("home.filter.expired")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        <h2 className="mt-6 text-lg font-semibold">{sectionTitle(statusFilter, search)}</h2>
+        <h2 className="mt-6 text-lg font-semibold">
+          {t(search.trim() ? "home.section.results" : SECTION_TITLE[statusFilter])}
+        </h2>
         {hunts === null ? (
-          <p className="mt-3 text-sm text-muted-foreground">Chargement…</p>
+          <p className="mt-3 text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : hasNoResults ? (
           <p className="mt-3 text-sm text-muted-foreground" role={loadError ? "alert" : undefined}>
             {loadError
-              ? "Impossible de charger les chasses pour le moment. Réessaie plus tard."
+              ? t("home.loadError")
               : search.trim() || statusFilter !== "all"
-                ? "Aucune chasse ne correspond à ces filtres."
-                : "Aucune chasse pour le moment."}
+                ? t("home.noMatch")
+                : t("home.empty")}
           </p>
         ) : (
           <ul className="mt-3 space-y-3">
@@ -192,18 +168,20 @@ function Index() {
                   params={{ id: h.id }}
                   className="block rounded-lg border p-4 transition-colors hover:bg-accent"
                 >
-                  <div className="font-medium">{h.title}</div>
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="font-medium">{h.title}</span>
+                    <HuntStatusBadge status={status} />
+                  </div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    {h.location} · avant le{" "}
-                    {new Date(h.deadline).toLocaleString("fr-FR", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
+                    {h.location} ·{" "}
+                    {t("home.card.before", {
+                      date: date(h.deadline, { dateStyle: "medium", timeStyle: "short" }),
                     })}
                   </div>
                   <div className="mt-1 text-sm">
                     {isProgressVisible(h, status) && commitCount !== null
-                      ? `${commitCount} sur ${h.threshold} engagés`
-                      : `Seuil : ${h.threshold} · progression masquée`}
+                      ? t("home.card.progress", { count: commitCount, threshold: h.threshold })
+                      : t("home.card.hidden", { threshold: h.threshold })}
                   </div>
                 </Link>
               </li>

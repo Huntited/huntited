@@ -1,6 +1,7 @@
 // Bouton de développement : efface uniquement les données de démonstration
 // Huntited (clés listées ci-dessous). Aucune autre clé n'est touchée.
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
 
 export const HUNTITED_MOCK_KEYS = [
   "huntited:mock-created-hunts",
@@ -24,6 +25,7 @@ export function clearHuntitedMockData(): void {
 }
 
 export function DevResetButton() {
+  const { t } = useI18n();
   if (!import.meta.env.DEV) return null;
   return (
     <div className="fixed bottom-3 left-3 z-50">
@@ -31,12 +33,12 @@ export function DevResetButton() {
         variant="outline"
         size="sm"
         onClick={() => {
-          if (!window.confirm("Réinitialiser les données de démonstration Huntited ?")) return;
+          if (!window.confirm(t("dev.resetConfirm"))) return;
           clearHuntitedMockData();
           window.location.reload();
         }}
       >
-        Réinitialiser les données de démonstration
+        {t("dev.reset")}
       </Button>
     </div>
   );

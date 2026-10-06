@@ -23,6 +23,21 @@ test("création impossible sans wallet", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Confirmer et créer la chasse" })).toHaveCount(0);
 });
 
+test("français / anglais, choix mémorisé, page introuvable", async ({ page }) => {
+  await open(page, "/");
+  await expect(
+    page.getByRole("heading", { name: "Agir ensemble, sans y aller seul" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "English" }).click();
+  await expect(page.getByRole("heading", { name: "Act together, never alone" })).toBeVisible();
+  await reload(page);
+  await expect(page.getByRole("heading", { name: "Act together, never alone" })).toBeVisible();
+  await open(page, "/nulle-part");
+  await expect(page.getByRole("heading", { name: "This page doesn't exist" })).toBeVisible();
+  await page.getByRole("button", { name: "Français" }).click();
+  await expect(page.getByRole("heading", { name: "Cette page n'existe pas" })).toBeVisible();
+});
+
 test("seuil minimum de 7 personnes à la création", async ({ page }) => {
   await fillCreateFields(page, { title: "Trop petite", threshold: 6 });
   await page.getByRole("button", { name: "Vérifier ma chasse" }).click();

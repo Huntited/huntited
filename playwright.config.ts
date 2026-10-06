@@ -20,6 +20,9 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${FRONT_PORT}`,
     channel: "chrome",
+    // Les vérifications portent sur les textes français (le site suit la
+    // langue du navigateur, anglaise par défaut dans Chrome de test).
+    locale: "fr-FR",
     headless: true,
     trace: "retain-on-failure",
   },

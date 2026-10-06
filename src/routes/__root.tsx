@@ -11,26 +11,28 @@ import {
 import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { AppFooter, AppHeader } from "@/components/AppHeader";
 import { DevResetButton } from "@/components/DevResetButton";
+import { LogoMark } from "@/components/Logo";
+import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
+  const { t } = useI18n();
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
+    <div className="mx-auto flex max-w-md flex-col items-center px-4 py-20 text-center">
+      <LogoMark className="h-14 w-14" />
+      <p className="mt-6 text-sm font-semibold text-muted-foreground">404</p>
+      <h1 className="mt-1 text-2xl font-semibold tracking-tight">{t("notFound.title")}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">{t("notFound.text")}</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <Button asChild>
+          <Link to="/">{t("notFound.home")}</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/create">{t("notFound.create")}</Link>
+        </Button>
       </div>
     </div>
   );
@@ -41,38 +43,29 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   // envoyé à un service extérieur.
   console.error(error);
   const router = useRouter();
+  const { t } = useI18n();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
+    <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center">
+      <LogoMark className="h-14 w-14" />
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight">{t("error.title")}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">{t("error.text")}</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <Button
+          onClick={() => {
+            void router.invalidate();
+            reset();
+          }}
+        >
+          {t("error.retry")}
+        </Button>
+        <Button asChild variant="outline">
+          <a href="/">{t("error.home")}</a>
+        </Button>
       </div>
     </div>
   );
 }
-
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -125,8 +118,14 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <div className="flex min-h-screen flex-col">
+        <AppHeader />
+        <main className="flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <AppFooter />
+      </div>
       <DevResetButton />
       <Toaster />
     </QueryClientProvider>
