@@ -130,20 +130,30 @@ describe("accès au chat", () => {
     expect((await app.get(`/api/chats/${id}`, t)).status).toBe(401);
   });
 
-  it("un·e engagé·e ne peut pas créer de room, mais peut lire une room active", async () => {
+  it("le salon s'ouvre tout seul au déclenchement, pour le créateur comme pour les engagé·es", async () => {
     const app = await setup();
     const { id, tc, tp } = await activatedHunt(app);
-    const chatP = (await app.post("/api/auth/chat-access", { huntId: id }, tp)).body[
+    for (const session of [tp, tc]) {
+      const t = (await app.post("/api/auth/chat-access", { huntId: id }, session)).body[
+        "accessToken"
+      ] as string;
+      const r = await app.get(`/api/chats/${id}`, t);
+      expect(r.status).toBe(200);
+      expect(r.body["isActive"]).toBe(true);
+    }
+  });
+
+  it("un·e engagé·e peut rouvrir le salon ; nom et expiration viennent du registre", async () => {
+    const app = await setup();
+    const { id, tp } = await activatedHunt(app);
+    const t = (await app.post("/api/auth/chat-access", { huntId: id }, tp)).body[
       "accessToken"
     ] as string;
-    const chatC = (await app.post("/api/auth/chat-access", { huntId: id }, tc)).body[
-      "accessToken"
-    ] as string;
-    expect((await app.post("/api/chats", chatBody(id), chatP)).status).toBe(403);
-    expect((await app.post("/api/chats", chatBody(id), chatC)).status).toBe(201);
-    const r = await app.get(`/api/chats/${id}`, chatP);
-    expect(r.status).toBe(200);
-    expect(r.body["isActive"]).toBe(true);
+    // Une expiration fantaisiste envoyée par le client est ignorée.
+    const far = Date.now() + 10 * 365 * 86_400_000;
+    const r = await app.post("/api/chats", { ...chatBody(id), expiresAt: far }, t);
+    expect(r.status).toBe(201);
+    expect(r.body["expiresAt"]).toBeLessThan(far);
   });
 
   it("le jeton d'une chasse ne permet pas d'en lire une autre", async () => {

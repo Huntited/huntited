@@ -2,10 +2,12 @@
 
 ## Comment ça marche
 
-1. La chasse se déclenche. Le créateur clique sur « Activer le chat » : le
-   backend crée un salon sur le serveur Matrix de Huntited — **privé, non
-   fédéré, chiffré de bout en bout**, historique visible seulement depuis
-   l'arrivée de chacun.
+1. La chasse se déclenche : **le backend crée aussitôt, sans aucun clic**, un
+   salon sur le serveur Matrix de Huntited — **privé, non fédéré, chiffré de
+   bout en bout**, historique visible seulement depuis l'arrivée de chacun.
+   Si Matrix est indisponible à ce moment-là, le salon est créé à la première
+   visite d'une personne autorisée sur la page de la chasse (nom et
+   expiration toujours tirés du registre, jamais du navigateur).
 2. Chaque personne autorisée (créateur, engagé·es retenu·es) qui ouvre le
    chat reçoit **un compte temporaire propre à cette chasse** : identifiant
    aléatoire (`@h…:huntited.org`), pseudonyme « Participant·e N », mot de

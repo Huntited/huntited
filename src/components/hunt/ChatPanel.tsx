@@ -1,6 +1,6 @@
 // ChatPanel : chat de coordination d'une chasse (Matrix, mocké pour l'instant).
 // - "active"    → le chat s'ouvrira au seuil
-// - "activated" → on vérifie l'état du salon ; bouton d'activation ou lien d'accès
+// - "activated" → le salon s'ouvre tout seul ; lien d'accès (et identifiants)
 // - "settled"   → salon accessible jusqu'à son expiration (deadline + 24 h)
 // - "expired"   → seuil non atteint : aucun salon n'a jamais été créé
 // Aucun salon n'est créé avant le statut "activated".
@@ -35,15 +35,25 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
   // (la vie du chat se poursuit 24 h après la date limite de la chasse).
   const chatAlive = chat !== null && chat.expiresAt > Date.now();
 
-  // Vérifie l'état du salon au montage (chasse activée, ou expirée avec un
-  // salon encore vivant pendant les 24 h qui suivent la date limite).
+  // Récupère le salon (chasse activée, ou résolue avec un salon encore vivant
+  // pendant les 24 h qui suivent la date limite). Le chat s'ouvre tout seul
+  // au déclenchement : si le salon manque encore (serveur Matrix indisponible
+  // à ce moment-là, ou mode local), on l'ouvre ici, sans clic.
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     // Seuls les statuts post-activation peuvent avoir un salon.
     if (status !== "activated" && status !== "settled") return;
     if (!access.isAuthorized) return;
     let cancelled = false;
     setIsLoading(true);
-    getChat(hunt.id, token)
+    setError(null);
+    (async () => {
+      const existing = await getChat(hunt.id, token);
+      if (existing || status !== "activated") return existing;
+      // Le salon reste ouvert 24 h après la date limite de la chasse.
+      const expiresAt = new Date(hunt.deadline).getTime() + matrixConfig.defaultRoomTtlMs;
+      return openChat(hunt, expiresAt, status, outcome, token);
+    })()
       .then((res) => {
         if (!cancelled && res) setChat(res);
       })
@@ -54,22 +64,9 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
     return () => {
       cancelled = true;
     };
-  }, [hunt.id, status, access.isAuthorized, token]);
-
-  async function handleActivate() {
-    setIsLoading(true);
-    setError(null);
-    try {
-      // Le salon reste ouvert 24 h après la date limite de la chasse
-      // (expiresAt = huntDeadline + defaultRoomTtlMs).
-      const expiresAt = new Date(hunt.deadline).getTime() + matrixConfig.defaultRoomTtlMs;
-      setChat(await openChat(hunt, expiresAt, status, outcome, token));
-    } catch {
-      setError("chat.unavailable");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    // `hunt` et `outcome` : seuls l'id et le statut décident d'un nouvel essai.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hunt.id, status, access.isAuthorized, token, attempt]);
 
   return (
     <section className="space-y-3 rounded-lg border border-border bg-card p-4">
@@ -110,24 +107,19 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
         </>
       )}
 
-      {status === "activated" &&
-        access.isAuthorized &&
-        access.role === "participant" &&
-        !chat &&
-        !isLoading && (
-          <p className="text-sm text-muted-foreground">{t(error ?? "chat.waitCreator")}</p>
-        )}
+      {status === "activated" && access.isAuthorized && !chat && isLoading && (
+        <p className="text-sm text-muted-foreground" role="status">
+          {t("chat.opening")}
+        </p>
+      )}
 
-      {status === "activated" && access.isAuthorized && access.role === "creator" && !chat && (
+      {status === "activated" && access.isAuthorized && !chat && !isLoading && error && (
         <>
-          <p className="text-sm">{t("chat.creatorActivate")}</p>
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {t(error)}
-            </p>
-          )}
-          <Button onClick={handleActivate} disabled={isLoading}>
-            {isLoading ? t("common.loading") : t("chat.activate")}
+          <p role="alert" className="text-sm text-destructive">
+            {t(error)}
+          </p>
+          <Button variant="outline" onClick={() => setAttempt((n) => n + 1)}>
+            {t("common.retry")}
           </Button>
         </>
       )}

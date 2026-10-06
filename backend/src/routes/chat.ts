@@ -1,5 +1,6 @@
 // Routes du chat (protégées par jeton d'accès court).
-//   POST /api/chats          → créateur uniquement (idempotent)
+//   POST /api/chats          → créateur ou engagé·e retenu·e (idempotent ; le
+//                              salon est normalement déjà ouvert au déclenchement)
 //   GET  /api/chats/:huntId  → créateur ou engagé·e
 //   POST /api/chats/cleanup  → DEV uniquement
 import { createHash } from "node:crypto";
@@ -11,7 +12,7 @@ import { requireChatAccess } from "../middleware/require-chat-access.js";
 import type { AuthService } from "../services/auth-service.js";
 import { ChatServiceError, type ChatService } from "../services/chat-service.js";
 import { isChatAllowed, type HuntAccessStore } from "../services/hunt-access-store.js";
-import type { ChatMember } from "../types/chat.js";
+import type { ChatMember, CreateChatInput } from "../types/chat.js";
 
 const huntIdSchema = z.string().regex(/^[\w-]{1,64}$/);
 
@@ -38,6 +39,7 @@ export function chatRouter(
   auth: AuthService,
   access: HuntAccessStore,
   isDevelopment: boolean,
+  terms?: (huntId: string) => CreateChatInput | undefined,
 ): Router {
   const router = Router();
   const stillAllowed = (id: string) =>
@@ -62,20 +64,13 @@ export function chatRouter(
         return res.status(409).json({ error: "Le chat n'est pas disponible pour cette chasse." });
       }
       try {
-        // Un·e engagé·e peut récupérer un salon existant, jamais en créer un.
-        if (req.chatAccess?.role !== "creator") {
-          const existing = await service.getChatStatus(
-            parsed.data.huntId,
-            memberOf(req, parsed.data.huntId),
-          );
-          if (existing.isActive) return res.json(existing);
-          return res
-            .status(403)
-            .json({ error: "Seul·e le créateur ou la créatrice peut ouvrir le chat." });
-        }
+        // Le salon s'ouvre normalement tout seul au déclenchement ; sinon (Matrix
+        // indisponible à ce moment-là), toute personne autorisée peut le rouvrir.
+        // Nom et expiration viennent du registre quand il connaît la chasse.
+        const input = terms?.(parsed.data.huntId) ?? parsed.data;
         return res
           .status(201)
-          .json(await service.createChat(parsed.data, memberOf(req, parsed.data.huntId)));
+          .json(await service.createChat(input, memberOf(req, parsed.data.huntId)));
       } catch (e) {
         if (e instanceof ChatServiceError) {
           return res.status(e.code === "invalid" ? 400 : 409).json({ error: e.message });

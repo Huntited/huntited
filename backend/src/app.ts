@@ -13,6 +13,7 @@ import type { ChallengeService } from "./services/challenge-service.js";
 import type { ChatService } from "./services/chat-service.js";
 import type { HuntRegistry } from "./services/hunt-registry.js";
 import type { PassRegistry } from "./services/pass-registry.js";
+import type { CreateChatInput } from "./types/chat.js";
 import { passesRouter } from "./routes/passes.js";
 
 export interface AppDeps {
@@ -32,9 +33,25 @@ export interface AppDeps {
   rateLimitMultiplier?: number;
   /** Pass Huntited (anti-bots) ; absent = fonctionnalité désactivée. */
   passes?: { registry: PassRegistry; required: boolean; invitesPerMonth: number };
+  /** Durée de vie du salon après la date limite (24 h par défaut). */
+  chatTtlMs?: number;
 }
 
+const DEFAULT_CHAT_TTL_MS = 86_400_000;
+
 export function createApp(d: AppDeps) {
+  // Salon d'une chasse : son titre, ouvert jusqu'à 24 h après la date limite.
+  const chatTerms = (huntId: string): CreateChatInput | undefined => {
+    const hunt = d.registry.get(huntId);
+    return hunt
+      ? {
+          huntId,
+          huntName: hunt.title.slice(0, 80),
+          expiresAt: Date.parse(hunt.deadline) + (d.chatTtlMs ?? DEFAULT_CHAT_TTL_MS),
+        }
+      : undefined;
+  };
+
   const app = express();
   app.disable("x-powered-by");
   if (d.trustProxy) app.set("trust proxy", d.trustProxy);
@@ -69,6 +86,12 @@ export function createApp(d: AppDeps) {
       ...(d.minThreshold !== undefined ? { minThreshold: d.minThreshold } : {}),
       ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
       ...(d.passes ? { passes: { registry: d.passes.registry, required: d.passes.required } } : {}),
+      // Le chat s'ouvre tout seul dès que la chasse se déclenche.
+      onActivated: (hunt) => {
+        d.chat
+          .createChat(chatTerms(hunt.id)!)
+          .catch(() => console.error("[chat] auto_create_failed"));
+      },
     }),
   );
   if (d.passes) {
@@ -91,7 +114,10 @@ export function createApp(d: AppDeps) {
       ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
     }),
   );
-  app.use("/api/chats", chatRouter(d.chat, d.auth, d.registry, d.nodeEnv !== "production"));
+  app.use(
+    "/api/chats",
+    chatRouter(d.chat, d.auth, d.registry, d.nodeEnv !== "production", chatTerms),
+  );
 
   // Erreurs : réponse générique, aucun détail interne ni secret.
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

@@ -159,10 +159,8 @@ export const fr = {
   "chat.open": "Le chat est ouvert. Rejoins-le pour coordonner l'action.",
   "chat.openLink": "Ouvrir le chat Matrix",
   "chat.expiresOn": "Expire le {date}",
-  "chat.waitCreator":
-    "Le chat n'est pas encore ouvert. La personne qui a créé la chasse va l'activer.",
-  "chat.creatorActivate": "La chasse est activée. Active le chat pour commencer la coordination.",
-  "chat.activate": "Activer le chat",
+  "chat.opening": "La chasse est déclenchée : ouverture du chat…",
+  "common.retry": "Réessayer",
   "chat.demo": "(Démonstration : chat simulé, aucun salon réel)",
   "chatLogin.title": "Tes identifiants pour ce chat",
   "chatLogin.step1": "Ouvre le chat avec le bouton ci-dessus (application Element).",

@@ -149,13 +149,13 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
   await expect(david.getByText("Remboursement par non-retenu·e (1)")).toBeVisible();
   await expect(david.getByText("Récompense par engagé·e")).toBeVisible();
 
-  // Alice (créatrice) ouvre le chat ; Bruno (retenu) le voit ; David (non retenu) non.
-  await open(alice, url);
-  await alice.getByRole("button", { name: "Activer le chat" }).click();
-  await expect(alice.getByRole("link", { name: "Ouvrir le chat Matrix" })).toBeVisible();
-
+  // Le chat s'est ouvert tout seul au déclenchement : Bruno (retenu) et Alice
+  // (créatrice) y ont accès sans rien activer ; David (non retenu) non.
   await reload(bruno);
   await expect(bruno.getByRole("link", { name: "Ouvrir le chat Matrix" })).toBeVisible();
+
+  await open(alice, url);
+  await expect(alice.getByRole("link", { name: "Ouvrir le chat Matrix" })).toBeVisible();
 
   await reload(david);
   await expect(david.getByText(/engagé·es retenu·es/)).toBeVisible();

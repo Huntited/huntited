@@ -14,6 +14,7 @@ import { requireSession } from "../middleware/require-session.js";
 import type { AuthService } from "../services/auth-service.js";
 import { RegistryError, type HuntRegistry } from "../services/hunt-registry.js";
 import type { PassRegistry } from "../services/pass-registry.js";
+import type { StoredHunt } from "../types/hunt.js";
 import { checkProof, huntScope, proofSchema } from "../services/semaphore.js";
 
 const huntIdSchema = z.string().regex(/^[\w-]{1,64}$/);
@@ -38,6 +39,8 @@ export function huntsRouter(deps: {
   rateLimitMultiplier?: number;
   /** Pass Huntited : si `required`, chaque engagement doit porter une preuve de pass. */
   passes?: { registry: PassRegistry; required: boolean };
+  /** Appelé une fois, quand un engagement déclenche la chasse (ex. ouvrir le chat). */
+  onActivated?: (hunt: StoredHunt) => void;
 }): Router {
   const { registry, auth } = deps;
   const minThreshold = deps.minThreshold ?? MIN_HUNT_THRESHOLD;
@@ -158,6 +161,8 @@ export function huntsRouter(deps: {
         body.data.personalThreshold,
         personKey,
       );
+      // Cet engagement vient de déclencher la chasse.
+      if (hunt.activationRank === rank) deps.onActivated?.(hunt);
       // Rang masqué pour une chasse à progression masquée encore active :
       // il révélerait le nombre d'engagés.
       return res

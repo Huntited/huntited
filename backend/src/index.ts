@@ -31,6 +31,7 @@ const app = createApp({
   challenges: new ChallengeService({ appUri: env.CORS_ORIGIN[0]!, network: env.KASPA_NETWORK }),
   verifySignature: createSignatureVerifier(env.WALLET_AUTH_MODE, env.KASPA_NETWORK),
   corsOrigin: env.CORS_ORIGIN,
+  chatTtlMs: env.CHAT_DEFAULT_TTL_MS,
   nodeEnv: env.NODE_ENV,
   trustProxy: env.TRUST_PROXY,
   rateLimitMultiplier: env.RATE_LIMIT_MULTIPLIER,
