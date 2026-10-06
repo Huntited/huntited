@@ -152,6 +152,7 @@ export function CreateHuntForm() {
         <Label htmlFor="title">Titre</Label>
         <Input
           id="title"
+          aria-invalid={errors.title ? true : undefined}
           value={values.title}
           onChange={setField("title")}
           placeholder="Ex. Rassemblement place de la République"
@@ -164,6 +165,7 @@ export function CreateHuntForm() {
         <Label htmlFor="description">Description</Label>
         <Textarea
           id="description"
+          aria-invalid={errors.description ? true : undefined}
           value={values.description}
           onChange={setField("description")}
           placeholder="Décrivez l'action collective en quelques lignes."
@@ -177,6 +179,7 @@ export function CreateHuntForm() {
         <Label htmlFor="location">Lieu</Label>
         <Input
           id="location"
+          aria-invalid={errors.location ? true : undefined}
           value={values.location}
           onChange={setField("location")}
           placeholder="Ex. Paris, place de la République"
@@ -192,6 +195,7 @@ export function CreateHuntForm() {
         <Label htmlFor="deadline">Date et heure limite</Label>
         <Input
           id="deadline"
+          aria-invalid={errors.deadline ? true : undefined}
           type="datetime-local"
           value={values.deadline}
           onChange={setField("deadline")}
@@ -207,6 +211,7 @@ export function CreateHuntForm() {
         <Label htmlFor="threshold">Seuil de participants</Label>
         <Input
           id="threshold"
+          aria-invalid={errors.threshold ? true : undefined}
           type="number"
           min={minHuntThreshold()}
           value={values.threshold}
@@ -247,6 +252,7 @@ export function CreateHuntForm() {
         <Label htmlFor="deposit">Ta caution (KAS)</Label>
         <Input
           id="deposit"
+          aria-invalid={errors.deposit ? true : undefined}
           type="number"
           min={MIN_CAUTION_KAS}
           step={1}
