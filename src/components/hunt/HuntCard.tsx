@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
 import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
+import { countryName } from "@/lib/countries";
 import { isProgressVisible } from "@/lib/hunt-lifecycle";
 import { useI18n } from "@/lib/i18n";
 import type { Hunt, HuntStatus } from "@/lib/types";
@@ -28,12 +29,12 @@ export function HuntCard({
   commitCount,
 }: {
   hunt: Pick<Hunt, "id" | "title" | "location" | "deadline" | "threshold"> &
-    Partial<Pick<Hunt, "progressVisibility">>;
+    Partial<Pick<Hunt, "progressVisibility" | "country">>;
   status: HuntStatus;
   /** null : compteur masqué par le serveur. */
   commitCount: number | null;
 }) {
-  const { t, relative } = useI18n();
+  const { t, relative, locale } = useI18n();
   const ended = Date.parse(hunt.deadline) <= Date.now();
   const visible = isProgressVisible(hunt, status) && commitCount !== null;
 
@@ -48,7 +49,8 @@ export function HuntCard({
         <HuntStatusBadge status={status} />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        {hunt.location} ·{" "}
+        {hunt.location}
+        {hunt.country ? `, ${countryName(hunt.country, locale)}` : ""} ·{" "}
         {t(ended ? "card.ended" : "card.endsIn", { when: relative(hunt.deadline) })}
       </p>
       <div className="mt-3 space-y-1.5">

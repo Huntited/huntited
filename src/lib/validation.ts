@@ -1,4 +1,5 @@
 import { MAX_CAUTION_KAS, MIN_CAUTION_KAS, MIN_THRESHOLD } from "@/lib/hunt-economics";
+import { isCountryCode } from "@/lib/countries";
 import { translate, type Locale } from "@/lib/i18n";
 import type { HuntFormData } from "@/lib/types";
 
@@ -18,6 +19,7 @@ export interface FormErrors {
   title?: string;
   description?: string;
   location?: string;
+  country?: string;
   deadline?: string;
   threshold?: string;
   deposit?: string;
@@ -44,6 +46,10 @@ export function validateHuntForm(data: HuntFormData, locale: Locale = "fr"): For
 
   if (!data.location || data.location.trim().length === 0) {
     errors.location = m("val.location.required");
+  }
+
+  if (!isCountryCode(data.country)) {
+    errors.country = m("val.country.required");
   }
 
   if (!data.deadline) {

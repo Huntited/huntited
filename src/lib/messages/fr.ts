@@ -339,6 +339,14 @@ export const fr = {
   "creator.tip3":
     "Rappelle que s'engager ne coûte rien : le dépôt est rendu, et une récompense est versée si l'action a lieu.",
 
+  // Pays
+  "form.country": "Pays",
+  "form.country.placeholder": "Choisis un pays",
+  "val.country.required": "Le pays est requis.",
+  "home.country": "Filtrer par pays",
+  "home.country.all": "Tous les pays",
+  "hunt.country": "Pays",
+
   // Cartes, sections, étapes
   "card.endsIn": "Se termine {when}",
   "card.ended": "Terminée {when}",

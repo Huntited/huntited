@@ -125,7 +125,7 @@ export function localDeadline(msFromNow: number): string {
 /** Remplit le formulaire de création (sans l'envoyer). */
 export async function fillCreateFields(
   page: Page,
-  opts: { title: string; threshold: number; hideProgress?: boolean },
+  opts: { title: string; threshold: number; hideProgress?: boolean; country?: string },
 ) {
   await open(page, "/create");
   await page.getByPlaceholder("Ex. Rassemblement place de la République").fill(opts.title);
@@ -137,12 +137,14 @@ export async function fillCreateFields(
   await page.getByPlaceholder("Ex. 50").fill(String(opts.threshold));
   if (opts.hideProgress)
     await page.getByRole("checkbox", { name: "Masquer la progression" }).click();
+  // Pays : pré-rempli d'après la langue du navigateur (fr-FR → France).
+  if (opts.country) await page.getByLabel("Pays").selectOption(opts.country);
 }
 
 /** Remplit le formulaire de création et arrive sur le récapitulatif. */
 export async function fillCreateForm(
   page: Page,
-  opts: { title: string; threshold: number; hideProgress?: boolean },
+  opts: { title: string; threshold: number; hideProgress?: boolean; country?: string },
 ) {
   await fillCreateFields(page, opts);
   await page.getByRole("button", { name: "Vérifier ma chasse" }).click();
@@ -153,7 +155,7 @@ export async function fillCreateForm(
 /** Crée une chasse (wallet déjà connecté) ; renvoie son URL. */
 export async function createHunt(
   page: Page,
-  opts: { title: string; threshold: number; hideProgress?: boolean },
+  opts: { title: string; threshold: number; hideProgress?: boolean; country?: string },
 ): Promise<string> {
   await fillCreateForm(page, opts);
   await page.getByRole("button", { name: "Confirmer et créer la chasse" }).click();

@@ -333,6 +333,14 @@ export const en: Messages = {
   "creator.tip3":
     "Remind people that committing costs nothing: the deposit is returned, and a reward is paid if the action happens.",
 
+  // Country
+  "form.country": "Country",
+  "form.country.placeholder": "Choose a country",
+  "val.country.required": "A country is required.",
+  "home.country": "Filter by country",
+  "home.country.all": "All countries",
+  "hunt.country": "Country",
+
   // Cards, sections, steps
   "card.endsIn": "Ends {when}",
   "card.ended": "Ended {when}",

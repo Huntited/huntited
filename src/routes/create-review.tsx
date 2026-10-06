@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { COMMIT_DEPOSIT_KAS } from "@/lib/covenants";
 import { clearCreateHuntDraft, getCreateHuntDraft } from "@/lib/create-hunt-store";
 import { createHunt, HuntActionError } from "@/lib/hunt-repository";
+import { countryName } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { addUserHunt } from "@/lib/user-hunts";
 import { useWallet } from "@/lib/useWallet";
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/create-review")({
  */
 function CreateReviewPage() {
   const navigate = useNavigate();
-  const { t, date } = useI18n();
+  const { t, date, locale } = useI18n();
   const wallet = useWallet();
   const { address } = wallet;
   const [draft, setDraft] = useState<HuntFormData | null>(null);
@@ -92,6 +93,7 @@ function CreateReviewPage() {
 
   const rows: Array<[string, string]> = [
     [t("hunt.location"), draft.location],
+    [t("hunt.country"), draft.country ? countryName(draft.country, locale) : "—"],
     [t("hunt.deadline"), date(draft.deadline, { dateStyle: "long", timeStyle: "short" })],
     [t("hunt.threshold"), t("hunt.thresholdValue", { count: draft.threshold })],
     [

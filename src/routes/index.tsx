@@ -15,6 +15,7 @@ import {
 import type { CovenantStatus } from "@/lib/covenants";
 import { listHuntViews, onHuntsChange, type HuntView } from "@/lib/hunt-repository";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { isCountryCode, sortedCountries } from "@/lib/countries";
 import { filterHuntViews, type HuntFilters } from "@/lib/registry";
 
 export const Route = createFileRoute("/")({
@@ -56,33 +57,30 @@ const STEPS: { title: MessageKey; text: MessageKey }[] = [
 function Index() {
   const { t } = useI18n();
 
-  // Filtres contrôlés : recherche plein texte + statut.
+  const { locale } = useI18n();
+  // Filtres contrôlés : recherche plein texte, statut, pays.
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [countryFilter, setCountryFilter] = useState("all");
 
-  // Liste lue après hydratation (les chasses créées sont en localStorage),
-  // recalculée à chaque changement de filtre.
-  const [hunts, setHunts] = useState<HuntView[] | null>(null);
+  // Toutes les chasses, lues après hydratation (les chasses créées sont en
+  // localStorage) ; les filtres s'appliquent à l'affichage.
+  const [all, setAll] = useState<HuntView[] | null>(null);
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    // Filtres construits conditionnellement (exactOptionalPropertyTypes :
-    // on ne passe pas de valeur undefined explicite).
-    const filters: HuntFilters = {};
-    if (statusFilter !== "all") filters.status = statusFilter;
-    if (search) filters.search = search;
     let cancelled = false;
     const load = () => {
       listHuntViews()
         .then((views) => {
           if (cancelled) return;
           setLoadError(false);
-          setHunts(filterHuntViews(views, filters));
+          setAll(views);
         })
         .catch(() => {
           if (cancelled) return;
           setLoadError(true);
-          setHunts([]);
+          setAll([]);
         });
     };
     load();
@@ -92,7 +90,20 @@ function Index() {
       cancelled = true;
       unsubscribe();
     };
-  }, [search, statusFilter]);
+  }, []);
+
+  // Filtres construits conditionnellement (exactOptionalPropertyTypes :
+  // on ne passe pas de valeur undefined explicite).
+  const filters: HuntFilters = {};
+  if (statusFilter !== "all") filters.status = statusFilter;
+  if (search) filters.search = search;
+  if (countryFilter !== "all") filters.country = countryFilter;
+  const hunts = all === null ? null : filterHuntViews(all, filters);
+  // Seuls les pays où il existe des chasses sont proposés dans le filtre.
+  const countries = sortedCountries(locale, [
+    ...new Set((all ?? []).map((v) => v.hunt.country).filter(isCountryCode)),
+  ]);
+  const filtering = search.trim() !== "" || statusFilter !== "all" || countryFilter !== "all";
 
   const hasNoResults = hunts !== null && hunts.length === 0;
 
@@ -144,6 +155,19 @@ function Index() {
               <SelectItem value="expired">{t("home.filter.expired")}</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={countryFilter} onValueChange={setCountryFilter}>
+            <SelectTrigger className="w-full sm:w-48" aria-label={t("home.country")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("home.country.all")}</SelectItem>
+              {countries.map((c) => (
+                <SelectItem key={c.code} value={c.code}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <h2 className="mt-6 text-lg font-semibold">
@@ -152,7 +176,7 @@ function Index() {
         {hunts === null ? (
           <p className="mt-3 text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : hasNoResults ? (
-          loadError || search.trim() || statusFilter !== "all" ? (
+          loadError || filtering ? (
             <p
               className="mt-3 text-sm text-muted-foreground"
               role={loadError ? "alert" : undefined}

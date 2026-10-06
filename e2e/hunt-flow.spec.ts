@@ -40,6 +40,21 @@ test("français / anglais, choix mémorisé, page introuvable", async ({ page })
   await expect(page.getByRole("heading", { name: "Cette page n'existe pas" })).toBeVisible();
 });
 
+test("pays : choix à la création, affichage et filtre sur l'accueil", async ({ browser }) => {
+  const alice = await newPerson(browser);
+  await open(alice, "/");
+  await connectWallet(alice);
+  await createHunt(alice, { title: "Chasse belge", threshold: 7, country: "BE" });
+  await expect(alice.getByText("Belgique")).toBeVisible();
+
+  await open(alice, "/");
+  await alice.getByRole("combobox", { name: "Filtrer par pays" }).click();
+  await alice.getByRole("option", { name: "Belgique" }).click();
+  await expect(alice.getByRole("link", { name: /Chasse belge/ })).toBeVisible();
+  // Les chasses d'autres pays ne sont plus listées.
+  await expect(alice.getByText(/, France/)).toHaveCount(0);
+});
+
 test("seuil minimum de 7 personnes à la création", async ({ page }) => {
   await fillCreateFields(page, { title: "Trop petite", threshold: 6 });
   await page.getByRole("button", { name: "Vérifier ma chasse" }).click();

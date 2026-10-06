@@ -22,6 +22,8 @@ export interface Hunt {
   description: string;
   /** Lieu, en texte libre (aucune donnée de géoloc collectée) */
   location: string;
+  /** Pays (code ISO 3166-1 alpha-2) ; absent pour les anciennes chasses. */
+  country?: string;
   /** Date/heure limite au format ISO — après quoi l'action est annulée */
   deadline: string;
   /** Nombre minimum d'engagements nécessaires pour déclencher l'action */
@@ -47,6 +49,8 @@ export interface HuntFormData {
   title: string;
   description: string;
   location: string;
+  /** Pays (code ISO 3166-1 alpha-2). */
+  country?: string;
   /** Valeur brute du champ datetime-local */
   deadline: string;
   threshold: number;

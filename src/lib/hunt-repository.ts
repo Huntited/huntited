@@ -109,6 +109,8 @@ interface PublicHunt {
   threshold: number;
   /** Caution du créateur, en KAS (absente des anciennes chasses : 30). */
   deposit?: number;
+  /** Pays (code ISO) ; absent pour les anciennes chasses. */
+  country?: string;
   progressVisibility: ProgressVisibility;
   status: "active" | "activated" | "expired" | "settled";
   commitCount: number | null;
@@ -128,6 +130,7 @@ function apiView(p: PublicHunt): HuntView {
       title: p.title,
       description: p.description,
       location: p.location,
+      ...(p.country ? { country: p.country } : {}),
       deadline: p.deadline,
       threshold: p.threshold,
       deposit: p.deposit ?? CREATE_DEPOSIT_KAS,
@@ -192,6 +195,7 @@ export async function createHunt(data: HuntFormData, address: string): Promise<s
         title: data.title.trim(),
         description: data.description.trim(),
         location: data.location.trim(),
+        ...(data.country ? { country: data.country } : {}),
         deadline: new Date(data.deadline).toISOString(),
         threshold: data.threshold,
         deposit: data.deposit,

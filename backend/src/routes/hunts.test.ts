@@ -57,6 +57,15 @@ describe("création", () => {
     expect((await app.createHunt(t, { deposit: 30.5 })).status).toBe(400);
   });
 
+  it("pays : code ISO à deux lettres, public, facultatif", async () => {
+    const app = await setup();
+    const t = await app.login(CREATOR);
+    expect((await app.createHunt(t, { country: "FR" })).body).toMatchObject({ country: "FR" });
+    expect((await app.createHunt(t)).body).not.toHaveProperty("country");
+    expect((await app.createHunt(t, { country: "fr" })).status).toBe(400);
+    expect((await app.createHunt(t, { country: "FRA" })).status).toBe(400);
+  });
+
   it("une chasse créée est visible par tout le monde, sans session", async () => {
     const app = await setup();
     const t = await app.login(CREATOR);

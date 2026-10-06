@@ -52,6 +52,11 @@ export function huntsRouter(deps: {
     title: z.string().trim().min(1).max(120),
     description: z.string().trim().min(1).max(2000),
     location: z.string().trim().min(1).max(200),
+    // Pays (code ISO 3166-1 alpha-2), public comme le lieu ; facultatif (anciens clients).
+    country: z
+      .string()
+      .regex(/^[A-Z]{2}$/)
+      .optional(),
     deadline: z
       .string()
       .datetime({ offset: true })

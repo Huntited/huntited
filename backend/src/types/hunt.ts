@@ -10,6 +10,8 @@ export interface StoredHunt {
   title: string;
   description: string;
   location: string;
+  /** Pays (code ISO 3166-1 alpha-2) ; absent pour les anciennes chasses. */
+  country?: string;
   /** ISO 8601. */
   deadline: string;
   threshold: number;
@@ -44,6 +46,7 @@ export interface NewHuntInput {
   title: string;
   description: string;
   location: string;
+  country?: string;
   deadline: string;
   threshold: number;
   deposit: number;
@@ -56,6 +59,7 @@ export interface PublicHunt {
   title: string;
   description: string;
   location: string;
+  country?: string;
   deadline: string;
   threshold: number;
   /** Caution du créateur, en KAS. */

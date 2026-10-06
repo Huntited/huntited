@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { HuntFormData } from "@/lib/types";
 import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
+import { guessCountry, sortedCountries } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
 import {
@@ -54,6 +55,7 @@ interface CreateHuntFormValues {
   title: string;
   description: string;
   location: string;
+  country: string;
   deadline: string;
   threshold: string;
   deposit: string;
@@ -72,11 +74,16 @@ export function CreateHuntForm() {
     title: "",
     description: "",
     location: "",
+    country: "",
     deadline: "",
     threshold: "",
     deposit: String(CREATE_DEPOSIT_KAS),
     hideProgress: false,
   });
+  // Noms des pays : calculés dans le navigateur seulement (ceux du serveur,
+  // fournis par Node, peuvent différer légèrement → erreur d'hydratation).
+  const [countryOptions, setCountryOptions] = useState<{ code: string; name: string }[]>([]);
+  useEffect(() => setCountryOptions(sortedCountries(locale)), [locale]);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Erreur globale, distincte des erreurs de validation champ par champ.
@@ -92,6 +99,7 @@ export function CreateHuntForm() {
     title: values.title,
     description: values.description,
     location: values.location,
+    country: values.country,
     deadline: values.deadline,
     threshold: Number(values.threshold),
     deposit: Number(values.deposit),
@@ -122,11 +130,16 @@ export function CreateHuntForm() {
   // Retour depuis le récapitulatif : on préremplit avec le brouillon.
   useEffect(() => {
     const draft = getCreateHuntDraft();
-    if (!draft) return;
+    if (!draft) {
+      // Pays suggéré d'après la langue du navigateur (modifiable).
+      setValues((prev) => (prev.country ? prev : { ...prev, country: guessCountry() }));
+      return;
+    }
     setValues({
       title: draft.title,
       description: draft.description,
       location: draft.location,
+      country: draft.country ?? guessCountry(),
       deadline: draft.deadline,
       threshold: String(draft.threshold),
       deposit: String(draft.deposit),
@@ -203,6 +216,28 @@ export function CreateHuntForm() {
           />
           <ErrorText id="location" msg={errors.location} />
           <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
+        </div>
+
+        {/* Pays : liste native (recherche au clavier, confortable sur mobile) */}
+        <div className="space-y-2">
+          <Label htmlFor="country">{t("form.country")}</Label>
+          <select
+            id="country"
+            value={values.country}
+            onChange={(e) => setValues((prev) => ({ ...prev, country: e.target.value }))}
+            aria-invalid={errors.country ? true : undefined}
+            aria-describedby={describe("country")}
+            data-filled={values.country ? "true" : "false"}
+            className="hf-field flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+          >
+            <option value="">{t("form.country.placeholder")}</option>
+            {countryOptions.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <ErrorText id="country" msg={errors.country} />
         </div>
 
         {/* Date/heure limite */}

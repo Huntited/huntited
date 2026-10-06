@@ -17,6 +17,8 @@ export interface HuntFilters {
   status?: CovenantStatus;
   /** Recherche plein texte (titre, description, lieu), insensible à la casse */
   search?: string;
+  /** Ne garder que les chasses de ce pays (code ISO) */
+  country?: string;
 }
 
 /** Statut courant d'une chasse (deadline + compteur). */
@@ -54,6 +56,7 @@ export function filterHuntViews(views: HuntView[], filters: HuntFilters = {}): H
   const q = filters.search?.trim().toLowerCase();
   return views
     .filter((v) => !filters.status || filterStatus(v) === filters.status)
+    .filter((v) => !filters.country || v.hunt.country === filters.country)
     .filter(
       (v) =>
         !q ||

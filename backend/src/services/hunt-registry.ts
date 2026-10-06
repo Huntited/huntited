@@ -118,6 +118,7 @@ export class HuntRegistry implements HuntAccessStore {
       title: hunt.title,
       description: hunt.description,
       location: hunt.location,
+      ...(hunt.country ? { country: hunt.country } : {}),
       deadline: hunt.deadline,
       threshold: hunt.threshold,
       deposit: hunt.deposit ?? 30,

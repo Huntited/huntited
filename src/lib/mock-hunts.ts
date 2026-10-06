@@ -10,6 +10,7 @@ const MOCK_HUNTS: Record<string, Hunt> = {
     description:
       "Rassemblement statique et pacifique. Point de rendez-vous communiqué aux participants engagés après déclenchement. Apportez de l'eau et restez mobiles.",
     location: "Paris, place de la République",
+    country: "FR",
     deadline: "2026-10-10T18:00:00Z",
     threshold: 50,
     deposit: 30,
@@ -23,6 +24,7 @@ const MOCK_HUNTS: Record<string, Hunt> = {
     description:
       "Distribution de repas et de couvertures. Engagement anonyme, coordination sur place le jour J uniquement.",
     location: "Lille, gare Lille-Flandres",
+    country: "FR",
     deadline: "2026-10-18T09:00:00Z",
     threshold: 20,
     deposit: 30,
