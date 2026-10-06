@@ -19,8 +19,10 @@ import {
 
 test("création impossible sans wallet", async ({ page }) => {
   await fillCreateForm(page, { title: "Sans wallet", threshold: 7 });
-  await expect(page.getByRole("button", { name: "Connecter le wallet" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Confirmer et créer la chasse" })).toHaveCount(0);
+  // Bouton de la page (l'en-tête en a un aussi).
+  const main = page.getByRole("main");
+  await expect(main.getByRole("button", { name: "Connecter le wallet" })).toBeVisible();
+  await expect(main.getByRole("button", { name: "Confirmer et créer la chasse" })).toHaveCount(0);
 });
 
 test("français / anglais, choix mémorisé, page introuvable", async ({ page }) => {
