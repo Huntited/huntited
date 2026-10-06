@@ -61,9 +61,11 @@ export function HuntSettlementPanel({
 
       <dl className="space-y-1">
         <Row label="Remboursement par engagé·e" value={s.participantRefundPerCommitSompi} />
-        <Row label="Part de la récompense par engagé·e" value={s.participantBonusPerCommitSompi} />
+        {success && (
+          <Row label="Récompense par engagé·e" value={s.participantBonusPerCommitSompi} />
+        )}
         <Row label="Caution rendue au créateur" value={s.creatorCreationRefundSompi} />
-        <Row label="Huntited (5 % de la récompense)" value={s.treasurySompi} />
+        <Row label="Huntited" value={s.treasurySompi} />
         {success && nonRetained > 0 && (
           <Row
             label={`Remboursement par non-retenu·e (${nonRetained})`}

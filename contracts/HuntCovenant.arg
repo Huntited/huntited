@@ -23,11 +23,13 @@
 const CREATE_DEPOSIT_SOMPI  = 30 * 10^8;   // dépôt de création d'une chasse
 const COMMIT_DEPOSIT_SOMPI  = 5 * 10^8;    // dépôt d'engagement
 const MIN_THRESHOLD = 7;                    // actions vraiment collectives
-// Le dépôt d'engagement est toujours rendu. Le créateur finance une
-// récompense prise sur sa caution, partagée 95 % engagés / 5 % treasury.
-const SUCCESS_REWARD_SOMPI = 15 * 10^8;    // le créateur récupère 15 KAS
-const FAILURE_REWARD_SOMPI = 20 * 10^8;    // le créateur récupère 10 KAS
-const REWARD_PARTICIPANTS_PERCENT = 95;
+// Le dépôt d'engagement est toujours rendu. En cas de succès seulement, le
+// créateur finance une récompense prise sur sa caution (rien à gagner en
+// engageant des bots sur une chasse vouée à l'échec).
+const SUCCESS_PARTICIPANTS_POOL_SOMPI = 1425 * 10^6; // 14,25 KAS au plus aux engagés
+const SUCCESS_TREASURY_SOMPI = 75 * 10^6;            // 0,75 KAS
+const REWARD_CAP_PER_COMMIT_SOMPI = 1 * 10^8;        // 1 KAS au plus par engagé
+const FAILURE_TREASURY_SOMPI = 1 * 10^8;             // échec : le créateur récupère 29 KAS
 const TREASURY_ADDRESS = treasury_multisig_hash;
 
 // ---------------------------------------------------------------------------
@@ -67,11 +69,10 @@ struct HuntCovenant {
 // engagé réclame ensuite son dépôt + sa part (claim_deposit_and_reward).
 // Parts arrondies au sompi inférieur ; le reste (ou toute part sans
 // destinataire) revient au créateur.
-fn settle(covenant: HuntCovenant, reward: amount) {
+fn settle(covenant: HuntCovenant, participants_pool: amount, treasury: amount) {
   let n = covenant.commit_count_hidden;
-  let participants_pool = reward * REWARD_PARTICIPANTS_PERCENT / 100;
-  let treasury = reward - participants_pool;
-  covenant.reward_share_per_commit = if (n == 0) { 0 } else { participants_pool / n };
+  let even = if (n == 0) { 0 } else { participants_pool / n };
+  covenant.reward_share_per_commit = min(even, REWARD_CAP_PER_COMMIT_SOMPI);
   send(TREASURY_ADDRESS, treasury);
   send(covenant.creator, CREATE_DEPOSIT_SOMPI - treasury
     - n * covenant.reward_share_per_commit);
@@ -156,18 +157,18 @@ fn activate(covenant: HuntCovenant, zk_proof: bytes) {
   covenant.state = State.Activated;
 }
 
-// distribute_deposit_on_success : récompense de 15 KAS (succès).
+// distribute_deposit_on_success : récompense plafonnée à 1 KAS par engagé (succès).
 fn distribute_deposit_on_success(covenant: HuntCovenant) {
   require(covenant.state == State.Activated, "la chasse n'est pas activée");
-  settle(covenant, SUCCESS_REWARD_SOMPI);
+  settle(covenant, SUCCESS_PARTICIPANTS_POOL_SOMPI, SUCCESS_TREASURY_SOMPI);
 }
 
 // expire : clôture la chasse si la date limite est passée sans activation.
-// N'importe qui peut l'appeler ; récompense de 20 KAS (échec).
+// N'importe qui peut l'appeler ; aucune récompense, dépôts rendus.
 fn expire(covenant: HuntCovenant) {
   require(covenant.state == State.Active, "chasse déjà close");
   require(now() >= covenant.deadline, "la date limite n'est pas passée");
-  settle(covenant, FAILURE_REWARD_SOMPI);
+  settle(covenant, 0, FAILURE_TREASURY_SOMPI);
   covenant.state = State.Expired;
 }
 

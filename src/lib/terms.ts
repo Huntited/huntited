@@ -8,10 +8,10 @@
  * Les montants sont vérifiés contre hunt-economics.ts dans les tests.
  */
 export const COMMIT_DEPOSIT_TERMS =
-  "Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. En plus, tu reçois ta part de la récompense du créateur : 14,25 KAS à partager si l'action a lieu, 19 KAS si elle est annulée.";
+  "Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. Si elle a lieu, tu reçois en plus une récompense du créateur, jusqu'à 1 KAS.";
 
 export const CREATE_DEPOSIT_TERMS =
-  "Le créateur bloque une caution de 30 KAS. Action réussie : 14,25 KAS aux engagés, 0,75 KAS à Huntited, il récupère 15 KAS. Action annulée : 19 KAS aux engagés, 1 KAS à Huntited, il récupère 10 KAS.";
+  "Le créateur bloque une caution de 30 KAS. Action réussie : jusqu'à 1 KAS par engagé (14,25 KAS au plus), 0,75 KAS à Huntited, il récupère le reste. Action annulée : 1 KAS à Huntited, il récupère 29 KAS.";
 
 /**
  * Argument mis en avant au moment de s'engager : on récupère toujours son
@@ -19,11 +19,11 @@ export const CREATE_DEPOSIT_TERMS =
  * frais de réseau existeront avec de vrais KAS.
  */
 export const COMMIT_REFUND_HIGHLIGHT =
-  "Tu ne perds rien : tes 5 KAS te sont rendus intégralement à la fin, plus ta part de la récompense du créateur (14,25 KAS à partager si l'action a lieu, 19 KAS sinon).";
+  "Tu ne perds rien : tes 5 KAS te sont rendus intégralement à la fin. Et si l'action a lieu, tu reçois une récompense du créateur, jusqu'à 1 KAS.";
 
 /** Version courte, sous le bouton d'engagement. */
 export const COMMIT_REFUND_SHORT =
-  "Rendus intégralement à la fin + une part de la récompense du créateur.";
+  "Rendus intégralement à la fin + jusqu'à 1 KAS de récompense si l'action a lieu.";
 
 /**
  * Conditions clés listées dans la modal d'engagement, sous l'encadré qui
@@ -50,14 +50,12 @@ l'action ou date limite passée). Ils te sont rendus intégralement à la
 fin, dans tous les cas. Tu ne peux pas les reprendre avant.
 
 2. La récompense du créateur
-Le créateur bloque une caution de 30 KAS, dont une partie récompense
-les engagés (95 %) et Huntited (5 %) :
-- L'action a lieu (seuil atteint) : récompense de 15 KAS, soit
-  14,25 KAS partagés à parts égales entre les engagés et 0,75 KAS pour
-  Huntited. Le créateur récupère 15 KAS.
-- L'action n'a pas lieu (seuil pas atteint à la date limite) :
-  récompense de 20 KAS, soit 19 KAS partagés à parts égales entre les
-  engagés et 1 KAS pour Huntited. Le créateur récupère 10 KAS.
+Le créateur bloque une caution de 30 KAS :
+- L'action a lieu (seuil atteint) : jusqu'à 14,25 KAS sont partagés à
+  parts égales entre les engagés, plafonnés à 1 KAS chacun, et 0,75 KAS
+  vont à Huntited. Le créateur récupère le reste.
+- L'action n'a pas lieu (seuil pas atteint à la date limite) : pas de
+  récompense. 1 KAS va à Huntited, le créateur récupère 29 KAS.
 - Tu as fixé un seuil personnel (« je viens si au moins N personnes
   viennent ») et il n'est pas atteint alors que l'action a lieu : tu
   ne participes pas et tu récupères tes 5 KAS, sans part de la

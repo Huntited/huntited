@@ -1,8 +1,8 @@
 # Économie de Huntited (MVP)
 
-> Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. En plus, tu reçois ta part de la récompense du créateur : 14,25 KAS à partager si l'action a lieu, 19 KAS si elle est annulée.
+> Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. Si elle a lieu, tu reçois en plus une récompense du créateur, jusqu'à 1 KAS.
 >
-> Le créateur bloque une caution de 30 KAS. Action réussie : 14,25 KAS aux engagés, 0,75 KAS à Huntited, il récupère 15 KAS. Action annulée : 19 KAS aux engagés, 1 KAS à Huntited, il récupère 10 KAS.
+> Le créateur bloque une caution de 30 KAS. Action réussie : jusqu'à 1 KAS par engagé (14,25 KAS au plus), 0,75 KAS à Huntited, il récupère le reste. Action annulée : 1 KAS à Huntited, il récupère 29 KAS.
 >
 > Une chasse demande au moins **7 personnes**.
 
@@ -26,26 +26,29 @@ Les badges (`src/lib/badges.ts`) et, plus tard, les missions, XP et niveaux sont
 - **Création d'une chasse** : caution de 30 KAS, déposée par le créateur.
 - **Engagement** : 5 KAS, déposés par chaque engagé et **toujours rendus** à la fin.
 
-## Récompense du créateur
+## Récompense du créateur (succès uniquement)
 
-Le créateur finance une récompense prise sur sa caution, partagée **95 %** à
-parts égales entre les engagés et **5 %** à la treasury (frais de maintenance).
+| Issue                                          | Engagés                                          | Huntited | Rendu au créateur            |
+| ---------------------------------------------- | ------------------------------------------------ | -------- | ---------------------------- |
+| **Succès** (seuil atteint)                     | jusqu'à 1 KAS chacun, 14,25 KAS au plus au total | 0,75 KAS | le reste (de 15 à 22,25 KAS) |
+| **Échec** (seuil non atteint à la date limite) | rien (dépôt rendu)                               | 1 KAS    | 29 KAS                       |
 
-| Issue                                          | Récompense | Engagés (95 %) | Treasury (5 %) | Rendu au créateur |
-| ---------------------------------------------- | ---------- | -------------- | -------------- | ----------------- |
-| **Succès** (seuil atteint)                     | 15 KAS     | 14,25 KAS      | 0,75 KAS       | 15 KAS            |
-| **Échec** (seuil non atteint à la date limite) | 20 KAS     | 19 KAS         | 1 KAS          | 10 KAS            |
-
-- Succès : seuls les engagé·es du **groupe retenu** reçoivent une part. Un·e
+- Succès : seuls les engagé·es du **groupe retenu** sont récompensé·es. Un·e
   engagé·e non retenu·e (seuil personnel pas atteint, voir
-  `docs/seuil-personnel.md`) récupère ses **5 KAS, sans part**.
-- Les parts sont arrondies au sompi inférieur ; le reste de l'arrondi, et
-  toute part sans destinataire (aucun engagé), revient au créateur.
+  `docs/seuil-personnel.md`) récupère ses **5 KAS, sans récompense**.
+- Parts égales : 14,25 KAS / N, plafonnées à 1 KAS (au-delà de 14 engagés, la
+  part passe sous 1 KAS). Arrondi au sompi inférieur ; le reste revient au
+  créateur.
 
-Pourquoi : s'engager ne fait jamais perdre d'argent et rapporte toujours une
-part (principe du « contrat d'assurance dominant »). Créer coûte 15 KAS si
-l'action réussit, 20 KAS si elle échoue : le créateur a intérêt à ne lancer
-que des chasses crédibles, et à les faire réussir.
+Pourquoi :
+
+- **Pas de récompense en cas d'échec** : engager des bots sur une chasse
+  vouée à l'échec ne rapporte rien.
+- **Plafond de 1 KAS par engagé** : un créateur qui s'engage avec ses propres
+  wallets récupère au plus 1 KAS par wallet.
+- **1 KAS de frais en cas d'échec** : lancer des chasses à la chaîne coûte
+  quelque chose.
+- S'engager ne fait jamais perdre d'argent (dépôt toujours rendu).
 
 ## Seuil minimum : 7 personnes
 
@@ -53,22 +56,23 @@ Une chasse demande au moins 7 personnes : des actions vraiment collectives, et
 une récompense plus difficile à récupérer avec ses propres wallets. Le seuil
 minimum est appliqué par le formulaire, par le serveur et par le covenant.
 
-## Exemples (part par engagé)
+## Exemples (succès)
 
-| Engagés | Succès         | Échec          |
-| ------- | -------------- | -------------- |
-| 7       | 5 + ≈ 2,04 KAS | 5 + ≈ 2,71 KAS |
-| 10      | 5 + 1,425 KAS  | 5 + 1,9 KAS    |
-| 20      | 5 + 0,7125 KAS | 5 + 0,95 KAS   |
-| 60      | 5 + 0,2375 KAS | 5 + ≈ 0,32 KAS |
+| Engagés | Récompense par engagé | Rendu au créateur |
+| ------- | --------------------- | ----------------- |
+| 7       | 1 KAS                 | 22,25 KAS         |
+| 10      | 1 KAS                 | 19,25 KAS         |
+| 20      | 0,7125 KAS            | 15 KAS            |
+| 60      | ≈ 0,24 KAS            | 15 KAS            |
 
 Tous les calculs sont faits en sompis (1 KAS = 10^8 sompis), sans nombre à virgule.
 
 ## Limite connue
 
-Un créateur peut s'engager avec ses propres wallets pour récupérer une partie
-de la récompense. Le minimum de 7 personnes limite ce contournement sans le
-supprimer : il devra être traité avant tout usage réel (KAS réels).
+Les bots peuvent encore gonfler le nombre d'engagés et provoquer un faux
+déclenchement (l'action se lance avec moins de vraies personnes que prévu).
+La parade prévue : une personne = un engagement, prouvé anonymement (voir
+`docs/anti-bots.md`). À traiter avant tout usage réel.
 
 ## Gouvernance et abus (MVP)
 

@@ -2,9 +2,9 @@
 
 ## Que devient mon dépôt ?
 
-Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. En plus, tu reçois ta part de la récompense du créateur : 14,25 KAS à partager si l'action a lieu, 19 KAS si elle est annulée.
+Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. Si elle a lieu, tu reçois en plus une récompense du créateur, jusqu'à 1 KAS.
 
-Le créateur bloque une caution de 30 KAS. Action réussie : 14,25 KAS aux engagés, 0,75 KAS à Huntited, il récupère 15 KAS. Action annulée : 19 KAS aux engagés, 1 KAS à Huntited, il récupère 10 KAS.
+Le créateur bloque une caution de 30 KAS. Action réussie : jusqu'à 1 KAS par engagé (14,25 KAS au plus), 0,75 KAS à Huntited, il récupère le reste. Action annulée : 1 KAS à Huntited, il récupère 29 KAS.
 
 ## Pourquoi au moins 7 personnes ?
 
@@ -12,11 +12,11 @@ Pour des actions vraiment collectives, et pour qu'un créateur ne puisse pas fac
 
 ## Puis-je fixer ma propre condition ?
 
-Oui. En t'engageant, tu peux indiquer « je viens si au moins N personnes viennent » (au minimum le seuil de la chasse). Ta condition reste privée. La chasse se déclenche dès qu'un groupe se forme dans lequel la condition de chacun est remplie ; les engagements restent ouverts jusqu'à la date limite, donc le groupe peut encore grandir et t'inclure. Si ta condition n'est toujours pas remplie à la fin alors que la chasse a réussi, tu ne participes pas et tu récupères tes 5 KAS (sans part de la récompense).
+Oui. En t'engageant, tu peux indiquer « je viens si au moins N personnes viennent » (au minimum le seuil de la chasse). Ta condition reste privée. La chasse se déclenche dès qu'un groupe se forme dans lequel la condition de chacun est remplie ; les engagements restent ouverts jusqu'à la date limite, donc le groupe peut encore grandir et t'inclure. Si ta condition n'est toujours pas remplie à la fin alors que la chasse a réussi, tu ne participes pas et tu récupères tes 5 KAS (sans récompense).
 
 ## Pourquoi une récompense payée par le créateur ?
 
-Pour que s'engager soit toujours une bonne décision : tu récupères ton dépôt dans tous les cas, plus une part de la récompense. Créer coûte 15 KAS si l'action réussit et 20 KAS si elle échoue : le créateur a intérêt à ne lancer que des chasses sérieuses, et à les faire réussir.
+Pour que s'engager soit toujours une bonne décision : tu récupères ton dépôt dans tous les cas, et tu es récompensé si l'action a lieu. Il n'y a pas de récompense en cas d'échec : engager des bots sur une chasse vouée à l'échec ne rapporte rien. Et la récompense est plafonnée à 1 KAS par engagé : un créateur ne gagne presque rien à s'engager avec ses propres wallets.
 
 ## Mon engagement est-il public ?
 
@@ -32,7 +32,7 @@ Un veto des engagés pourra être étudié dans une version future si l'usage mo
 
 ## Combien coûte un engagement ?
 
-Rien : tes 5 KAS sont bloqués pendant la chasse puis rendus intégralement, et tu reçois une part de la récompense du créateur (voir « Que devient mon dépôt ? »).
+Rien : tes 5 KAS sont bloqués pendant la chasse puis rendus intégralement. Si l'action a lieu, tu reçois en plus jusqu'à 1 KAS (voir « Que devient mon dépôt ? »).
 
 ## Puis-je m'engager plusieurs fois ?
 

@@ -209,11 +209,11 @@ export function CreateHuntForm() {
         <Input id="deposit" value={`${CREATE_DEPOSIT_KAS} KAS`} readOnly disabled />
         <ul className="space-y-0.5 text-xs text-muted-foreground">
           <li>
-            <strong>Action réussie :</strong> 15 KAS pour toi, 14,25 KAS aux engagés, 0,75 KAS à
-            Huntited.
+            <strong>Action réussie :</strong> jusqu'à 1 KAS par engagé (14,25 KAS au plus), 0,75 KAS
+            à Huntited, le reste pour toi.
           </li>
           <li>
-            <strong>Action annulée :</strong> 10 KAS pour toi, 19 KAS aux engagés, 1 KAS à Huntited.
+            <strong>Action annulée :</strong> 29 KAS pour toi, 1 KAS à Huntited.
           </li>
         </ul>
       </div>

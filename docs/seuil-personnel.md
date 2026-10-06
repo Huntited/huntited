@@ -44,16 +44,16 @@ Exemple, T = 3, seuils : 3, 3, 4, 10.
 ## 3. Économie
 
 > **Décidé le 6 octobre 2026 :** en cas de succès, un·e engagé·e non retenu·e
-> récupère ses 5 KAS **sans part de la récompense** (un seuil personnel
+> récupère ses 5 KAS **sans récompense** (un seuil personnel
 > inatteignable ne doit pas rapporter de gain garanti).
 
 Appliquée **au groupe retenu** (règles complètes : `docs/economics.md`) :
 
-- **Succès** : chaque membre du groupe retenu récupère ses 5 KAS + sa part
-  des 14,25 KAS de récompense ; les engagé·es **non retenu·es** récupèrent
-  leurs 5 KAS (sans part de la récompense).
+- **Succès** : chaque membre du groupe retenu récupère ses 5 KAS + sa
+  récompense (jusqu'à 1 KAS) ; les engagé·es **non retenu·es** récupèrent
+  leurs 5 KAS (sans récompense).
 - **Échec** (groupe retenu < T à la date limite) : chaque engagé·e récupère
-  5 KAS + sa part des 19 KAS de récompense.
+  ses 5 KAS, sans récompense.
 
 ## 4. Confidentialité
 

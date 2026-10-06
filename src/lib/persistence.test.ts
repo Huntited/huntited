@@ -57,21 +57,21 @@ describe("matrix-mock", () => {
 });
 
 describe("règlement", () => {
-  it("échec : dépôts rendus, 19 KAS partagés entre les engagés, 1 KAS à la treasury, 10 KAS au créateur", () => {
+  it("échec : dépôts rendus, aucune récompense, 1 KAS à la treasury, 29 KAS au créateur", () => {
     const s = calculateSettlement(2, "failure");
     const kas = CREATE_DEPOSIT_SOMPI / 30n;
     expect(s.treasurySompi).toBe(kas);
     expect(s.participantRefundPerCommitSompi).toBe(COMMIT_DEPOSIT_SOMPI);
-    expect(s.participantBonusPerCommitSompi).toBe((19n * kas) / 2n);
-    expect(s.creatorCreationRefundSompi).toBe(10n * kas);
+    expect(s.participantBonusPerCommitSompi).toBe(0n);
+    expect(s.creatorCreationRefundSompi).toBe(29n * kas);
   });
 
-  it("succès : dépôts rendus, 14,25 KAS partagés, 0,75 KAS à la treasury, 15 KAS au créateur", () => {
+  it("succès : dépôts rendus, 1 KAS par engagé (plafond), 0,75 KAS à la treasury", () => {
     const s = calculateSettlement(10, "success");
     const kas = CREATE_DEPOSIT_SOMPI / 30n;
     expect(s.treasurySompi).toBe((75n * kas) / 100n);
-    expect(s.participantBonusPerCommitSompi).toBe((1425n * kas) / 100n / 10n);
-    expect(s.creatorCreationRefundSompi).toBe(15n * kas);
+    expect(s.participantBonusPerCommitSompi).toBe(kas);
+    expect(s.creatorCreationRefundSompi).toBe(30n * kas - (75n * kas) / 100n - 10n * kas);
     expect(s.participantRefundPerCommitSompi).toBe(COMMIT_DEPOSIT_SOMPI);
   });
 });

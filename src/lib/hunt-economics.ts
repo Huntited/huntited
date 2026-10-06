@@ -2,13 +2,15 @@
  * Économie Huntited — source de vérité du MVP.
  *
  * S'engager ne coûte rien : le dépôt d'engagement (5 KAS) est toujours rendu
- * à la fin. Le créateur finance une récompense prise sur sa caution (30 KAS) :
- * - Succès : récompense de 15 KAS, 95 % partagés à parts égales entre les
- *   engagé·es retenu·es, 5 % à la treasury ; le créateur récupère 15 KAS.
- * - Échec : récompense de 20 KAS, 95 % partagés à parts égales entre tous
- *   les engagés, 5 % à la treasury ; le créateur récupère 10 KAS.
- * Les parts sont arrondies au sompi inférieur ; le reste (et toute part sans
- * destinataire) revient au créateur.
+ * à la fin. Le créateur finance, sur sa caution (30 KAS) :
+ * - Succès : une récompense de 15 KAS au plus — 14,25 KAS au plus partagés à
+ *   parts égales entre les engagé·es retenu·es, plafonnés à 1 KAS chacun,
+ *   et 0,75 KAS à la treasury ; le créateur récupère le reste (≥ 15 KAS).
+ * - Échec : aucune récompense (rien à gagner en engageant des bots sur une
+ *   chasse vouée à l'échec) ; 1 KAS à la treasury, le créateur récupère 29 KAS.
+ * Le plafond par engagé limite ce qu'un créateur récupère en s'engageant
+ * avec ses propres wallets. Les parts sont arrondies au sompi inférieur ; le
+ * reste revient au créateur.
  * Seuil minimum (MIN_THRESHOLD) : des actions vraiment collectives, et une
  * récompense plus difficile à récupérer avec ses propres wallets.
  *
@@ -24,11 +26,14 @@ export const COMMIT_DEPOSIT_SOMPI = 5n * SOMPI_PER_KAS;
 /** Seuil minimum d'une chasse (voir l'en-tête). */
 export const MIN_THRESHOLD = 7;
 
-/** Récompense prise sur la caution, selon l'issue. */
+/** Récompense de succès prise sur la caution (engagés + treasury). */
 export const SUCCESS_REWARD_SOMPI = 15n * SOMPI_PER_KAS;
-export const FAILURE_REWARD_SOMPI = 20n * SOMPI_PER_KAS;
-/** Part de la récompense versée aux engagé·es (le reste va à la treasury). */
+/** Part de la récompense destinée aux engagé·es (le reste va à la treasury). */
 export const REWARD_PARTICIPANTS_PERCENT = 95n;
+/** Plafond de récompense par engagé·e. */
+export const REWARD_CAP_PER_COMMIT_SOMPI = 1n * SOMPI_PER_KAS;
+/** Échec : frais pris sur la caution pour la treasury (aucune récompense). */
+export const FAILURE_FEE_SOMPI = 1n * SOMPI_PER_KAS;
 
 export type HuntOutcome = "success" | "failure";
 
@@ -49,22 +54,16 @@ export interface HuntSettlement {
   nonRetainedRefundPerCommitSompi: bigint;
 }
 
-/** Récompense totale (engagés + treasury) selon l'issue. */
-export function rewardPool(outcome: HuntOutcome): bigint {
-  return outcome === "success" ? SUCCESS_REWARD_SOMPI : FAILURE_REWARD_SOMPI;
-}
-
-/** Part de la récompense destinée à l'ensemble des engagé·es. */
-export function participantsRewardPool(outcome: HuntOutcome): bigint {
-  return (rewardPool(outcome) * REWARD_PARTICIPANTS_PERCENT) / 100n;
-}
+/** Récompense de succès destinée à l'ensemble des engagé·es (avant plafond). */
+export const SUCCESS_PARTICIPANTS_POOL_SOMPI =
+  (SUCCESS_REWARD_SOMPI * REWARD_PARTICIPANTS_PERCENT) / 100n;
 
 /**
  * Règlement d'une chasse.
  * - Succès : `commitCount` = engagé·es **retenu·es** (dépôt rendu + part de la
  *   récompense) ; les non-retenu·es récupèrent leur dépôt
  *   (nonRetainedRefundPerCommitSompi).
- * - Échec : `commitCount` = tous les engagé·es (dépôt rendu + part de la récompense).
+ * - Échec : `commitCount` = tous les engagé·es (dépôt rendu, sans récompense).
  */
 export function calculateSettlement(commitCount: number, outcome: HuntOutcome): HuntSettlement {
   if (!Number.isSafeInteger(commitCount) || commitCount < 0) {
@@ -72,9 +71,16 @@ export function calculateSettlement(commitCount: number, outcome: HuntOutcome): 
   }
 
   const n = BigInt(commitCount);
-  const participantsPool = participantsRewardPool(outcome);
-  const treasurySompi = rewardPool(outcome) - participantsPool;
-  const share = n > 0n ? participantsPool / n : 0n;
+  const success = outcome === "success";
+  const treasurySompi = success
+    ? SUCCESS_REWARD_SOMPI - SUCCESS_PARTICIPANTS_POOL_SOMPI
+    : FAILURE_FEE_SOMPI;
+  const evenShare = n > 0n ? SUCCESS_PARTICIPANTS_POOL_SOMPI / n : 0n;
+  const share = !success
+    ? 0n
+    : evenShare < REWARD_CAP_PER_COMMIT_SOMPI
+      ? evenShare
+      : REWARD_CAP_PER_COMMIT_SOMPI;
 
   return {
     creatorCreationRefundSompi: CREATE_DEPOSIT_SOMPI - treasurySompi - share * n,

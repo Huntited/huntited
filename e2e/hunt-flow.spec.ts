@@ -81,7 +81,7 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
     "en attente",
   );
   await expect(david.getByText("Remboursement par non-retenu·e (1)")).toBeVisible();
-  await expect(david.getByText("Part de la récompense par engagé·e")).toBeVisible();
+  await expect(david.getByText("Récompense par engagé·e")).toBeVisible();
 
   // Alice (créatrice) ouvre le chat ; Bruno (retenu) le voit ; David (non retenu) non.
   await reload(alice);
