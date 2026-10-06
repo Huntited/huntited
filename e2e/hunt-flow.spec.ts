@@ -55,6 +55,23 @@ test("pays : choix à la création, affichage et filtre sur l'accueil", async ({
   await expect(alice.getByText(/, France/)).toHaveCount(0);
 });
 
+test("choisir une ville remplit le pays (recherche sur l'appareil)", async ({ page }) => {
+  await open(page, "/create");
+  const place = page.getByRole("combobox", { name: "Lieu" });
+  await place.click();
+  await place.fill("Bruxe");
+  const option = page.getByRole("option", { name: /Brussels, Belgique/ });
+  await expect(option).toBeVisible();
+  // Clavier : flèche bas puis Entrée choisit la première suggestion.
+  await place.press("ArrowDown");
+  await place.press("Enter");
+  await expect(place).toHaveValue("Brussels");
+  await expect(page.getByLabel("Pays")).toHaveValue("BE");
+  // Le lieu reste modifiable librement.
+  await place.fill("Brussels, Mont des Arts");
+  await expect(page.getByLabel("Pays")).toHaveValue("BE");
+});
+
 test("seuil minimum de 7 personnes à la création", async ({ page }) => {
   await fillCreateFields(page, { title: "Trop petite", threshold: 6 });
   await page.getByRole("button", { name: "Vérifier ma chasse" }).click();

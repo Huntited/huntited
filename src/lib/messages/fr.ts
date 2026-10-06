@@ -216,7 +216,8 @@ export const fr = {
   "form.description": "Description",
   "form.description.placeholder": "Décrivez l'action collective en quelques lignes.",
   "form.location.placeholder": "Ex. Paris, place de la République",
-  "form.location.help": "Texte libre. Aucune position n'est collectée.",
+  "form.location.help":
+    "Tape une ville pour la choisir dans la liste (le pays se remplit tout seul), puis précise si besoin. La recherche se fait sur ton appareil.",
   "form.deadline": "Date et heure limite",
   "form.deadline.help": "Seuil pas atteint à cette date : action annulée.",
   "form.threshold": "Seuil de participants",
@@ -346,6 +347,9 @@ export const fr = {
   "home.country": "Filtrer par pays",
   "home.country.all": "Tous les pays",
   "hunt.country": "Pays",
+  "city.suggestions": "Villes suggérées",
+  "city.population": "{count} hab.",
+  "footer.geonames": "Villes : GeoNames (CC BY 4.0)",
 
   // Cartes, sections, étapes
   "card.endsIn": "Se termine {when}",

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { HuntFormData } from "@/lib/types";
 import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
+import { CityInput } from "@/components/hunt/CityInput";
 import { guessCountry, sortedCountries } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
@@ -206,12 +207,16 @@ export function CreateHuntForm() {
         {/* Lieu — texte libre, aucune donnée de géoloc */}
         <div className="space-y-2">
           <Label htmlFor="location">{t("hunt.location")}</Label>
-          <Input
+          <CityInput
             id="location"
-            aria-invalid={errors.location ? true : undefined}
-            aria-describedby={describe("location")}
+            invalid={!!errors.location}
+            describedBy={describe("location")}
             value={values.location}
-            onChange={setField("location")}
+            onChange={(text) => setValues((prev) => ({ ...prev, location: text }))}
+            // Ville choisie : elle remplit le lieu et le pays.
+            onPick={(city) =>
+              setValues((prev) => ({ ...prev, location: city.name, country: city.country }))
+            }
             placeholder={t("form.location.placeholder")}
           />
           <ErrorText id="location" msg={errors.location} />

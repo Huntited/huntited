@@ -212,7 +212,8 @@ export const en: Messages = {
   "form.description": "Description",
   "form.description.placeholder": "Describe the collective action in a few lines.",
   "form.location.placeholder": "E.g. Paris, Republic Square",
-  "form.location.help": "Free text. No location is collected.",
+  "form.location.help":
+    "Type a city to pick it from the list (the country fills in by itself), then add details if needed. The search runs on your device.",
   "form.deadline": "Deadline (date and time)",
   "form.deadline.help": "Threshold not reached by this date: action cancelled.",
   "form.threshold": "Participant threshold",
@@ -340,6 +341,9 @@ export const en: Messages = {
   "home.country": "Filter by country",
   "home.country.all": "All countries",
   "hunt.country": "Country",
+  "city.suggestions": "Suggested cities",
+  "city.population": "{count} people",
+  "footer.geonames": "Cities: GeoNames (CC BY 4.0)",
 
   // Cards, sections, steps
   "card.endsIn": "Ends {when}",

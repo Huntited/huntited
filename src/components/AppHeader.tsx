@@ -189,6 +189,16 @@ export function AppFooter() {
     <footer className="mx-auto mt-16 w-full max-w-3xl border-t px-4 py-6 text-xs text-muted-foreground">
       <p>{t("footer.tagline")}</p>
       <p className="mt-1">{t("footer.testnet")}</p>
+      <p className="mt-1">
+        <a
+          href="https://www.geonames.org/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline-offset-2 hover:underline"
+        >
+          {t("footer.geonames")}
+        </a>
+      </p>
     </footer>
   );
 }
