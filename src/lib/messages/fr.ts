@@ -159,6 +159,13 @@ export const fr = {
   "chat.open": "Le chat est ouvert. Rejoins-le pour coordonner l'action.",
   "chat.openLink": "Ouvrir le chat Matrix",
   "chat.expiresOn": "Expire le {date}",
+  "notify.follow": "Me prévenir du résultat",
+  "notify.on": "Tu seras prévenu·e",
+  "notify.hint": "Une notification quand la chasse se déclenche ou échoue. Sans compte ni wallet.",
+  "notify.onHint": "Clique à nouveau pour annuler.",
+  "notify.denied":
+    "Les notifications sont bloquées pour ce site : autorise-les dans les réglages du navigateur.",
+  "notify.unavailable": "Les notifications ne sont pas disponibles pour le moment.",
   "chat.opening": "La chasse est déclenchée : ouverture du chat…",
   "common.retry": "Réessayer",
   "chat.demo": "(Démonstration : chat simulé, aucun salon réel)",

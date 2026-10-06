@@ -26,6 +26,11 @@ export interface StoredHunt {
   activationRank?: number;
   settledAt?: string;
   outcome?: HuntOutcome;
+  /**
+   * Chasse ratée : nombre d'engagements au moment de leur effacement (24 h
+   * après la date limite). Seul ce nombre reste, pour l'affichage.
+   */
+  purgedCommitCount?: number;
 }
 
 /** Engagement stocké : empreinte propre à la chasse, jamais l'adresse. */

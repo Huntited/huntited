@@ -7,7 +7,9 @@ import { ChatService } from "./services/chat-service.js";
 import { MemoryChatStore } from "./services/chat-store.js";
 import { HuntRegistry } from "./services/hunt-registry.js";
 import { createMatrixService } from "./services/matrix-service.js";
+import { runMaintenance } from "./services/maintenance.js";
 import { PassRegistry } from "./services/pass-registry.js";
+import { createWebPushSender, PushService } from "./services/push-service.js";
 import { createSignatureVerifier } from "./services/wallet-auth.js";
 
 const chat = new ChatService(
@@ -18,6 +20,20 @@ const chat = new ChatService(
     clientUrl: env.MATRIX_CLIENT_URL,
   }),
 );
+const registry = new HuntRegistry(env.REGISTRY_FILE ? { file: env.REGISTRY_FILE } : {});
+
+// Notifications : actives seulement si les clés VAPID sont fournies.
+const push = env.PUSH_VAPID_PRIVATE_KEY
+  ? new PushService(
+      await createWebPushSender({
+        publicKey: env.PUSH_VAPID_PUBLIC_KEY,
+        privateKey: env.PUSH_VAPID_PRIVATE_KEY,
+        subject: env.PUSH_SUBJECT,
+      }),
+      env.PUSH_FILE ? { file: env.PUSH_FILE } : {},
+    )
+  : undefined;
+
 const app = createApp({
   chat,
   auth: new AuthService(
@@ -26,7 +42,8 @@ const app = createApp({
     Date.now,
     env.AUTH_SESSION_TTL_SECONDS,
   ),
-  registry: new HuntRegistry(env.REGISTRY_FILE ? { file: env.REGISTRY_FILE } : {}),
+  registry,
+  ...(push ? { push: { service: push, publicKey: env.PUSH_VAPID_PUBLIC_KEY } } : {}),
   // L'URI affichée dans le message à signer est l'origine principale.
   challenges: new ChallengeService({ appUri: env.CORS_ORIGIN[0]!, network: env.KASPA_NETWORK }),
   verifySignature: createSignatureVerifier(env.WALLET_AUTH_MODE, env.KASPA_NETWORK),
@@ -46,7 +63,10 @@ const app = createApp({
   },
 });
 
-// Nettoyage périodique des salons expirés.
-setInterval(() => void chat.cleanExpiredChats(), 60_000).unref();
+// Salons expirés, notifications de fin, effacement des chasses ratées.
+setInterval(
+  () => void runMaintenance({ registry, chat, ...(push ? { push } : {}) }),
+  60_000,
+).unref();
 
 app.listen(env.PORT, () => console.info(`[server] démarré sur le port ${env.PORT}`));

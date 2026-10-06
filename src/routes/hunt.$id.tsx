@@ -5,6 +5,7 @@ import { ChatPanel } from "@/components/hunt/ChatPanel";
 import { HuntSettlementPanel } from "@/components/hunt/HuntSettlementPanel";
 import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
 import { CommitModal } from "@/components/hunt/CommitModal";
+import { NotifyButton } from "@/components/hunt/NotifyButton";
 import { ReplyOnXButton } from "@/components/hunt/ReplyOnXButton";
 import { ShareHuntButton } from "@/components/hunt/ShareHuntButton";
 import { Button } from "@/components/ui/button";
@@ -207,6 +208,9 @@ function HuntDetailPage() {
               </p>
             );
           })()}
+
+        {/* Être prévenu·e du résultat, sans compte ni wallet */}
+        {status === "active" && <NotifyButton huntId={hunt.id} />}
       </section>
 
       {/* Encadré du créateur : mobiliser pendant que la chasse est ouverte */}

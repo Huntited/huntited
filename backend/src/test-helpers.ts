@@ -13,6 +13,7 @@ import { HuntRegistry } from "./services/hunt-registry.js";
 import { encodeKaspaAddress, personalMessageHash } from "./services/kaspa-signature.js";
 import { MockMatrixService } from "./services/matrix-service.js";
 import { PassRegistry } from "./services/pass-registry.js";
+import type { PushService } from "./services/push-service.js";
 import { createSignatureVerifier } from "./services/wallet-auth.js";
 
 export interface TestWallet {
@@ -38,6 +39,8 @@ export async function startApp(
     minThreshold?: number | "default";
     /** Pass Huntited activés (invitations de départ, pass exigé ou non). */
     passes?: { required: boolean; genesis?: string[] };
+    /** Notifications « me prévenir » (expéditeur factice). */
+    push?: PushService;
   } = {},
 ) {
   const now = opts.now ?? Date.now;
@@ -59,6 +62,7 @@ export async function startApp(
     ...(passes
       ? { passes: { registry: passes, required: opts.passes!.required, invitesPerMonth: 3 } }
       : {}),
+    ...(opts.push ? { push: { service: opts.push, publicKey: "test-public-key" } } : {}),
   });
   const server: Server = app.listen(0);
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;

@@ -80,7 +80,7 @@ const fr: LegalSection[] = [
       {
         heading: "Ce qui reste sur ton appareil",
         paragraphs: [
-          "Dans le stockage de ton navigateur : l'état de connexion de ton wallet, ta langue et ton thème, le brouillon de création, la liste des chasses que tu as créées ou rejointes, tes réglages de badges, et le secret de ton pass. Ces données ne quittent pas ton appareil ; tu peux les effacer en vidant les données du site.",
+          "Dans le stockage de ton navigateur : l'état de connexion de ton wallet, ta langue et ton thème, le brouillon de création, la liste des chasses que tu as créées, rejointes ou suivies, tes réglages de badges, et le secret de ton pass. Ces données ne quittent pas ton appareil ; tu peux les effacer en vidant les données du site.",
           "La recherche de villes se fait sur ton appareil : aucune lettre tapée n'est envoyée (données GeoNames, CC BY 4.0).",
         ],
       },
@@ -90,6 +90,8 @@ const fr: LegalSection[] = [
           "Les informations publiques des chasses (titre, description, lieu, pays, date limite, seuil, caution), une empreinte du wallet créateur, une empreinte par engagement (propre à chaque chasse) et l'éventuel seuil personnel ; pour les pass, uniquement des empreintes anonymes et des codes à usage unique.",
           "L'adresse de ton wallet n'est jamais conservée en clair. Les adresses IP ne sont pas enregistrées : elles servent seulement, sous forme d'empreinte gardée en mémoire quelques minutes, à limiter les abus.",
           "Chat : les salons sont créés sur un serveur Matrix géré par Huntited, sans fédération, avec chiffrement de bout en bout ; ils sont supprimés, avec les comptes temporaires, 24 heures après la date limite.",
+          "Chasse ratée : 24 heures après la date limite, les empreintes d'engagement, seuils personnels et codes de pass de la chasse sont effacés ; seul leur nombre reste affiché.",
+          "Notifications (facultatives) : si tu demandes à être prévenu·e, le serveur garde l'adresse de livraison fournie par ton navigateur, l'identifiant de la chasse et ta langue, sans lien avec ton wallet. Elles sont supprimées dès la notification envoyée. Le message, chiffré de bout en bout, transite par le service de notification de ton navigateur (Google, Mozilla, Apple ou Microsoft), qui ne peut pas le lire.",
         ],
       },
       {
@@ -203,7 +205,7 @@ const en: LegalSection[] = [
       {
         heading: "What stays on your device",
         paragraphs: [
-          "In your browser's storage: your wallet connection state, your language and theme, the creation draft, the hunts you created or joined, your badge settings, and your pass secret. This data doesn't leave your device; you can erase it by clearing the site's data.",
+          "In your browser's storage: your wallet connection state, your language and theme, the creation draft, the hunts you created, joined or follow, your badge settings, and your pass secret. This data doesn't leave your device; you can erase it by clearing the site's data.",
           "City search runs on your device: no keystroke is sent anywhere (GeoNames data, CC BY 4.0).",
         ],
       },
@@ -213,6 +215,8 @@ const en: LegalSection[] = [
           "Public hunt information (title, description, place, country, deadline, threshold, deposit), a fingerprint of the creator's wallet, one fingerprint per commitment (specific to each hunt) and any personal threshold; for passes, only anonymous fingerprints and single-use codes.",
           "Your wallet address is never stored in clear. IP addresses aren't recorded: they're only used, as a fingerprint kept in memory for a few minutes, to limit abuse.",
           "Chat: rooms are created on a Matrix server run by Huntited, without federation, with end-to-end encryption; they're deleted, along with the temporary accounts, 24 hours after the deadline.",
+          "Failed hunt: 24 hours after the deadline, the hunt's commitment fingerprints, personal thresholds and pass codes are erased; only their number remains displayed.",
+          "Notifications (optional): if you ask to be notified, the server keeps the delivery address provided by your browser, the hunt's identifier and your language, with no link to your wallet. They're deleted as soon as the notification is sent. The message, end-to-end encrypted, goes through your browser's notification service (Google, Mozilla, Apple or Microsoft), which can't read it.",
         ],
       },
       {

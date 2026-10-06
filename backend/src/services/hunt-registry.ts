@@ -75,7 +75,7 @@ export class HuntRegistry implements HuntAccessStore {
   }
 
   commitCount(huntId: string): number {
-    return this.commits.get(huntId)?.length ?? 0;
+    return this.hunts.get(huntId)?.purgedCommitCount ?? this.commits.get(huntId)?.length ?? 0;
   }
 
   /** Seuil personnel effectif d'un engagement (anciens engagements : seuil de la chasse). */
@@ -283,6 +283,31 @@ export class HuntRegistry implements HuntAccessStore {
     hunt.settledAt = new Date(this.now()).toISOString();
     this.save();
     return hunt;
+  }
+
+  /** La chasse a échoué (seuil non atteint à la date limite). */
+  isFailed(hunt: StoredHunt): boolean {
+    const status = this.status(hunt);
+    return status === "expired" || (status === "settled" && hunt.outcome === "failure");
+  }
+
+  /**
+   * Efface les engagements des chasses ratées, `graceMs` après la date limite
+   * (le temps de voir le remboursement) : empreintes, seuils personnels et
+   * codes de pass disparaissent ; seul leur nombre reste. Renvoie le nombre
+   * de chasses purgées.
+   */
+  purgeFailed(graceMs: number): number {
+    let purged = 0;
+    for (const hunt of this.hunts.values()) {
+      if (hunt.purgedCommitCount !== undefined || !this.isFailed(hunt)) continue;
+      if (this.now() < Date.parse(hunt.deadline) + graceMs) continue;
+      hunt.purgedCommitCount = this.commits.get(hunt.id)?.length ?? 0;
+      this.commits.set(hunt.id, []);
+      purged++;
+    }
+    if (purged > 0) this.save();
+    return purged;
   }
 
   // --- Persistance -------------------------------------------------------------

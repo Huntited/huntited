@@ -64,6 +64,17 @@ const schema = z
       )
       .pipe(z.array(z.string().regex(/^[\w-]{24,128}$/))),
     PASS_INVITES_PER_MONTH: z.coerce.number().int().min(1).max(20).default(3),
+    // Notifications « me prévenir » (Web Push). Vides = désactivées.
+    // Générer la paire : npx web-push generate-vapid-keys. Clé privée backend-only.
+    PUSH_VAPID_PUBLIC_KEY: z.string().default(""),
+    PUSH_VAPID_PRIVATE_KEY: z.string().default(""),
+    PUSH_SUBJECT: z.string().default("mailto:Huntited@proton.me"),
+    // Fichier JSON des abonnements ; vide = mémoire seulement.
+    PUSH_FILE: z.string().default(""),
+  })
+  .refine((e) => !e.PUSH_VAPID_PRIVATE_KEY || e.PUSH_VAPID_PUBLIC_KEY.length > 0, {
+    message: "PUSH_VAPID_PUBLIC_KEY requis avec PUSH_VAPID_PRIVATE_KEY",
+    path: ["PUSH_VAPID_PUBLIC_KEY"],
   })
   .refine((e) => e.NODE_ENV !== "production" || e.MIN_HUNT_THRESHOLD === 7, {
     message: "MIN_HUNT_THRESHOLD ne peut pas être abaissé en production",

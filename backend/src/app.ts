@@ -13,8 +13,10 @@ import type { ChallengeService } from "./services/challenge-service.js";
 import type { ChatService } from "./services/chat-service.js";
 import type { HuntRegistry } from "./services/hunt-registry.js";
 import type { PassRegistry } from "./services/pass-registry.js";
+import type { PushService } from "./services/push-service.js";
 import type { CreateChatInput } from "./types/chat.js";
 import { passesRouter } from "./routes/passes.js";
+import { pushRouter } from "./routes/push.js";
 
 export interface AppDeps {
   chat: ChatService;
@@ -35,6 +37,8 @@ export interface AppDeps {
   passes?: { registry: PassRegistry; required: boolean; invitesPerMonth: number };
   /** Durée de vie du salon après la date limite (24 h par défaut). */
   chatTtlMs?: number;
+  /** Notifications « me prévenir » ; absent = fonctionnalité désactivée. */
+  push?: { service: PushService; publicKey: string };
 }
 
 const DEFAULT_CHAT_TTL_MS = 86_400_000;
@@ -86,14 +90,27 @@ export function createApp(d: AppDeps) {
       ...(d.minThreshold !== undefined ? { minThreshold: d.minThreshold } : {}),
       ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
       ...(d.passes ? { passes: { registry: d.passes.registry, required: d.passes.required } } : {}),
-      // Le chat s'ouvre tout seul dès que la chasse se déclenche.
+      // Dès que la chasse se déclenche : le chat s'ouvre tout seul, et les
+      // personnes qui l'ont demandé sont prévenues.
       onActivated: (hunt) => {
         d.chat
           .createChat(chatTerms(hunt.id)!)
           .catch(() => console.error("[chat] auto_create_failed"));
+        void d.push?.service.notify(hunt, "activated");
       },
     }),
   );
+  if (d.push) {
+    app.use(
+      "/api/push",
+      pushRouter({
+        push: d.push.service,
+        registry: d.registry,
+        publicKey: d.push.publicKey,
+        ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
+      }),
+    );
+  }
   if (d.passes) {
     app.use(
       "/api/passes",

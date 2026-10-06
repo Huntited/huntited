@@ -50,6 +50,18 @@ if ($Pass) {
   }
 }
 $passRequired = if ($Pass) { "true" } else { "false" }
+
+# Clés des notifications « me prévenir » : générées une fois, gardées dans
+# backend/data/vapid.json (hors git) pour que les abonnements restent valables.
+$vapidFile = "$root\backend\data\vapid.json"
+if (-not (Test-Path $vapidFile)) {
+  New-Item -ItemType Directory -Force "$root\backend\data" | Out-Null
+  Push-Location "$root\backend"
+  node -e "process.stdout.write(JSON.stringify(require('web-push').generateVAPIDKeys()))" |
+    Out-File -Encoding ascii $vapidFile
+  Pop-Location
+}
+$vapid = Get-Content $vapidFile -Raw | ConvertFrom-Json
 $genesisList = $genesis -join ","
 
 $backend = @"
@@ -62,6 +74,9 @@ $backend = @"
 `$env:PASS_REQUIRED='$passRequired'
 `$env:PASS_FILE='data/passes.json'
 `$env:PASS_GENESIS_INVITES='$genesisList'
+`$env:PUSH_VAPID_PUBLIC_KEY='$($vapid.publicKey)'
+`$env:PUSH_VAPID_PRIVATE_KEY='$($vapid.privateKey)'
+`$env:PUSH_FILE='data/push.json'
 Set-Location '$root\backend'
 bun run dev
 "@
