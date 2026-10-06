@@ -434,6 +434,8 @@ export const fr = {
   "form.country.placeholder": "Choisis un pays",
   "val.country.required": "Le pays est requis.",
   "home.country": "Filtrer par pays",
+  "home.country.withHunts": "Avec des chasses",
+  "home.country.others": "Autres pays",
   "home.country.all": "Tous les pays",
   "hunt.country": "Pays",
   "city.suggestions": "Villes suggérées",

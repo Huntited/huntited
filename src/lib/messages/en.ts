@@ -428,6 +428,8 @@ export const en: Messages = {
   "form.country.placeholder": "Choose a country",
   "val.country.required": "A country is required.",
   "home.country": "Filter by country",
+  "home.country.withHunts": "With hunts",
+  "home.country.others": "Other countries",
   "home.country.all": "All countries",
   "hunt.country": "Country",
   "city.suggestions": "Suggested cities",

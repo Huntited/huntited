@@ -8,7 +8,10 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -93,10 +96,19 @@ function Index() {
   if (search) filters.search = search;
   if (countryFilter !== "all") filters.country = countryFilter;
   const hunts = all === null ? null : filterHuntViews(all, filters);
-  // Seuls les pays où il existe des chasses sont proposés dans le filtre.
-  const countries = sortedCountries(locale, [
-    ...new Set((all ?? []).map((v) => v.hunt.country).filter(isCountryCode)),
-  ]);
+  // Filtre par pays : d'abord ceux qui ont des chasses (avec leur nombre),
+  // puis tous les autres. Noms calculés dans le navigateur seulement (ceux
+  // du serveur peuvent différer légèrement → erreur d'hydratation).
+  const [allCountries, setAllCountries] = useState<{ code: string; name: string }[]>([]);
+  useEffect(() => setAllCountries(sortedCountries(locale)), [locale]);
+  const perCountry = new Map<string, number>();
+  for (const v of all ?? []) {
+    if (isCountryCode(v.hunt.country)) {
+      perCountry.set(v.hunt.country, (perCountry.get(v.hunt.country) ?? 0) + 1);
+    }
+  }
+  const withHunts = allCountries.filter((c) => perCountry.has(c.code));
+  const others = allCountries.filter((c) => !perCountry.has(c.code));
   const filtering = search.trim() !== "" || statusFilter !== "all" || countryFilter !== "all";
 
   const hasNoResults = hunts !== null && hunts.length === 0;
@@ -162,11 +174,26 @@ function Index() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("home.country.all")}</SelectItem>
-              {countries.map((c) => (
-                <SelectItem key={c.code} value={c.code}>
-                  {c.name}
-                </SelectItem>
-              ))}
+              {withHunts.length > 0 && (
+                <SelectGroup>
+                  <SelectSeparator />
+                  <SelectLabel>{t("home.country.withHunts")}</SelectLabel>
+                  {withHunts.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.name} ({perCountry.get(c.code)})
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+              <SelectGroup>
+                <SelectSeparator />
+                <SelectLabel>{t("home.country.others")}</SelectLabel>
+                {others.map((c) => (
+                  <SelectItem key={c.code} value={c.code}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
         </div>

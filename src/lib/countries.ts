@@ -3,8 +3,12 @@
 // liste de noms à maintenir. Le pays est public, comme le lieu.
 import type { Locale } from "./i18n";
 
-/** Codes ISO 3166-1 alpha-2 attribués. */
+/**
+ * Codes ISO 3166-1 alpha-2 attribués, plus « XK » (Kosovo, code d'usage
+ * courant, connu des navigateurs, sans attribution officielle).
+ */
 export const COUNTRY_CODES = (
+  "XK " +
   "AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ " +
   "BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM " +
   "DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS " +

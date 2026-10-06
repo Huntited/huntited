@@ -11,12 +11,13 @@ import type { HuntView } from "./hunt-repository";
 import { filterHuntViews } from "./registry";
 
 describe("pays", () => {
-  it("contient les 249 codes ISO, sans doublon", () => {
-    expect(COUNTRY_CODES).toHaveLength(249);
-    expect(new Set(COUNTRY_CODES).size).toBe(249);
+  it("contient les 249 codes ISO et le Kosovo, sans doublon", () => {
+    expect(COUNTRY_CODES).toHaveLength(250);
+    expect(new Set(COUNTRY_CODES).size).toBe(250);
     expect(isCountryCode("FR")).toBe(true);
     expect(isCountryCode("fr")).toBe(false);
     expect(isCountryCode("XX")).toBe(false);
+    expect(countryName("XK", "fr")).toBe("Kosovo");
   });
 
   it("nomme les pays dans la langue choisie", () => {
