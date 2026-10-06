@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { HuntFormData } from "@/lib/types";
 import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
-import { COMMIT_DEPOSIT_TERMS, CREATE_DEPOSIT_TERMS } from "@/lib/terms";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
 import { validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
 
@@ -163,7 +162,7 @@ export function CreateHuntForm() {
         />
         <ErrorText msg={errors.deadline} />
         <p className="text-xs text-muted-foreground">
-          Après cette date, la chasse est annulée si le seuil n'est pas atteint.
+          Si le seuil n'est pas atteint à cette date, la chasse est annulée et chacun est remboursé.
         </p>
       </div>
 
@@ -180,7 +179,7 @@ export function CreateHuntForm() {
         />
         <ErrorText msg={errors.threshold} />
         <p className="text-xs text-muted-foreground">
-          Nombre minimum d'engagements pour déclencher l'action.
+          Nombre minimum de personnes pour que l'action ait lieu.
         </p>
       </div>
 
@@ -198,26 +197,30 @@ export function CreateHuntForm() {
           <span>Masquer la progression</span>
         </label>
         <p className="text-xs text-muted-foreground">
-          Personne ne voit combien de personnes se sont engagées avant l'activation ou la date
-          limite : s'engager en premier n'expose plus. Dans ce prototype, c'est un masquage
-          d'affichage, pas encore une garantie cryptographique.
+          Le nombre d'engagés reste caché jusqu'au déclenchement ou à la date limite : personne
+          n'hésite à s'engager le premier. (Version de test : c'est seulement caché à l'écran.)
         </p>
       </div>
 
       {/* Dépôt de création — fixé, non modifiable pour l'instant */}
       <div className="space-y-2">
-        <Label htmlFor="deposit">Dépôt de création</Label>
+        <Label htmlFor="deposit">Ta caution</Label>
         <Input id="deposit" value={`${CREATE_DEPOSIT_KAS} KAS`} readOnly disabled />
         <p className="text-xs text-muted-foreground">
-          Montant fixe pour le MVP, verrouillé dans le covenant de la chasse. {CREATE_DEPOSIT_TERMS}
+          Tu bloques {CREATE_DEPOSIT_KAS} KAS en créant la chasse. Si l'action a lieu, tu les
+          récupères. Sinon, ils offrent d'abord 1 KAS de bonus à chaque engagé ({CREATE_DEPOSIT_KAS}{" "}
+          KAS au plus au total) et tu récupères le reste.
         </p>
       </div>
 
       {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
       <div className="space-y-2">
-        <Label htmlFor="commit-deposit">Dépôt par engagement</Label>
+        <Label htmlFor="commit-deposit">Prix de l'engagement</Label>
         <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
-        <p className="text-xs text-muted-foreground">{COMMIT_DEPOSIT_TERMS}</p>
+        <p className="text-xs text-muted-foreground">
+          Chaque participant bloque {COMMIT_DEPOSIT_KAS} KAS. Si l'action a lieu, tu reçois 95 % de
+          ces KAS (5 % vont à Huntited). Sinon, chacun récupère les siens.
+        </p>
       </div>
 
       {/* Erreur globale de création (distincte des erreurs de validation) */}

@@ -8,21 +8,21 @@
  * Les montants sont vérifiés contre hunt-economics.ts dans les tests.
  */
 export const COMMIT_DEPOSIT_TERMS =
-  "Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement, avec un bonus pouvant aller jusqu'à 1 KAS pris sur le dépôt du créateur. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %.";
+  "S'engager coûte 5 KAS. Si l'action n'a pas lieu (pas assez de monde à la date limite), tu récupères tes 5 KAS, plus jusqu'à 1 KAS de bonus. Si elle a lieu, tes 5 KAS sont dépensés : 95 % pour le créateur de la chasse, 5 % pour Huntited.";
 
 export const CREATE_DEPOSIT_TERMS =
-  "Le dépôt de création de 30 KAS est remboursé au créateur si le seuil est atteint. Sinon, il verse d'abord 1 KAS de bonus à chaque engagé (30 KAS au plus, partagés au-delà de 30 engagés) et le créateur récupère le reste.";
+  "Le créateur bloque une caution de 30 KAS. Si l'action a lieu, il la récupère. Sinon, elle sert d'abord à donner 1 KAS de bonus à chaque engagé (30 KAS au plus au total, partagés s'il y a plus de 30 engagés), et le créateur récupère le reste.";
 
 /**
  * Argument mis en avant au moment de s'engager : l'échec rapporte même un
  * bonus. Ne pas écrire « gratuit » : en cas de succès, l'engagement coûte 5 KAS.
  */
 export const COMMIT_REFUND_HIGHLIGHT =
-  "Gagnant même si ça ne se fait pas : si le seuil n'est pas atteint, tes 5 KAS te sont rendus intégralement, avec un bonus pouvant aller jusqu'à 1 KAS.";
+  "Tu ne perds rien si ça ne se fait pas : tes 5 KAS te sont rendus intégralement, plus jusqu'à 1 KAS de bonus.";
 
 /** Version courte, sous le bouton d'engagement. */
 export const COMMIT_REFUND_SHORT =
-  "Si le seuil n'est pas atteint : remboursé intégralement + jusqu'à 1 KAS de bonus.";
+  "Si ça ne se fait pas : remboursé intégralement + jusqu'à 1 KAS de bonus.";
 
 /**
  * Conditions clés listées dans la modal d'engagement, sous l'encadré qui
@@ -30,9 +30,9 @@ export const COMMIT_REFUND_SHORT =
  */
 export const termsShort: string[] = [
   CREATE_DEPOSIT_TERMS,
-  "Pas de remboursement à la demande : une fois engagé, ton dépôt est verrouillé.",
-  "Déclenchement atomique : soit la chasse atteint son seuil et s'active, soit elle expire.",
-  "Confidentialité : ton engagement est enregistré sous une empreinte anonyme, jamais sous ton adresse.",
+  "Une fois engagé, tu ne peux pas reprendre tes KAS avant la fin de la chasse.",
+  "Tout le monde ou personne : l'action n'a lieu que si le seuil est atteint.",
+  "Anonyme : ton engagement n'est jamais enregistré sous ton adresse.",
 ];
 
 /**
@@ -41,39 +41,34 @@ export const termsShort: string[] = [
  * ultérieurement (référence pour la page légale à venir).
  */
 export const termsFull = `
-CONDITIONS D'ENGAGEMENT — HUNTITED (MVP)
+CONDITIONS D'ENGAGEMENT — HUNTITED (version de test)
 
-1. Dépôt et engagement
-En confirmant, tu engages un dépôt de 5 KAS. Ce dépôt est verrouillé
-dans le covenant de la chasse jusqu'au déclenchement ou à l'expiration
-de l'action. Il ne peut pas être retiré sur simple demande.
+1. Ce que tu bloques
+En t'engageant, tu bloques 5 KAS jusqu'à la fin de la chasse (seuil
+atteint ou date limite passée). Tu ne peux pas les reprendre avant.
 
-2. Pas de remboursement à la demande
-Une fois engagé, ton dépôt ne peut plus être récupéré sur simple
-demande. Il n'est libéré que selon les règles du protocole :
-- si la chasse réussit, le créateur récupère ses 30 KAS et le total
-  des dépôts d'engagement est réparti 95 % au créateur, 5 % à la
-  treasury Huntited ; les engagés ne récupèrent pas leur dépôt ;
-- si la chasse échoue, chaque engagé récupère ses 5 KAS plus un
-  bonus de 1 KAS pris sur le dépôt de création du créateur (bonus total
-  plafonné à 30 KAS, partagé à parts égales au-delà de 30 engagés) ;
-  le créateur récupère le reste de ses 30 KAS ; la treasury ne reçoit rien ;
-- si tu as fixé un seuil personnel (« je viens si au moins N personnes
-  viennent ») et qu'il n'est pas atteint alors que la chasse réussit, tu
-  ne participes pas : tu récupères tes 5 KAS, sans bonus.
+2. Ce qui se passe à la fin
+- L'action a lieu (seuil atteint) : tes 5 KAS sont dépensés, 95 % pour
+  le créateur et 5 % pour Huntited. Le créateur récupère ses 30 KAS
+  de caution.
+- L'action n'a pas lieu (seuil pas atteint à la date limite) : tu
+  récupères tes 5 KAS, plus un bonus de 1 KAS pris sur la caution du
+  créateur (30 KAS de bonus au total au maximum, partagés à parts
+  égales s'il y a plus de 30 engagés). Le créateur récupère le reste ;
+  Huntited ne prend rien.
+- Tu as fixé un seuil personnel (« je viens si au moins N personnes
+  viennent ») et il n'est pas atteint alors que l'action a lieu : tu
+  ne participes pas et tu récupères tes 5 KAS, sans bonus.
 
-3. Déclenchement atomique
-Le déclenchement est atomique : soit le seuil est atteint et l'action
-s'active pour tous les participants en même temps, soit elle expire.
-Il n'existe pas d'état intermédiaire où une partie des participants
-serait exposée sans les autres.
+3. Tout le monde ou personne
+L'action se déclenche pour tous les participants en même temps, ou
+pas du tout. Personne ne se retrouve exposé seul.
 
-4. Confidentialité des engagements
+4. Anonymat
 Ton engagement est enregistré sous une empreinte anonyme, jamais sous
-ton adresse. Selon le choix du créateur, le nombre d'engagés est
-visible de tous ou masqué jusqu'à l'activation ou la date limite.
-Dans cette version, ce masquage est un simple masquage d'affichage :
-ce n'est pas encore une garantie cryptographique (preuves ZK prévues
-plus tard).
+ton adresse. Le créateur choisit si le nombre d'engagés est visible
+de tous ou caché jusqu'au déclenchement ou à la date limite. Dans
+cette version, c'est seulement caché à l'écran :
+ce n'est pas encore une garantie cryptographique.
 
 `.trim();

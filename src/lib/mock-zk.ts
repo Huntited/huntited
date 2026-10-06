@@ -103,7 +103,7 @@ export async function mockCommit(
 ): Promise<MockCommitReceipt> {
   if (!walletAddress) throw new Error("Wallet non connecté.");
   if (hasMockCommitment(huntId, walletAddress)) {
-    throw new Error("Tu es déjà engagé·e dans cette hunt.");
+    throw new Error("Tu es déjà engagé·e dans cette chasse.");
   }
 
   const secret = bytesToHex(crypto.getRandomValues(new Uint8Array(32)));

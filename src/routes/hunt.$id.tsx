@@ -28,13 +28,13 @@ export const Route = createFileRoute("/hunt/$id")({
       {
         name: "description",
         content:
-          "Détails d'une chasse : lieu, date limite, seuil de participants et dépôt. Engagez-vous de façon privée et atomique.",
+          "Détails d'une chasse : lieu, date limite, seuil de participants et dépôt. Engagez-vous en privé : tout le monde ou personne.",
       },
       { property: "og:title", content: "Chasse — Huntited" },
       {
         property: "og:description",
         content:
-          "Détails d'une chasse : lieu, date limite, seuil et dépôt. Engagement privé et déclenchement atomique.",
+          "Détails d'une chasse : lieu, date limite, seuil et dépôt. Engagement privé : tout le monde ou personne.",
       },
     ],
   }),
@@ -138,7 +138,7 @@ function HuntDetailPage() {
           <span className="font-medium">{hunt.threshold} participants</span>
         </div>
         <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Dépôt par engagement</span>
+          <span className="text-muted-foreground">Prix de l'engagement</span>
           <span className="font-medium">{hunt.commitDeposit} KAS</span>
         </div>
       </div>
@@ -258,8 +258,8 @@ function HuntDetailPage() {
       {/* Bannières d'état */}
       {isActivated && (
         <div className="mt-6 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-          Cette chasse a atteint son seuil ({retainedCount ?? commitCount} / {hunt.threshold}). Le
-          covenant est activé.
+          Cette chasse a atteint son seuil ({retainedCount ?? commitCount} / {hunt.threshold}) :
+          l'action aura lieu.
           {commitsOpen &&
             " Les engagements restent ouverts jusqu'à la date limite : le groupe peut encore grandir."}
         </div>

@@ -88,7 +88,7 @@ export function CommitModal({
 
         {isCommitted ? (
           <p role="status" className="rounded-lg border bg-muted/40 p-4 text-sm">
-            Tu es déjà engagé·e dans cette hunt.
+            Tu es déjà engagé·e dans cette chasse.
           </p>
         ) : (
           <>
@@ -97,8 +97,8 @@ export function CommitModal({
             </p>
             <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
               <p>
-                <strong>Dépôt :</strong> {hunt.commitDeposit} KAS, verrouillés dans le covenant
-                (simulé).
+                <strong>Tu bloques {hunt.commitDeposit} KAS</strong> (version de test : aucun vrai
+                KAS n'est utilisé).
               </p>
               <p>{COMMIT_DEPOSIT_TERMS}</p>
               <div className="flex justify-between gap-4">
@@ -135,10 +135,9 @@ export function CommitModal({
                 <span>personnes viennent</span>
               </label>
               <p className="text-xs text-muted-foreground">
-                Facultatif. Laisse {hunt.threshold} (le seuil de la chasse) si tu viens dès que la
-                chasse se déclenche. Si tu demandes plus et que ce nombre n'est pas atteint, tu ne
-                participes pas et tes {hunt.commitDeposit} KAS te sont rendus. Ton choix reste
-                privé.
+                Facultatif. Laisse {hunt.threshold} si tu viens dès que la chasse se déclenche. Si
+                tu mets plus et que ce nombre n'est pas atteint, tu ne viens pas et tes{" "}
+                {hunt.commitDeposit} KAS te sont rendus. Personne d'autre ne voit ce chiffre.
               </p>
               {!personalValid && (
                 <p className="text-xs text-destructive" role="alert">

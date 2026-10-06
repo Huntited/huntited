@@ -23,8 +23,7 @@ export const Route = createFileRoute("/")({
       { title: "Huntited — Chasses actives" },
       {
         name: "description",
-        content:
-          "Rejoins des actions collectives de façon privée et atomique : tout le monde ensemble, ou personne.",
+        content: "Rejoins des actions collectives en privé : tout le monde ensemble, ou personne.",
       },
       { property: "og:title", content: "Huntited — Chasses actives" },
       {
@@ -131,8 +130,8 @@ function Index() {
       </header>
 
       <p className="mt-3 text-muted-foreground">
-        Coordination décentralisée d'actions collectives : engagements privés, déclenchement
-        atomique, aucun organisateur central.
+        Des actions collectives sans risque d'y aller seul : chacun s'engage en privé, et l'action
+        n'a lieu que si assez de monde suit. Sinon, tout le monde est remboursé.
       </p>
 
       <div className="mt-6">

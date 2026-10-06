@@ -103,8 +103,8 @@ function CreateReviewPage() {
       "Progression",
       draft.progressVisibility === "hidden" ? "Masquée jusqu'à la fin" : "Visible par tous",
     ],
-    ["Dépôt de création", `${CREATE_DEPOSIT_KAS} KAS`],
-    ["Dépôt par engagement", `${COMMIT_DEPOSIT_KAS} KAS`],
+    ["Ta caution", `${CREATE_DEPOSIT_KAS} KAS`],
+    ["Prix de l'engagement", `${COMMIT_DEPOSIT_KAS} KAS`],
   ];
 
   return (

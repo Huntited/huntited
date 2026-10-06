@@ -158,10 +158,10 @@ describe("sompiToKasText", () => {
 describe("textes UX des dépôts", () => {
   it("reprennent la formulation de référence du MVP", () => {
     expect(COMMIT_DEPOSIT_TERMS).toBe(
-      "Un engagement coûte 5 KAS. Si le seuil n'est pas atteint avant la deadline, le dépôt est remboursé intégralement, avec un bonus pouvant aller jusqu'à 1 KAS pris sur le dépôt du créateur. Si le seuil est atteint, le dépôt finance le créateur à 95 % et la treasury à 5 %.",
+      "S'engager coûte 5 KAS. Si l'action n'a pas lieu (pas assez de monde à la date limite), tu récupères tes 5 KAS, plus jusqu'à 1 KAS de bonus. Si elle a lieu, tes 5 KAS sont dépensés : 95 % pour le créateur de la chasse, 5 % pour Huntited.",
     );
     expect(CREATE_DEPOSIT_TERMS).toBe(
-      "Le dépôt de création de 30 KAS est remboursé au créateur si le seuil est atteint. Sinon, il verse d'abord 1 KAS de bonus à chaque engagé (30 KAS au plus, partagés au-delà de 30 engagés) et le créateur récupère le reste.",
+      "Le créateur bloque une caution de 30 KAS. Si l'action a lieu, il la récupère. Sinon, elle sert d'abord à donner 1 KAS de bonus à chaque engagé (30 KAS au plus au total, partagés s'il y a plus de 30 engagés), et le créateur récupère le reste.",
     );
   });
 
