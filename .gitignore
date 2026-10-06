@@ -39,3 +39,7 @@ backend/.env
 
 # Registre local des chasses (données de test, jamais versionnées)
 backend/data/
+
+# Rapports des tests de parcours (Playwright)
+test-results/
+playwright-report/

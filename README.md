@@ -88,6 +88,18 @@ Par défaut (`VITE_DATA_MODE=local`), les chasses sont stockées dans le navigat
 3. Ouvrir le front sur chaque appareil : créer, partager le lien, s'engager.
    Une seule signature du wallet par visite ouvre une session d'une heure.
 
+### Tests
+
+```bash
+bun run test        # tests unitaires du front (Vitest)
+bun run test:e2e    # parcours complet dans Chrome (Playwright) : backend + front dédiés
+```
+
+`test:e2e` démarre lui-même un backend et un front de test (ports 3099 et 5199,
+registre en mémoire, wallet factice) et utilise le Chrome installé. Il simule
+4 personnes : création, progression masquée, seuils personnels, activation,
+accès au chat. Les tests du backend : `cd backend && bun run test`.
+
 Routes du backend : `GET /health`, `GET|POST /api/hunts`, `GET /api/hunts/:id`,
 `POST /api/hunts/:id/commit`, `GET /api/me`, `POST /api/auth/challenge|session|chat-access`,
 `POST /api/chats`, `GET /api/chats/:huntId`.
