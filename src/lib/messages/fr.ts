@@ -325,6 +325,19 @@ export const fr = {
   "my.commitments": "Mes engagements",
   "my.noCommitments": "Aucun engagement pour l'instant.",
 
+  // Cartes, sections, étapes
+  "card.endsIn": "Se termine {when}",
+  "card.ended": "Terminée {when}",
+  "my.created": "Chasses créées",
+  "my.browse": "Voir les chasses",
+  "pass.step1": "Un membre t'envoie une invitation (par exemple sur Signal).",
+  "pass.step2": "Tu crées ton pass : il reste sur ton téléphone, sans nom ni adresse.",
+  "pass.step3":
+    "Pour t'engager, ton téléphone prouve que tu as un pass, sans dire lequel : une personne = un engagement.",
+  "form.section.action": "L'action",
+  "form.section.people": "Les participants",
+  "form.section.money": "Les dépôts",
+
   // Erreurs (wallet, actions)
   "wallet.err.noKastle": "Extension Kastle introuvable. Installe-la puis recharge la page.",
   "wallet.err.refused": "Connexion refusée dans Kastle.",

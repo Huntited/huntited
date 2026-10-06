@@ -67,11 +67,24 @@ export function formatDate(
   return new Date(date).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", options);
 }
 
+/** Durée relative courte (« dans 2 jours », « il y a 3 heures »). */
+export function formatRelative(locale: Locale, date: string | number | Date, now = Date.now()) {
+  const diff = new Date(date).getTime() - now;
+  const abs = Math.abs(diff);
+  const rtf = new Intl.RelativeTimeFormat(locale === "fr" ? "fr-FR" : "en-GB", {
+    numeric: "auto",
+  });
+  if (abs >= 86_400_000) return rtf.format(Math.round(diff / 86_400_000), "day");
+  if (abs >= 3_600_000) return rtf.format(Math.round(diff / 3_600_000), "hour");
+  return rtf.format(Math.round(diff / 60_000), "minute");
+}
+
 export interface UseI18n {
   locale: Locale;
   setLocale: (l: Locale) => void;
   t: (key: MessageKey, vars?: Record<string, string | number>) => string;
   date: (d: string | number | Date, options?: Intl.DateTimeFormatOptions) => string;
+  relative: (d: string | number | Date) => string;
 }
 
 export function useI18n(): UseI18n {
@@ -94,5 +107,6 @@ export function useI18n(): UseI18n {
       formatDate(locale, d, options),
     [locale],
   );
-  return { locale, setLocale, t, date };
+  const relative = useCallback((d: string | number | Date) => formatRelative(locale, d), [locale]);
+  return { locale, setLocale, t, date, relative };
 }

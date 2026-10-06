@@ -319,6 +319,19 @@ export const en: Messages = {
   "my.commitments": "My commitments",
   "my.noCommitments": "No commitments yet.",
 
+  // Cards, sections, steps
+  "card.endsIn": "Ends {when}",
+  "card.ended": "Ended {when}",
+  "my.created": "Hunts created",
+  "my.browse": "Browse hunts",
+  "pass.step1": "A member sends you an invitation (for example on Signal).",
+  "pass.step2": "You create your pass: it stays on your phone, with no name or address.",
+  "pass.step3":
+    "To commit, your phone proves you have a pass without saying which one: one person = one commitment.",
+  "form.section.action": "The action",
+  "form.section.people": "Participants",
+  "form.section.money": "Deposits",
+
   // Errors (wallet, actions)
   "wallet.err.noKastle": "Kastle extension not found. Install it, then reload the page.",
   "wallet.err.refused": "Connection refused in Kastle.",

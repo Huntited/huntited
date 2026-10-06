@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
-import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
+import { EmptyState } from "@/components/EmptyState";
+import { HuntCard } from "@/components/hunt/HuntCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,7 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { CovenantStatus } from "@/lib/covenants";
-import { isProgressVisible } from "@/lib/hunt-lifecycle";
 import { listHuntViews, onHuntsChange, type HuntView } from "@/lib/hunt-repository";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { filterHuntViews, type HuntFilters } from "@/lib/registry";
@@ -54,7 +54,7 @@ const STEPS: { title: MessageKey; text: MessageKey }[] = [
 ];
 
 function Index() {
-  const { t, date } = useI18n();
+  const { t } = useI18n();
 
   // Filtres contrôlés : recherche plein texte + statut.
   const [search, setSearch] = useState("");
@@ -152,38 +152,21 @@ function Index() {
         {hunts === null ? (
           <p className="mt-3 text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : hasNoResults ? (
-          <p className="mt-3 text-sm text-muted-foreground" role={loadError ? "alert" : undefined}>
-            {loadError
-              ? t("home.loadError")
-              : search.trim() || statusFilter !== "all"
-                ? t("home.noMatch")
-                : t("home.empty")}
-          </p>
+          loadError || search.trim() || statusFilter !== "all" ? (
+            <p
+              className="mt-3 text-sm text-muted-foreground"
+              role={loadError ? "alert" : undefined}
+            >
+              {loadError ? t("home.loadError") : t("home.noMatch")}
+            </p>
+          ) : (
+            <EmptyState title={t("home.empty")} action={t("home.create")} />
+          )
         ) : (
-          <ul className="mt-3 space-y-3">
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
             {hunts.map(({ hunt: h, status, commitCount }) => (
               <li key={h.id}>
-                <Link
-                  to="/hunt/$id"
-                  params={{ id: h.id }}
-                  className="block rounded-lg border p-4 transition-colors hover:bg-accent"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="font-medium">{h.title}</span>
-                    <HuntStatusBadge status={status} />
-                  </div>
-                  <div className="mt-1 text-sm text-muted-foreground">
-                    {h.location} ·{" "}
-                    {t("home.card.before", {
-                      date: date(h.deadline, { dateStyle: "medium", timeStyle: "short" }),
-                    })}
-                  </div>
-                  <div className="mt-1 text-sm">
-                    {isProgressVisible(h, status) && commitCount !== null
-                      ? t("home.card.progress", { count: commitCount, threshold: h.threshold })
-                      : t("home.card.hidden", { threshold: h.threshold })}
-                  </div>
-                </Link>
+                <HuntCard hunt={h} status={status} commitCount={commitCount} />
               </li>
             ))}
           </ul>

@@ -152,118 +152,130 @@ export function CreateHuntForm() {
   return (
     // noValidate : nos messages (traduits, avec la raison) plutôt que ceux du navigateur.
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      {/* Titre */}
-      <div className="space-y-2">
-        <Label htmlFor="title">{t("form.title")}</Label>
-        <Input
-          id="title"
-          aria-invalid={errors.title ? true : undefined}
-          value={values.title}
-          onChange={setField("title")}
-          placeholder={t("form.title.placeholder")}
-        />
-        <ErrorText msg={errors.title} />
-      </div>
-
-      {/* Description */}
-      <div className="space-y-2">
-        <Label htmlFor="description">{t("form.description")}</Label>
-        <Textarea
-          id="description"
-          aria-invalid={errors.description ? true : undefined}
-          value={values.description}
-          onChange={setField("description")}
-          placeholder={t("form.description.placeholder")}
-          rows={4}
-        />
-        <ErrorText msg={errors.description} />
-      </div>
-
-      {/* Lieu — texte libre, aucune donnée de géoloc */}
-      <div className="space-y-2">
-        <Label htmlFor="location">{t("hunt.location")}</Label>
-        <Input
-          id="location"
-          aria-invalid={errors.location ? true : undefined}
-          value={values.location}
-          onChange={setField("location")}
-          placeholder={t("form.location.placeholder")}
-        />
-        <ErrorText msg={errors.location} />
-        <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
-      </div>
-
-      {/* Date/heure limite */}
-      <div className="space-y-2">
-        <Label htmlFor="deadline">{t("form.deadline")}</Label>
-        <Input
-          id="deadline"
-          aria-invalid={errors.deadline ? true : undefined}
-          type="datetime-local"
-          value={values.deadline}
-          onChange={setField("deadline")}
-        />
-        <ErrorText msg={errors.deadline} />
-        <p className="text-xs text-muted-foreground">{t("form.deadline.help")}</p>
-      </div>
-
-      {/* Seuil de participants */}
-      <div className="space-y-2">
-        <Label htmlFor="threshold">{t("form.threshold")}</Label>
-        <Input
-          id="threshold"
-          aria-invalid={errors.threshold ? true : undefined}
-          type="number"
-          min={minHuntThreshold()}
-          value={values.threshold}
-          onChange={setField("threshold")}
-          placeholder={t("form.threshold.placeholder")}
-        />
-        <ErrorText msg={errors.threshold} />
-        <p className="text-xs text-muted-foreground">
-          {t("form.threshold.help", { min: minHuntThreshold() })}
-        </p>
-      </div>
-
-      {/* Visibilité de la progression */}
-      <div className="space-y-2">
-        <label className="flex cursor-pointer items-start gap-3 text-sm">
-          <Checkbox
-            id="hide-progress"
-            checked={values.hideProgress}
-            onCheckedChange={(checked) =>
-              setValues((prev) => ({ ...prev, hideProgress: checked === true }))
-            }
-            className="mt-0.5"
+      <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
+        <legend className="float-left w-full border-b pb-2 text-base font-semibold">
+          {t("form.section.action")}
+        </legend>
+        <div className="space-y-2">
+          <Label htmlFor="title">{t("form.title")}</Label>
+          <Input
+            id="title"
+            aria-invalid={errors.title ? true : undefined}
+            value={values.title}
+            onChange={setField("title")}
+            placeholder={t("form.title.placeholder")}
           />
-          <span>{t("form.hide")}</span>
-        </label>
-        <p className="text-xs text-muted-foreground">{t("form.hide.help")}</p>
-        <p className="text-xs font-medium text-green-700">{t("form.hide.recommended")}</p>
-      </div>
+          <ErrorText msg={errors.title} />
+        </div>
 
-      {/* Caution du créateur : 30 KAS au moins, au choix ; jamais de gain. */}
-      <div className="space-y-2">
-        <Label htmlFor="deposit">{t("form.caution.label")}</Label>
-        <Input
-          id="deposit"
-          aria-invalid={errors.deposit ? true : undefined}
-          type="number"
-          min={MIN_CAUTION_KAS}
-          step={1}
-          value={values.deposit}
-          onChange={setField("deposit")}
-        />
-        <ErrorText msg={errors.deposit} />
-        <CautionBreakdown deposit={Number(values.deposit)} />
-      </div>
+        {/* Description */}
+        <div className="space-y-2">
+          <Label htmlFor="description">{t("form.description")}</Label>
+          <Textarea
+            id="description"
+            aria-invalid={errors.description ? true : undefined}
+            value={values.description}
+            onChange={setField("description")}
+            placeholder={t("form.description.placeholder")}
+            rows={4}
+          />
+          <ErrorText msg={errors.description} />
+        </div>
 
-      {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
-      <div className="space-y-2">
-        <Label htmlFor="commit-deposit">{t("form.commitDeposit")}</Label>
-        <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
-        <p className="text-xs text-muted-foreground">{t("form.commitDeposit.help")}</p>
-      </div>
+        {/* Lieu — texte libre, aucune donnée de géoloc */}
+        <div className="space-y-2">
+          <Label htmlFor="location">{t("hunt.location")}</Label>
+          <Input
+            id="location"
+            aria-invalid={errors.location ? true : undefined}
+            value={values.location}
+            onChange={setField("location")}
+            placeholder={t("form.location.placeholder")}
+          />
+          <ErrorText msg={errors.location} />
+          <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
+        </div>
+
+        {/* Date/heure limite */}
+        <div className="space-y-2">
+          <Label htmlFor="deadline">{t("form.deadline")}</Label>
+          <Input
+            id="deadline"
+            aria-invalid={errors.deadline ? true : undefined}
+            type="datetime-local"
+            value={values.deadline}
+            onChange={setField("deadline")}
+          />
+          <ErrorText msg={errors.deadline} />
+          <p className="text-xs text-muted-foreground">{t("form.deadline.help")}</p>
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
+        <legend className="float-left w-full border-b pb-2 text-base font-semibold">
+          {t("form.section.people")}
+        </legend>
+        <div className="space-y-2">
+          <Label htmlFor="threshold">{t("form.threshold")}</Label>
+          <Input
+            id="threshold"
+            aria-invalid={errors.threshold ? true : undefined}
+            type="number"
+            min={minHuntThreshold()}
+            value={values.threshold}
+            onChange={setField("threshold")}
+            placeholder={t("form.threshold.placeholder")}
+          />
+          <ErrorText msg={errors.threshold} />
+          <p className="text-xs text-muted-foreground">
+            {t("form.threshold.help", { min: minHuntThreshold() })}
+          </p>
+        </div>
+
+        {/* Visibilité de la progression */}
+        <div className="space-y-2">
+          <label className="flex cursor-pointer items-start gap-3 text-sm">
+            <Checkbox
+              id="hide-progress"
+              checked={values.hideProgress}
+              onCheckedChange={(checked) =>
+                setValues((prev) => ({ ...prev, hideProgress: checked === true }))
+              }
+              className="mt-0.5"
+            />
+            <span>{t("form.hide")}</span>
+          </label>
+          <p className="text-xs text-muted-foreground">{t("form.hide.help")}</p>
+          <p className="text-xs font-medium text-green-700">{t("form.hide.recommended")}</p>
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
+        <legend className="float-left w-full border-b pb-2 text-base font-semibold">
+          {t("form.section.money")}
+        </legend>
+        <div className="space-y-2">
+          <Label htmlFor="deposit">{t("form.caution.label")}</Label>
+          <Input
+            id="deposit"
+            aria-invalid={errors.deposit ? true : undefined}
+            type="number"
+            min={MIN_CAUTION_KAS}
+            step={1}
+            value={values.deposit}
+            onChange={setField("deposit")}
+          />
+          <ErrorText msg={errors.deposit} />
+          <CautionBreakdown deposit={Number(values.deposit)} />
+        </div>
+
+        {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
+        <div className="space-y-2">
+          <Label htmlFor="commit-deposit">{t("form.commitDeposit")}</Label>
+          <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
+          <p className="text-xs text-muted-foreground">{t("form.commitDeposit.help")}</p>
+        </div>
+      </fieldset>
 
       {/* Erreur globale (distincte des erreurs de validation) */}
       {globalError && (
