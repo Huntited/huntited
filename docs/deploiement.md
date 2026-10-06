@@ -13,7 +13,7 @@ Navigateur ──HTTPS──► Front (site statique / worker)
 ```
 
 - **Front** : build Vite / TanStack Start (`bun run build`). Peut être publié
-  par Lovable ou par tout hébergeur compatible (Cloudflare par défaut).
+  par tout hébergeur compatible (Cloudflare par défaut).
 - **Backend** : image Docker (`backend/Dockerfile`), un seul conteneur, avec un
   **volume persistant** monté sur `/app/data` (sinon les chasses sont perdues
   à chaque redéploiement).
