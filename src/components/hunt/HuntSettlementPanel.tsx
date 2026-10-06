@@ -60,26 +60,15 @@ export function HuntSettlementPanel({
       </div>
 
       <dl className="space-y-1">
-        {success ? (
-          <>
-            <Row label="Part de la caution par engagé·e" value={s.participantBonusPerCommitSompi} />
-            <Row label="Créateur (95 % des engagements)" value={s.creatorCommitRewardSompi} />
-            <Row label="Caution rendue au créateur" value={s.creatorCreationRefundSompi} />
-            <Row label="Huntited (5 %)" value={s.treasurySompi} />
-            {nonRetained > 0 && (
-              <Row
-                label={`Remboursement par non-retenu·e (${nonRetained})`}
-                value={s.nonRetainedRefundPerCommitSompi}
-              />
-            )}
-          </>
-        ) : (
-          <>
-            <Row label="Remboursement par engagé·e" value={s.participantRefundPerCommitSompi} />
-            <Row label="Part de la caution par engagé·e" value={s.participantBonusPerCommitSompi} />
-            <Row label="Caution rendue au créateur" value={s.creatorCreationRefundSompi} />
-            <Row label="Huntited (2,5 % de la caution)" value={s.treasurySompi} />
-          </>
+        <Row label="Remboursement par engagé·e" value={s.participantRefundPerCommitSompi} />
+        <Row label="Part de la récompense par engagé·e" value={s.participantBonusPerCommitSompi} />
+        <Row label="Caution rendue au créateur" value={s.creatorCreationRefundSompi} />
+        <Row label="Huntited (5 % de la récompense)" value={s.treasurySompi} />
+        {success && nonRetained > 0 && (
+          <Row
+            label={`Remboursement par non-retenu·e (${nonRetained})`}
+            value={s.nonRetainedRefundPerCommitSompi}
+          />
         )}
       </dl>
 

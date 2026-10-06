@@ -132,7 +132,7 @@ function HuntDetailPage() {
           <span className="font-medium">{hunt.threshold} participants</span>
         </div>
         <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Prix de l'engagement</span>
+          <span className="text-muted-foreground">Dépôt d'engagement (rendu à la fin)</span>
           <span className="font-medium">{hunt.commitDeposit} KAS</span>
         </div>
       </div>

@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   COMMIT_DEPOSIT_SOMPI,
   CREATE_DEPOSIT_SOMPI,
-  MIN_THRESHOLD,
   SOMPI_PER_KAS,
   calculateSettlement,
   sompiToKasText,
@@ -25,56 +24,45 @@ const kas = (whole: bigint, hundredths = 0n) =>
 const fr = (sompi: bigint) => sompiToKasText(sompi).replace(".", ",");
 
 describe("calculateSettlement", () => {
-  it("succès avec 10 engagés : 47,5 KAS au créateur, 2,85 KAS de caution à chaque engagé", () => {
+  it("succès avec 10 engagés : dépôts rendus, 1,425 KAS chacun, 0,75 KAS à la treasury, 15 KAS au créateur", () => {
     const r = calculateSettlement(10, "success");
-    expect(r.creatorCommitRewardSompi).toBe(kas(47n, 50n));
-    expect(r.participantBonusPerCommitSompi).toBe(kas(2n, 85n));
-    // Caution : 28,5 KAS aux engagés, 1,5 KAS à la treasury, rien au créateur.
-    expect(r.creatorCreationRefundSompi).toBe(0n);
-    // Treasury : 5 % des engagements (2,5) + 5 % de la caution (1,5).
-    expect(r.treasurySompi).toBe(kas(4n));
-    expect(r.participantRefundPerCommitSompi).toBe(0n);
-  });
-
-  it("échec avec 10 engagés : 5 + 1,425 KAS à chaque engagé, 15 KAS au créateur, 0,75 KAS à la treasury", () => {
-    const r = calculateSettlement(10, "failure");
     expect(r.participantRefundPerCommitSompi).toBe(kas(5n));
     expect(r.participantBonusPerCommitSompi).toBe(142_500_000n);
-    expect(r.creatorCreationRefundSompi).toBe(kas(15n));
-    expect(r.creatorCommitRewardSompi).toBe(0n);
     expect(r.treasurySompi).toBe(kas(0n, 75n));
+    expect(r.creatorCreationRefundSompi).toBe(kas(15n));
   });
 
-  it("au seuil minimum, le créateur ne perd pas d'argent en cas de succès", () => {
-    const r = calculateSettlement(MIN_THRESHOLD, "success");
-    expect(r.creatorCommitRewardSompi + r.creatorCreationRefundSompi >= CREATE_DEPOSIT_SOMPI).toBe(
-      true,
-    );
-    // Juste en dessous, il perdrait : c'est ce qui fixe le minimum.
-    const below = calculateSettlement(MIN_THRESHOLD - 1, "success");
-    expect(below.creatorCommitRewardSompi + below.creatorCreationRefundSompi).toBeLessThan(
-      CREATE_DEPOSIT_SOMPI,
-    );
+  it("échec avec 10 engagés : dépôts rendus, 1,9 KAS chacun, 1 KAS à la treasury, 10 KAS au créateur", () => {
+    const r = calculateSettlement(10, "failure");
+    expect(r.participantRefundPerCommitSompi).toBe(kas(5n));
+    expect(r.participantBonusPerCommitSompi).toBe(190_000_000n);
+    expect(r.treasurySompi).toBe(kas(1n));
+    expect(r.creatorCreationRefundSompi).toBe(kas(10n));
+  });
+
+  it("le dépôt d'engagement est toujours rendu, quelle que soit l'issue", () => {
+    for (const outcome of ["success", "failure"] as const) {
+      expect(calculateSettlement(7, outcome).participantRefundPerCommitSompi).toBe(
+        COMMIT_DEPOSIT_SOMPI,
+      );
+    }
   });
 
   it("la part de chacun baisse quand le nombre d'engagés augmente, arrondie au sompi inférieur", () => {
-    const r = calculateSettlement(3, "failure");
-    // 14,25 KAS / 3 = 4,75 KAS exactement.
-    expect(r.participantBonusPerCommitSompi).toBe(kas(4n, 75n));
     const odd = calculateSettlement(7, "failure");
-    expect(odd.participantBonusPerCommitSompi).toBe(1_425_000_000n / 7n);
+    expect(odd.participantBonusPerCommitSompi).toBe(kas(19n) / 7n);
     // Le reste de l'arrondi revient au créateur.
-    expect(odd.creatorCreationRefundSompi).toBe(kas(15n) + (1_425_000_000n % 7n));
+    expect(odd.creatorCreationRefundSompi).toBe(kas(10n) + (kas(19n) % 7n));
   });
 
-  it("échec sans engagement : la part sans destinataire revient au créateur", () => {
+  it("sans engagé, la part sans destinataire revient au créateur", () => {
     const r = calculateSettlement(0, "failure");
     expect(r.participantBonusPerCommitSompi).toBe(0n);
-    expect(r.treasurySompi).toBe(kas(0n, 75n));
-    expect(r.creatorCreationRefundSompi).toBe(CREATE_DEPOSIT_SOMPI - kas(0n, 75n));
+    expect(r.treasurySompi).toBe(kas(1n));
+    expect(r.creatorCreationRefundSompi).toBe(kas(29n));
   });
 
-  it("succès : un·e non-retenu·e récupère 5 KAS, sans part de la caution ; rien en échec", () => {
+  it("succès : un·e non-retenu·e récupère 5 KAS, sans part de la récompense ; rien en échec", () => {
     expect(calculateSettlement(10, "success").nonRetainedRefundPerCommitSompi).toBe(kas(5n));
     expect(calculateSettlement(10, "failure").nonRetainedRefundPerCommitSompi).toBe(0n);
   });
@@ -90,9 +78,8 @@ describe("calculateSettlement", () => {
       const deposits = CREATE_DEPOSIT_SOMPI + BigInt(retained + nonRetained) * COMMIT_DEPOSIT_SOMPI;
       const payout =
         s.creatorCreationRefundSompi +
-        s.creatorCommitRewardSompi +
         s.treasurySompi +
-        BigInt(retained) * s.participantBonusPerCommitSompi +
+        BigInt(retained) * (s.participantRefundPerCommitSompi + s.participantBonusPerCommitSompi) +
         BigInt(nonRetained) * s.nonRetainedRefundPerCommitSompi;
       expect(payout).toBe(deposits);
     }
@@ -130,24 +117,16 @@ describe("calculateSettlement", () => {
 
   it("conserve exactement les fonds, quel que soit le nombre d'engagements", () => {
     for (const n of [0, 1, 3, 7, 10, 29, 30, 31, 60, 999, 1_000_003]) {
-      const total = BigInt(n) * COMMIT_DEPOSIT_SOMPI;
-      const deposits = CREATE_DEPOSIT_SOMPI + total;
+      const deposits = CREATE_DEPOSIT_SOMPI + BigInt(n) * COMMIT_DEPOSIT_SOMPI;
       for (const outcome of ["success", "failure"] as const) {
         const s = calculateSettlement(n, outcome);
         const payout =
           s.creatorCreationRefundSompi +
-          s.creatorCommitRewardSompi +
           s.treasurySompi +
           BigInt(n) * (s.participantRefundPerCommitSompi + s.participantBonusPerCommitSompi);
         expect(payout).toBe(deposits);
         expect(s.creatorCreationRefundSompi >= 0n).toBe(true);
       }
-      const ok = calculateSettlement(n, "success");
-      expect(ok.creatorCommitRewardSompi * 20n).toBe(total * 19n);
-      expect(ok.participantRefundPerCommitSompi).toBe(0n);
-      expect(calculateSettlement(n, "failure").participantRefundPerCommitSompi).toBe(
-        COMMIT_DEPOSIT_SOMPI,
-      );
     }
   });
 });
@@ -162,9 +141,9 @@ describe("sompiToKasText", () => {
 });
 
 describe("textes UX des dépôts", () => {
-  // Parts totales de la caution, recalculées depuis l'économie (1 engagé reçoit tout).
-  const successPool = calculateSettlement(1, "success").participantBonusPerCommitSompi;
-  const failurePool = calculateSettlement(1, "failure").participantBonusPerCommitSompi;
+  // Récompense totale des engagés, recalculée depuis l'économie (1 engagé reçoit tout).
+  const success = calculateSettlement(1, "success");
+  const failure = calculateSettlement(1, "failure");
 
   it("ne promettent pas une confidentialité cryptographique qui n'existe pas encore", () => {
     for (const line of termsShort) expect(line).not.toMatch(/\bZK\b/);
@@ -173,30 +152,31 @@ describe("textes UX des dépôts", () => {
   });
 
   it("annoncent les montants calculés par l'économie", () => {
-    expect(successPool).toBe(kas(28n, 50n));
-    expect(failurePool).toBe(kas(14n, 25n));
+    expect(success.participantBonusPerCommitSompi).toBe(kas(14n, 25n));
+    expect(failure.participantBonusPerCommitSompi).toBe(kas(19n));
     for (const text of [COMMIT_DEPOSIT_TERMS, CREATE_DEPOSIT_TERMS, termsFull]) {
-      expect(text).toContain(`${fr(successPool)} KAS`);
-      expect(text).toContain(`${fr(failurePool)} KAS`);
+      expect(text).toContain(`${fr(success.participantBonusPerCommitSompi)} KAS`);
+      expect(text).toContain(`${fr(failure.participantBonusPerCommitSompi)} KAS`);
+    }
+    for (const text of [CREATE_DEPOSIT_TERMS, termsFull]) {
+      expect(text).toContain(`${fr(success.treasurySompi)} KAS`);
+      expect(text).toContain(`${fr(failure.treasurySompi)} KAS`);
+      expect(text).toContain(`${fr(success.creatorCreationRefundSompi)} KAS`);
+      expect(text).toContain(`${fr(failure.creatorCreationRefundSompi)} KAS`);
     }
     expect(COMMIT_DEPOSIT_TERMS).toContain(`${sompiToKasText(COMMIT_DEPOSIT_SOMPI)} KAS`);
     expect(CREATE_DEPOSIT_TERMS).toContain(`${sompiToKasText(CREATE_DEPOSIT_SOMPI)} KAS`);
-    // En échec, le créateur récupère la moitié de sa caution.
-    const creatorHalf = calculateSettlement(1, "failure").creatorCreationRefundSompi;
-    expect(creatorHalf).toBe(CREATE_DEPOSIT_SOMPI / 2n);
-    expect(termsFull).toContain(`${fr(creatorHalf)} KAS`);
   });
 
   it("la mise en avant du remboursement correspond à l'économie et ne promet pas la gratuité", () => {
-    // En échec, chaque engagé récupère exactement son dépôt.
-    const refund = calculateSettlement(10, "failure").participantRefundPerCommitSompi;
-    expect(refund).toBe(COMMIT_DEPOSIT_SOMPI);
-    expect(COMMIT_REFUND_HIGHLIGHT).toContain(`${sompiToKasText(refund)} KAS`);
-    expect(COMMIT_REFUND_HIGHLIGHT).toContain(`${fr(failurePool)} KAS`);
-    expect(COMMIT_REFUND_HIGHLIGHT).toContain(`${fr(successPool)} KAS`);
+    expect(COMMIT_REFUND_HIGHLIGHT).toContain(
+      `${sompiToKasText(success.participantRefundPerCommitSompi)} KAS`,
+    );
+    expect(COMMIT_REFUND_HIGHLIGHT).toContain(`${fr(success.participantBonusPerCommitSompi)} KAS`);
+    expect(COMMIT_REFUND_HIGHLIGHT).toContain(`${fr(failure.participantBonusPerCommitSompi)} KAS`);
     for (const text of [COMMIT_REFUND_HIGHLIGHT, COMMIT_REFUND_SHORT]) {
       expect(text).toMatch(/intégralement/);
-      expect(text).toMatch(/caution/);
+      expect(text).toMatch(/récompense/);
       expect(text).not.toMatch(/gratuit/i);
     }
   });

@@ -1,8 +1,8 @@
 # Économie de Huntited (MVP)
 
-> S'engager coûte 5 KAS. Si l'action a lieu, tes 5 KAS vont au créateur (95 %) et à Huntited (5 %), et tu reçois ta part des 28,5 KAS de la caution du créateur. Si elle n'a pas lieu (pas assez de monde à la date limite), tu récupères tes 5 KAS, plus ta part des 14,25 KAS de la caution.
+> Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. En plus, tu reçois ta part de la récompense du créateur : 14,25 KAS à partager si l'action a lieu, 19 KAS si elle est annulée.
 >
-> Le créateur bloque une caution de 30 KAS, partagée avec les engagés. Si l'action a lieu, 95 % de la caution (28,5 KAS) est partagée entre les engagés et 5 % va à Huntited. Sinon, 47,5 % (14,25 KAS) est partagée entre les engagés, 2,5 % va à Huntited et le créateur récupère la moitié.
+> Le créateur bloque une caution de 30 KAS. Action réussie : 14,25 KAS aux engagés, 0,75 KAS à Huntited, il récupère 15 KAS. Action annulée : 19 KAS aux engagés, 1 KAS à Huntited, il récupère 10 KAS.
 >
 > Une chasse demande au moins **7 personnes**.
 
@@ -23,62 +23,52 @@ Les badges (`src/lib/badges.ts`) et, plus tard, les missions, XP et niveaux sont
 
 ## Dépôts
 
-- **Création d'une chasse** : 30 KAS, déposés par le créateur.
-- **Engagement** : 5 KAS, déposés par chaque engagé.
+- **Création d'une chasse** : caution de 30 KAS, déposée par le créateur.
+- **Engagement** : 5 KAS, déposés par chaque engagé et **toujours rendus** à la fin.
+
+## Récompense du créateur
+
+Le créateur finance une récompense prise sur sa caution, partagée **95 %** à
+parts égales entre les engagés et **5 %** à la treasury (frais de maintenance).
+
+| Issue                                          | Récompense | Engagés (95 %) | Treasury (5 %) | Rendu au créateur |
+| ---------------------------------------------- | ---------- | -------------- | -------------- | ----------------- |
+| **Succès** (seuil atteint)                     | 15 KAS     | 14,25 KAS      | 0,75 KAS       | 15 KAS            |
+| **Échec** (seuil non atteint à la date limite) | 20 KAS     | 19 KAS         | 1 KAS          | 10 KAS            |
+
+- Succès : seuls les engagé·es du **groupe retenu** reçoivent une part. Un·e
+  engagé·e non retenu·e (seuil personnel pas atteint, voir
+  `docs/seuil-personnel.md`) récupère ses **5 KAS, sans part**.
+- Les parts sont arrondies au sompi inférieur ; le reste de l'arrondi, et
+  toute part sans destinataire (aucun engagé), revient au créateur.
+
+Pourquoi : s'engager ne fait jamais perdre d'argent et rapporte toujours une
+part (principe du « contrat d'assurance dominant »). Créer coûte 15 KAS si
+l'action réussit, 20 KAS si elle échoue : le créateur a intérêt à ne lancer
+que des chasses crédibles, et à les faire réussir.
 
 ## Seuil minimum : 7 personnes
 
-En cas de succès, le créateur abandonne sa caution (30 KAS) et reçoit 95 % des
-engagements. Il faut donc au moins 7 engagés pour qu'il ne perde pas d'argent
-quand son action réussit : 95 % × 7 × 5 KAS = 33,25 KAS ≥ 30 KAS. Le seuil
+Une chasse demande au moins 7 personnes : des actions vraiment collectives, et
+une récompense plus difficile à récupérer avec ses propres wallets. Le seuil
 minimum est appliqué par le formulaire, par le serveur et par le covenant.
 
-## Succès (seuil atteint avant la deadline)
+## Exemples (part par engagé)
 
-- Le total des **dépôts d'engagement** (5 KAS × N retenu·es) est réparti :
-  - **95 %** au créateur ;
-  - **5 %** à la treasury.
-- La **caution de 30 KAS** est répartie :
-  - **95 % (28,5 KAS)** partagés à parts égales entre les engagé·es retenu·es ;
-  - **5 % (1,5 KAS)** à la treasury.
-
-**Seuil personnel** (voir `docs/seuil-personnel.md`) : seuls les engagé·es du
-**groupe retenu** (dont la condition « au moins N personnes » est remplie)
-financent la répartition 95/5 et reçoivent une part de la caution. Un·e
-engagé·e non retenu·e récupère ses **5 KAS, sans part de la caution**.
-
-## Échec (seuil non atteint)
-
-- Chaque engagé récupère 100 % de ses 5 KAS.
-- La **caution de 30 KAS** est répartie :
-  - **47,5 % (14,25 KAS)** partagés à parts égales entre tous les engagés ;
-  - **2,5 % (0,75 KAS)** à la treasury (frais de maintenance) ;
-  - **50 % (15 KAS)** rendus au créateur.
-
-Les parts sont arrondies au sompi inférieur ; le reste de l'arrondi, et toute
-part sans destinataire (aucun engagé), revient au créateur.
-
-Pourquoi : s'engager rapporte une part de la caution dans tous les cas, et ne
-coûte rien si l'action n'a pas lieu (principe du « contrat d'assurance
-dominant »). Un créateur ne lance que des chasses auxquelles il croit,
-puisqu'un échec lui coûte 15 KAS.
-
-## Exemples
-
-| Engagés | Succès : créateur (gain net) | Succès : part par engagé | Succès : treasury | Échec : par engagé | Échec : créateur | Échec : treasury |
-| ------- | ---------------------------- | ------------------------ | ----------------- | ------------------ | ---------------- | ---------------- |
-| 7       | 33,25 KAS (+3,25)            | ≈ 4,07 KAS               | 3,25 KAS          | 5 + ≈ 2,04 KAS     | 15 KAS           | 0,75 KAS         |
-| 10      | 47,5 KAS (+17,5)             | 2,85 KAS                 | 4 KAS             | 5 + 1,425 KAS      | 15 KAS           | 0,75 KAS         |
-| 20      | 95 KAS (+65)                 | 1,425 KAS                | 6,5 KAS           | 5 + 0,7125 KAS     | 15 KAS           | 0,75 KAS         |
-| 60      | 285 KAS (+255)               | 0,475 KAS                | 16,5 KAS          | 5 + 0,2375 KAS     | 15 KAS           | 0,75 KAS         |
+| Engagés | Succès         | Échec          |
+| ------- | -------------- | -------------- |
+| 7       | 5 + ≈ 2,04 KAS | 5 + ≈ 2,71 KAS |
+| 10      | 5 + 1,425 KAS  | 5 + 1,9 KAS    |
+| 20      | 5 + 0,7125 KAS | 5 + 0,95 KAS   |
+| 60      | 5 + 0,2375 KAS | 5 + ≈ 0,32 KAS |
 
 Tous les calculs sont faits en sompis (1 KAS = 10^8 sompis), sans nombre à virgule.
 
 ## Limite connue
 
 Un créateur peut s'engager avec ses propres wallets pour récupérer une partie
-de la caution. Ce contournement existait déjà avec l'ancien bonus d'échec ; il
-devra être traité avant tout usage réel (KAS réels).
+de la récompense. Le minimum de 7 personnes limite ce contournement sans le
+supprimer : il devra être traité avant tout usage réel (KAS réels).
 
 ## Gouvernance et abus (MVP)
 

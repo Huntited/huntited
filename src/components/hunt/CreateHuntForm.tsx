@@ -209,28 +209,22 @@ export function CreateHuntForm() {
         <Input id="deposit" value={`${CREATE_DEPOSIT_KAS} KAS`} readOnly disabled />
         <ul className="space-y-0.5 text-xs text-muted-foreground">
           <li>
-            <strong>Action réussie :</strong> 28,5 KAS aux engagés, 1,5 KAS à Huntited.
+            <strong>Action réussie :</strong> 15 KAS pour toi, 14,25 KAS aux engagés, 0,75 KAS à
+            Huntited.
           </li>
           <li>
-            <strong>Action annulée :</strong> 15 KAS pour toi, 14,25 KAS aux engagés, 0,75 KAS à
-            Huntited.
+            <strong>Action annulée :</strong> 10 KAS pour toi, 19 KAS aux engagés, 1 KAS à Huntited.
           </li>
         </ul>
       </div>
 
       {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
       <div className="space-y-2">
-        <Label htmlFor="commit-deposit">Prix de l'engagement (par participant)</Label>
+        <Label htmlFor="commit-deposit">Dépôt d'engagement (par participant)</Label>
         <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
-        <ul className="space-y-0.5 text-xs text-muted-foreground">
-          <li>
-            <strong>Action réussie :</strong> 4,75 KAS pour toi par participant, 0,25 KAS à
-            Huntited.
-          </li>
-          <li>
-            <strong>Action annulée :</strong> rendus au participant.
-          </li>
-        </ul>
+        <p className="text-xs text-muted-foreground">
+          Rendu au participant à la fin, que l'action réussisse ou non.
+        </p>
       </div>
 
       {/* Erreur globale de création (distincte des erreurs de validation) */}

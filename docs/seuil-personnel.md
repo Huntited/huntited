@@ -44,18 +44,16 @@ Exemple, T = 3, seuils : 3, 3, 4, 10.
 ## 3. Économie
 
 > **Décidé le 6 octobre 2026 :** en cas de succès, un·e engagé·e non retenu·e
-> récupère ses 5 KAS **sans part de la caution** (un seuil personnel
+> récupère ses 5 KAS **sans part de la récompense** (un seuil personnel
 > inatteignable ne doit pas rapporter de gain garanti).
 
 Appliquée **au groupe retenu** (règles complètes : `docs/economics.md`) :
 
-- **Succès** : les dépôts des membres du groupe retenu vont 95 % au créateur,
-  5 % à la treasury ; 95 % de la caution est partagée entre les membres du
-  groupe retenu, 5 % va à la treasury ; les engagé·es **non retenu·es**
-  récupèrent leurs 5 KAS (sans part de la caution).
+- **Succès** : chaque membre du groupe retenu récupère ses 5 KAS + sa part
+  des 14,25 KAS de récompense ; les engagé·es **non retenu·es** récupèrent
+  leurs 5 KAS (sans part de la récompense).
 - **Échec** (groupe retenu < T à la date limite) : chaque engagé·e récupère
-  5 KAS + sa part des 47,5 % de la caution ; 2,5 % va à la treasury ; le
-  créateur récupère la moitié de sa caution.
+  5 KAS + sa part des 19 KAS de récompense.
 
 ## 4. Confidentialité
 

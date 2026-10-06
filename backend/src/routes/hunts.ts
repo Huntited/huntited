@@ -17,8 +17,8 @@ const huntIdSchema = z.string().regex(/^[\w-]{1,64}$/);
 const MAX_DEADLINE_MS = 366 * 24 * 3600 * 1000;
 
 /**
- * Seuil minimum d'une chasse : en dessous, un créateur perdrait de l'argent
- * même quand son action réussit (95 % de 7 × 5 KAS ≥ 30 KAS de caution).
+ * Seuil minimum d'une chasse : des actions vraiment collectives, et une
+ * récompense du créateur plus difficile à récupérer avec ses propres wallets.
  * Même valeur que MIN_THRESHOLD côté front (src/lib/hunt-economics.ts).
  */
 export const MIN_HUNT_THRESHOLD = 7;

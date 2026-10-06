@@ -9,7 +9,7 @@ export const Route = createFileRoute("/create")({
       {
         name: "description",
         content:
-          "Créez une action collective coordonnée : caution de 30 KAS, engagements à 5 KAS, tout le monde ou personne.",
+          "Créez une action collective coordonnée : caution de 30 KAS, engagements rendus à la fin, tout le monde ou personne.",
       },
       { property: "og:title", content: "Créer une chasse — Huntited" },
       {

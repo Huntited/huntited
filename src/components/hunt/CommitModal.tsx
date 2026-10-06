@@ -97,8 +97,8 @@ export function CommitModal({
             </p>
             <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
               <p>
-                <strong>Tu bloques {hunt.commitDeposit} KAS</strong> (version de test : aucun vrai
-                KAS n'est utilisé).
+                <strong>Tu bloques {hunt.commitDeposit} KAS</strong>, rendus à la fin (version de
+                test : aucun vrai KAS n'est utilisé).
               </p>
               <p>{COMMIT_DEPOSIT_TERMS}</p>
               <div className="flex justify-between gap-4">

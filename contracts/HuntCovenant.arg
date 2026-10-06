@@ -22,15 +22,12 @@
 // ---------------------------------------------------------------------------
 const CREATE_DEPOSIT_SOMPI  = 30 * 10^8;   // dépôt de création d'une chasse
 const COMMIT_DEPOSIT_SOMPI  = 5 * 10^8;    // dépôt d'engagement
-const MIN_THRESHOLD = 7;                    // en dessous, le créateur perdrait de l'argent
-                                           // même en cas de succès
-const CREATOR_SHARE_PERCENT = 95;          // part des engagements (succès)
-const TREASURY_SHARE_PERCENT = 5;
-// Partage du dépôt de création (caution), en points de base (10 000 = 100 %).
-const SUCCESS_CAUTION_SHARE_BPS = 9500;    // aux engagés retenus
-const SUCCESS_CAUTION_TREASURY_BPS = 500;
-const FAILURE_CAUTION_SHARE_BPS = 4750;    // aux engagés ; le créateur garde ~50 %
-const FAILURE_CAUTION_TREASURY_BPS = 250;
+const MIN_THRESHOLD = 7;                    // actions vraiment collectives
+// Le dépôt d'engagement est toujours rendu. Le créateur finance une
+// récompense prise sur sa caution, partagée 95 % engagés / 5 % treasury.
+const SUCCESS_REWARD_SOMPI = 15 * 10^8;    // le créateur récupère 15 KAS
+const FAILURE_REWARD_SOMPI = 20 * 10^8;    // le créateur récupère 10 KAS
+const REWARD_PARTICIPANTS_PERCENT = 95;
 const TREASURY_ADDRESS = treasury_multisig_hash;
 
 // ---------------------------------------------------------------------------
@@ -62,14 +59,23 @@ struct HuntCovenant {
   // Fonds bloqués dans le covenant
   balance: amount;            // somme des dépôts bloqués
 
-  // Fixé à la résolution : part de la caution versée à chaque engagé.
-  caution_share_per_commit: amount;
+  // Fixé à la résolution : part de la récompense versée à chaque engagé.
+  reward_share_per_commit: amount;
 }
 
-// Part de la caution par engagé (arrondi inférieur ; le reste au créateur).
-fn caution_share(n: u64, share_bps: u64) -> amount {
-  if (n == 0) { return 0; }
-  return (CREATE_DEPOSIT_SOMPI * share_bps / 10000) / n;
+// Résolution commune : treasury et créateur payés tout de suite ; chaque
+// engagé réclame ensuite son dépôt + sa part (claim_deposit_and_reward).
+// Parts arrondies au sompi inférieur ; le reste (ou toute part sans
+// destinataire) revient au créateur.
+fn settle(covenant: HuntCovenant, reward: amount) {
+  let n = covenant.commit_count_hidden;
+  let participants_pool = reward * REWARD_PARTICIPANTS_PERCENT / 100;
+  let treasury = reward - participants_pool;
+  covenant.reward_share_per_commit = if (n == 0) { 0 } else { participants_pool / n };
+  send(TREASURY_ADDRESS, treasury);
+  send(covenant.creator, CREATE_DEPOSIT_SOMPI - treasury
+    - n * covenant.reward_share_per_commit);
+  covenant.balance = n * (COMMIT_DEPOSIT_SOMPI + covenant.reward_share_per_commit);
 }
 
 // ---------------------------------------------------------------------------
@@ -117,7 +123,7 @@ fn create_hunt(deadline: timestamp, threshold: u64) -> HuntCovenant {
     commitments_root: 0,
     commit_count_hidden: 0,
     balance: tx.value,
-    caution_share_per_commit: 0
+    reward_share_per_commit: 0
   };
 }
 
@@ -150,66 +156,31 @@ fn activate(covenant: HuntCovenant, zk_proof: bytes) {
   covenant.state = State.Activated;
 }
 
-// distribute_deposit_on_success : applique automatiquement l'économie du MVP.
-// Les dépôts d'engagement financent le créateur (95 %) et le treasury (5 %) ;
-// la caution va à 95 % aux engagés (réclamée par chacun, voir
-// claim_caution_share) et à 5 % au treasury ; le reste d'arrondi au créateur.
+// distribute_deposit_on_success : récompense de 15 KAS (succès).
 fn distribute_deposit_on_success(covenant: HuntCovenant) {
   require(covenant.state == State.Activated, "la chasse n'est pas activée");
-
-  let n = covenant.commit_count_hidden;
-  let commit_total = n * COMMIT_DEPOSIT_SOMPI;
-  let creator_share = (commit_total * CREATOR_SHARE_PERCENT) / 100;
-  let caution_treasury = CREATE_DEPOSIT_SOMPI * SUCCESS_CAUTION_TREASURY_BPS / 10000;
-  covenant.caution_share_per_commit = caution_share(n, SUCCESS_CAUTION_SHARE_BPS);
-  let caution_rest = CREATE_DEPOSIT_SOMPI - caution_treasury
-    - n * covenant.caution_share_per_commit;
-
-  send(covenant.creator, creator_share + caution_rest);
-  send(TREASURY_ADDRESS, (commit_total - creator_share) + caution_treasury);
-  covenant.balance = n * covenant.caution_share_per_commit;
-}
-
-// claim_caution_share : après un succès, chaque engagé réclame sa part de la
-// caution avec une preuve ZK de membership (adresse de sortie non liée).
-fn claim_caution_share(covenant: HuntCovenant, zk_proof: bytes) {
-  require(covenant.state == State.Activated, "la chasse n'est pas activée");
-  require(verify_zk_membership(zk_proof, covenant.commitments_root),
-          "preuve d'engagement invalide");
-  send(tx.recipient, covenant.caution_share_per_commit);
-  covenant.balance -= covenant.caution_share_per_commit;
+  settle(covenant, SUCCESS_REWARD_SOMPI);
 }
 
 // expire : clôture la chasse si la date limite est passée sans activation.
-// N'importe qui peut l'appeler ; les dépôts deviennent restituables.
+// N'importe qui peut l'appeler ; récompense de 20 KAS (échec).
 fn expire(covenant: HuntCovenant) {
   require(covenant.state == State.Active, "chasse déjà close");
   require(now() >= covenant.deadline, "la date limite n'est pas passée");
-
-  // Caution : 47,5 % partagés entre les engagés, 2,5 % au treasury, le reste
-  // (50 % + arrondi, ou toute la part sans destinataire) au créateur.
-  let n = covenant.commit_count_hidden;
-  let caution_treasury = CREATE_DEPOSIT_SOMPI * FAILURE_CAUTION_TREASURY_BPS / 10000;
-  covenant.caution_share_per_commit = caution_share(n, FAILURE_CAUTION_SHARE_BPS);
-  send(TREASURY_ADDRESS, caution_treasury);
-  send(covenant.creator, CREATE_DEPOSIT_SOMPI - caution_treasury
-    - n * covenant.caution_share_per_commit);
-  covenant.balance = n * (COMMIT_DEPOSIT_SOMPI + covenant.caution_share_per_commit);
-
+  settle(covenant, FAILURE_REWARD_SOMPI);
   covenant.state = State.Expired;
 }
 
-// distribute_deposit_on_expire : restitue les dépôts après expiration.
-// Chaque engagé réclame son dépôt + sa part de la caution avec une preuve ZK
-// de membership.
-fn distribute_deposit_on_expire(covenant: HuntCovenant, zk_proof: bytes) {
-  require(covenant.state == State.Expired, "la chasse n'est pas expirée");
+// claim_deposit_and_reward : après la résolution (succès ou échec), chaque
+// engagé réclame son dépôt + sa part de la récompense avec une preuve ZK de
+// membership. Adresse de sortie fournie dans la transaction, jamais liée au
+// commitment.
+fn claim_deposit_and_reward(covenant: HuntCovenant, zk_proof: bytes) {
+  require(covenant.state == State.Activated || covenant.state == State.Expired,
+          "la chasse n'est pas résolue");
   require(verify_zk_membership(zk_proof, covenant.commitments_root),
           "preuve d'engagement invalide");
-
-  // Restitue le dépôt d'engagement au réclamant (adresse de sortie fournie
-  // dans la transaction, jamais liée au commitment).
-  let payout = COMMIT_DEPOSIT_SOMPI + covenant.caution_share_per_commit;
+  let payout = COMMIT_DEPOSIT_SOMPI + covenant.reward_share_per_commit;
   send(tx.recipient, payout);
   covenant.balance -= payout;
 }
