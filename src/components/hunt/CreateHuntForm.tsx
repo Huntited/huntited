@@ -163,7 +163,7 @@ export function CreateHuntForm() {
         />
         <ErrorText msg={errors.deadline} />
         <p className="text-xs text-muted-foreground">
-          Si le seuil n'est pas atteint à cette date, la chasse est annulée et chacun est remboursé.
+          Seuil pas atteint à cette date : action annulée.
         </p>
       </div>
 
@@ -180,8 +180,7 @@ export function CreateHuntForm() {
         />
         <ErrorText msg={errors.threshold} />
         <p className="text-xs text-muted-foreground">
-          Nombre minimum de personnes pour que l'action ait lieu ({minHuntThreshold()} au moins : en
-          dessous, tu perdrais de l'argent même si l'action réussit).
+          Personnes nécessaires pour que l'action ait lieu. Minimum {minHuntThreshold()}.
         </p>
       </div>
 
@@ -199,8 +198,8 @@ export function CreateHuntForm() {
           <span>Masquer la progression</span>
         </label>
         <p className="text-xs text-muted-foreground">
-          Le nombre d'engagés reste caché jusqu'au déclenchement ou à la date limite : personne
-          n'hésite à s'engager le premier. (Version de test : c'est seulement caché à l'écran.)
+          Personne ne voit le nombre d'engagés avant la fin. (Version de test : caché à l'écran
+          seulement.)
         </p>
       </div>
 
@@ -208,21 +207,30 @@ export function CreateHuntForm() {
       <div className="space-y-2">
         <Label htmlFor="deposit">Ta caution</Label>
         <Input id="deposit" value={`${CREATE_DEPOSIT_KAS} KAS`} readOnly disabled />
-        <p className="text-xs text-muted-foreground">
-          Tu bloques {CREATE_DEPOSIT_KAS} KAS en créant la chasse, et ils sont partagés avec les
-          engagés. Si l'action a lieu, 95 % (28,5 KAS) vont aux engagés et 5 % à Huntited. Sinon,
-          47,5 % (14,25 KAS) vont aux engagés, 2,5 % à Huntited, et tu récupères la moitié (15 KAS).
-        </p>
+        <ul className="space-y-0.5 text-xs text-muted-foreground">
+          <li>
+            <strong>Action réussie :</strong> 28,5 KAS aux engagés, 1,5 KAS à Huntited.
+          </li>
+          <li>
+            <strong>Action annulée :</strong> 15 KAS pour toi, 14,25 KAS aux engagés, 0,75 KAS à
+            Huntited.
+          </li>
+        </ul>
       </div>
 
       {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
       <div className="space-y-2">
-        <Label htmlFor="commit-deposit">Prix de l'engagement</Label>
+        <Label htmlFor="commit-deposit">Prix de l'engagement (par participant)</Label>
         <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
-        <p className="text-xs text-muted-foreground">
-          Chaque participant bloque {COMMIT_DEPOSIT_KAS} KAS. Si l'action a lieu, tu reçois 95 % de
-          ces KAS (5 % vont à Huntited). Sinon, chacun récupère les siens.
-        </p>
+        <ul className="space-y-0.5 text-xs text-muted-foreground">
+          <li>
+            <strong>Action réussie :</strong> 4,75 KAS pour toi par participant, 0,25 KAS à
+            Huntited.
+          </li>
+          <li>
+            <strong>Action annulée :</strong> rendus au participant.
+          </li>
+        </ul>
       </div>
 
       {/* Erreur globale de création (distincte des erreurs de validation) */}
