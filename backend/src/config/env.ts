@@ -28,6 +28,9 @@ const schema = z
     MATRIX_SERVER_NAME: z.string().default(""),
     MATRIX_CLIENT_URL: z.string().default(""),
     CHAT_DEFAULT_TTL_MS: z.coerce.number().int().positive().default(86_400_000),
+    // Fichier JSON des salons ouverts ; vide = mémoire (un redémarrage les
+    // rendrait impossibles à fermer automatiquement : à remplir en production).
+    CHAT_FILE: z.string().default(""),
     AUTH_JWT_SECRET: z.string().min(32),
     AUTH_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
     // Durée de la session obtenue par signature (une signature par visite).
@@ -93,6 +96,10 @@ const schema = z
       path: ["MATRIX_CLIENT_URL"],
     },
   )
+  .refine((e) => e.MATRIX_MODE === "mock" || e.CHAT_FILE.length > 0, {
+    message: "CHAT_FILE requis en mode synapse (salons à fermer après un redémarrage)",
+    path: ["CHAT_FILE"],
+  })
   .refine((e) => e.NODE_ENV !== "production" || e.WALLET_AUTH_MODE === "signature", {
     message: "WALLET_AUTH_MODE=mock interdit en production",
     path: ["WALLET_AUTH_MODE"],

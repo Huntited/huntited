@@ -77,6 +77,7 @@ $backend = @"
 `$env:PUSH_VAPID_PUBLIC_KEY='$($vapid.publicKey)'
 `$env:PUSH_VAPID_PRIVATE_KEY='$($vapid.privateKey)'
 `$env:PUSH_FILE='data/push.json'
+`$env:CHAT_FILE='data/chats.json'
 Set-Location '$root\backend'
 bun run dev
 "@

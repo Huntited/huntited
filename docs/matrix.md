@@ -23,10 +23,9 @@ personne et son compte temporaire n'existe que dans la mémoire du backend
 (empreinte propre à la chasse), le temps du salon. Les identifiants ne sont
 pas enregistrés sur l'appareil.
 
-**Limite connue** : le lien chasse → salon est gardé en mémoire par le
-backend ; un redémarrage pendant qu'un salon est ouvert empêche sa
-suppression automatique (à purger à la main via l'API d'administration).
-À rendre persistant avant un usage à grande échelle.
+**Redémarrages** : le lien chasse → salon (et les comptes temporaires) est
+gardé dans `CHAT_FILE` (`data/chats.json`, hors git), pour que les salons
+ouverts soient toujours fermés à leur expiration. Obligatoire en mode synapse.
 
 ## Installation (une machine avec Docker)
 
@@ -58,6 +57,7 @@ Fichiers prêts dans `deploy/matrix/`.
    MATRIX_SERVER_NAME=huntited.org
    MATRIX_CLIENT_URL=https://chat.huntited.org
    MATRIX_ACCESS_TOKEN=<jeton du bot, jamais dans une variable VITE_>
+   CHAT_FILE=data/chats.json
    ```
 
 ## Tests

@@ -4,7 +4,7 @@ import { env } from "./config/env.js";
 import { AuthService } from "./services/auth-service.js";
 import { ChallengeService } from "./services/challenge-service.js";
 import { ChatService } from "./services/chat-service.js";
-import { MemoryChatStore } from "./services/chat-store.js";
+import { createChatStore } from "./services/chat-store.js";
 import { HuntRegistry } from "./services/hunt-registry.js";
 import { createMatrixService } from "./services/matrix-service.js";
 import { runMaintenance } from "./services/maintenance.js";
@@ -13,7 +13,7 @@ import { createWebPushSender, PushService } from "./services/push-service.js";
 import { createSignatureVerifier } from "./services/wallet-auth.js";
 
 const chat = new ChatService(
-  new MemoryChatStore(),
+  createChatStore(env.CHAT_FILE),
   createMatrixService(env.MATRIX_MODE, env.MATRIX_HOMESERVER_URL, {
     serverName: env.MATRIX_SERVER_NAME,
     accessToken: env.MATRIX_ACCESS_TOKEN,
