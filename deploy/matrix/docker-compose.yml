@@ -1,0 +1,32 @@
+# Chat Huntited : Synapse (serveur Matrix) + Element (application web) + Caddy
+# (HTTPS automatique). Guide : docs/matrix.md.
+#
+# Deux sous-domaines pointant vers cette machine, par exemple :
+#   matrix.huntited.org → Synapse      chat.huntited.org → Element
+services:
+  synapse:
+    image: matrixdotorg/synapse:latest
+    restart: unless-stopped
+    volumes:
+      - ./synapse:/data # homeserver.yaml, clés, base SQLite
+    environment:
+      SYNAPSE_CONFIG_PATH: /data/homeserver.yaml
+
+  element:
+    image: vectorim/element-web:latest
+    restart: unless-stopped
+    volumes:
+      - ./element-config.json:/app/config.json:ro
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+
+volumes:
+  caddy_data:

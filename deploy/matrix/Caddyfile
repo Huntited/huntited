@@ -1,0 +1,21 @@
+# Remplace les deux domaines par les tiens (HTTPS obtenu automatiquement).
+# Aucun journal d'accès : Caddy n'enregistre pas les requêtes par défaut.
+
+matrix.huntited.org {
+	# API client uniquement : la fédération (port 8448, /_matrix/federation)
+	# n'est pas exposée.
+	reverse_proxy /_matrix/client/* synapse:8008
+	reverse_proxy /_synapse/client/* synapse:8008
+	# L'API d'administration n'est accessible qu'au backend Huntited : mettre
+	# ici l'IP du serveur backend, ou passer par un réseau privé.
+	@admin path /_synapse/admin/*
+	handle @admin {
+		@allowed remote_ip 127.0.0.1 IP_DU_BACKEND
+		reverse_proxy @allowed synapse:8008
+		respond 403
+	}
+}
+
+chat.huntited.org {
+	reverse_proxy element:80
+}

@@ -1,12 +1,12 @@
 // Logique métier du chat. Indépendante d'Express et de la config (testable).
 // Logs : événements anonymes uniquement, sans aucun identifiant.
 //
-// NB : la vérification « hunt activated ou settled-success » sera faite ici
-// en lisant l'état du covenant Kaspa. En attendant, le front ne demande un
-// salon qu'après activation.
+// Chaque personne autorisée (créateur ou engagé·e retenu·e, vérifié par la
+// route) reçoit son propre accès : un compte temporaire propre à la chasse,
+// réutilisé si elle revient, supprimé avec le salon à l'expiration.
 import type { ChatStore } from "./chat-store.js";
 import type { MatrixService } from "./matrix-service.js";
-import type { ChatRecord, CreateChatInput, PublicChatResponse } from "../types/chat.js";
+import type { ChatMember, ChatRecord, CreateChatInput, PublicChatResponse } from "../types/chat.js";
 
 export class ChatServiceError extends Error {
   constructor(
@@ -30,12 +30,12 @@ export class ChatService {
     private readonly now: () => number = Date.now,
   ) {}
 
-  async createChat(input: CreateChatInput): Promise<PublicChatResponse> {
+  async createChat(input: CreateChatInput, member?: ChatMember): Promise<PublicChatResponse> {
     if (input.expiresAt <= this.now()) {
       throw new ChatServiceError("invalid", "La date d'expiration est passée.");
     }
     const existing = this.store.get(input.huntId);
-    if (existing && existing.expiresAt > this.now()) return toPublic(existing);
+    if (existing && existing.expiresAt > this.now()) return this.withAccess(existing, member);
     if (existing) await this.close(existing);
 
     const { roomId, inviteLink } = await this.matrix.createPrivateRoom(input);
@@ -46,20 +46,21 @@ export class ChatService {
       createdAt: this.now(),
       expiresAt: input.expiresAt,
       state: "active",
+      members: {},
     };
     this.store.set(record);
     logEvent("chat_created");
-    return toPublic(record);
+    return this.withAccess(record, member);
   }
 
-  async getChatStatus(huntId: string): Promise<PublicChatResponse> {
+  async getChatStatus(huntId: string, member?: ChatMember): Promise<PublicChatResponse> {
     const r = this.store.get(huntId);
     if (!r) return { isActive: false };
     if (r.expiresAt <= this.now()) {
       await this.close(r);
       return { isActive: false };
     }
-    return toPublic(r);
+    return this.withAccess(r, member);
   }
 
   async cleanExpiredChats(now: number = this.now()): Promise<number> {
@@ -68,8 +69,28 @@ export class ChatService {
     return expired.length;
   }
 
+  /** Ajoute au salon le compte temporaire de la personne (créé au besoin). */
+  private async withAccess(r: ChatRecord, member?: ChatMember): Promise<PublicChatResponse> {
+    if (!member) return toPublic(r);
+    const members = r.members ?? {};
+    const known = members[member.key];
+    const displayName =
+      member.role === "creator"
+        ? "Créateur·rice"
+        : `Participant·e ${known ? Object.keys(members).indexOf(member.key) + 1 : Object.keys(members).length + 1}`;
+    const { userId, login } = await this.matrix.grantAccess(r.roomId, {
+      userId: known,
+      displayName,
+    });
+    if (!known) {
+      this.store.set({ ...r, members: { ...members, [member.key]: userId } });
+      logEvent("chat_member_added");
+    }
+    return { ...toPublic(r), ...(login ? { login } : {}) };
+  }
+
   private async close(r: ChatRecord) {
-    await this.matrix.closeRoom(r.roomId);
+    await this.matrix.closeRoom(r.roomId, Object.values(r.members ?? {}));
     this.store.delete(r.huntId);
     logEvent("chat_expired");
   }

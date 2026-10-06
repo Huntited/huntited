@@ -18,11 +18,11 @@ avant l'ouverture au public**, en particulier :
 
 ## À compléter à la mise en ligne
 
-| Élément | Où | Valeur |
-| --- | --- | --- |
-| Éditeur (nom ou raison sociale, adresse si personne morale) | `[éditeur]` / `[publisher]` | à définir |
-| Hébergeur (nom, adresse) | `[hébergeur…]` / `[host…]` | selon le choix d'hébergement |
-| Contact | `LEGAL_CONTACT` | `Huntited@proton.me` |
-| Date de mise à jour | `LEGAL_UPDATED` | à changer à chaque modification |
+| Élément                                                     | Où                          | Valeur                          |
+| ----------------------------------------------------------- | --------------------------- | ------------------------------- |
+| Éditeur (nom ou raison sociale, adresse si personne morale) | `[éditeur]` / `[publisher]` | à définir                       |
+| Hébergeur (nom, adresse)                                    | `[hébergeur…]` / `[host…]`  | selon le choix d'hébergement    |
+| Contact                                                     | `LEGAL_CONTACT`             | `Huntited@proton.me`            |
+| Date de mise à jour                                         | `LEGAL_UPDATED`             | à changer à chaque modification |
 
 Une fois relu, retirer le bandeau « version de test » (`legal.draft`).

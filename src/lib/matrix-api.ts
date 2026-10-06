@@ -2,11 +2,21 @@ import { apiBaseUrl as baseUrl } from "./chat-access-api";
 // Client HTTP du front vers le backend Huntited (chat Matrix).
 // Aucun token Matrix ici ; aucun log de lien ni d'identifiant.
 
-/** Contrat public du backend : jamais de roomId. */
+/** Identifiants temporaires (compte Matrix propre à cette chasse et à cette personne). */
+export interface ChatLogin {
+  clientUrl: string;
+  homeserverUrl: string;
+  username: string;
+  password: string;
+}
+
+/** Contrat public du backend. */
 export interface PublicChatResponse {
   isActive: boolean;
   expiresAt?: number;
   inviteLink?: string;
+  /** Présent avec le vrai serveur Matrix (Synapse) : à saisir dans Element. */
+  login?: ChatLogin;
 }
 
 export class ChatApiError extends Error {}

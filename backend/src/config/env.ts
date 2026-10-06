@@ -24,6 +24,9 @@ const schema = z
     MATRIX_MODE: z.enum(["mock", "synapse"]).default("mock"),
     MATRIX_HOMESERVER_URL: z.string().url(),
     MATRIX_ACCESS_TOKEN: z.string().default(""),
+    // Synapse : nom du serveur (@x:<nom>) et application Element à ouvrir.
+    MATRIX_SERVER_NAME: z.string().default(""),
+    MATRIX_CLIENT_URL: z.string().default(""),
     CHAT_DEFAULT_TTL_MS: z.coerce.number().int().positive().default(86_400_000),
     AUTH_JWT_SECRET: z.string().min(32),
     AUTH_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
@@ -70,6 +73,15 @@ const schema = z
     message: "MATRIX_ACCESS_TOKEN requis en mode synapse",
     path: ["MATRIX_ACCESS_TOKEN"],
   })
+  .refine(
+    (e) =>
+      e.MATRIX_MODE === "mock" ||
+      (e.MATRIX_SERVER_NAME.length > 0 && /^https:\/\//.test(e.MATRIX_CLIENT_URL)),
+    {
+      message: "MATRIX_SERVER_NAME et MATRIX_CLIENT_URL (https) requis en mode synapse",
+      path: ["MATRIX_CLIENT_URL"],
+    },
+  )
   .refine((e) => e.NODE_ENV !== "production" || e.WALLET_AUTH_MODE === "signature", {
     message: "WALLET_AUTH_MODE=mock interdit en production",
     path: ["WALLET_AUTH_MODE"],

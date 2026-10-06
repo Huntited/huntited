@@ -12,7 +12,11 @@ import { createSignatureVerifier } from "./services/wallet-auth.js";
 
 const chat = new ChatService(
   new MemoryChatStore(),
-  createMatrixService(env.MATRIX_MODE, env.MATRIX_HOMESERVER_URL),
+  createMatrixService(env.MATRIX_MODE, env.MATRIX_HOMESERVER_URL, {
+    serverName: env.MATRIX_SERVER_NAME,
+    accessToken: env.MATRIX_ACCESS_TOKEN,
+    clientUrl: env.MATRIX_CLIENT_URL,
+  }),
 );
 const app = createApp({
   chat,

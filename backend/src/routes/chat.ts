@@ -2,15 +2,31 @@
 //   POST /api/chats          → créateur uniquement (idempotent)
 //   GET  /api/chats/:huntId  → créateur ou engagé·e
 //   POST /api/chats/cleanup  → DEV uniquement
-import { Router } from "express";
+import { createHash } from "node:crypto";
+
+import { Router, type Request } from "express";
 import { z } from "zod";
 
 import { requireChatAccess } from "../middleware/require-chat-access.js";
 import type { AuthService } from "../services/auth-service.js";
 import { ChatServiceError, type ChatService } from "../services/chat-service.js";
 import { isChatAllowed, type HuntAccessStore } from "../services/hunt-access-store.js";
+import type { ChatMember } from "../types/chat.js";
 
 const huntIdSchema = z.string().regex(/^[\w-]{1,64}$/);
+
+/**
+ * Personne qui demande l'accès : clé propre à la chasse et au wallet (le
+ * wallet n'est ni transmis à Matrix ni stocké), et son rôle.
+ */
+function memberOf(req: Request, huntId: string): ChatMember | undefined {
+  const access = req.chatAccess;
+  if (!access) return undefined;
+  const key = createHash("sha256")
+    .update(`huntited:chat|${huntId}|${access.walletFingerprint}`)
+    .digest("hex");
+  return { key, role: access.role };
+}
 const createSchema = z.object({
   huntId: huntIdSchema,
   huntName: z.string().trim().min(1).max(80),
@@ -48,13 +64,18 @@ export function chatRouter(
       try {
         // Un·e engagé·e peut récupérer un salon existant, jamais en créer un.
         if (req.chatAccess?.role !== "creator") {
-          const existing = await service.getChatStatus(parsed.data.huntId);
+          const existing = await service.getChatStatus(
+            parsed.data.huntId,
+            memberOf(req, parsed.data.huntId),
+          );
           if (existing.isActive) return res.json(existing);
           return res
             .status(403)
             .json({ error: "Seul·e le créateur ou la créatrice peut ouvrir le chat." });
         }
-        return res.status(201).json(await service.createChat(parsed.data));
+        return res
+          .status(201)
+          .json(await service.createChat(parsed.data, memberOf(req, parsed.data.huntId)));
       } catch (e) {
         if (e instanceof ChatServiceError) {
           return res.status(e.code === "invalid" ? 400 : 409).json({ error: e.message });
@@ -72,7 +93,7 @@ export function chatRouter(
       if (!parsed.success) return res.status(400).json({ error: "Requête invalide." });
       if (!stillAllowed(parsed.data)) return res.status(404).json({ isActive: false });
       try {
-        const status = await service.getChatStatus(parsed.data);
+        const status = await service.getChatStatus(parsed.data, memberOf(req, parsed.data));
         return res.status(status.isActive ? 200 : 404).json(status);
       } catch (e) {
         return next(e);

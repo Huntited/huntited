@@ -163,7 +163,18 @@ export const fr = {
     "Le chat n'est pas encore ouvert. La personne qui a créé la chasse va l'activer.",
   "chat.creatorActivate": "La chasse est activée. Active le chat pour commencer la coordination.",
   "chat.activate": "Activer le chat",
-  "chat.demo": "(Démonstration — Matrix auto-hébergé, intégration réelle à venir)",
+  "chat.demo": "(Démonstration : chat simulé, aucun salon réel)",
+  "chatLogin.title": "Tes identifiants pour ce chat",
+  "chatLogin.step1": "Ouvre le chat avec le bouton ci-dessus (application Element).",
+  "chatLogin.step2": "Connecte-toi avec l'identifiant et le mot de passe ci-dessous.",
+  "chatLogin.username": "Identifiant",
+  "chatLogin.password": "Mot de passe",
+  "chatLogin.copy": "Copier",
+  "chatLogin.copied": "Copié.",
+  "chatLogin.show": "Afficher",
+  "chatLogin.hide": "Masquer",
+  "chatLogin.note":
+    "Compte temporaire, réservé à cette chasse et sans lien avec ton wallet. Il est supprimé avec le salon, 24 h après la date limite. Les messages sont chiffrés de bout en bout.",
 
   // Partage et X
   "share.share": "Partager",

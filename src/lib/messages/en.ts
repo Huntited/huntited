@@ -159,7 +159,18 @@ export const en: Messages = {
   "chat.waitCreator": "The chat isn't open yet. The hunt's creator will activate it.",
   "chat.creatorActivate": "The hunt is triggered. Activate the chat to start coordinating.",
   "chat.activate": "Activate the chat",
-  "chat.demo": "(Demo — self-hosted Matrix, real integration coming)",
+  "chat.demo": "(Demo: simulated chat, no real room)",
+  "chatLogin.title": "Your login for this chat",
+  "chatLogin.step1": "Open the chat with the button above (Element app).",
+  "chatLogin.step2": "Sign in with the username and password below.",
+  "chatLogin.username": "Username",
+  "chatLogin.password": "Password",
+  "chatLogin.copy": "Copy",
+  "chatLogin.copied": "Copied.",
+  "chatLogin.show": "Show",
+  "chatLogin.hide": "Hide",
+  "chatLogin.note":
+    "Temporary account, for this hunt only and unrelated to your wallet. It's deleted with the room, 24 hours after the deadline. Messages are end-to-end encrypted.",
 
   // Sharing and X
   "share.share": "Share",

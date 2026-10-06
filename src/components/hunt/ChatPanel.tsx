@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { Hunt, HuntStatus } from "@/lib/types";
 import type { SettlementOutcome } from "@/lib/hunt-state-store";
+import { ChatLoginBox } from "@/components/hunt/ChatLoginBox";
 import { getChat, openChat, type ChatAccess } from "@/lib/chat-client";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { matrixConfig } from "@/lib/matrix-config";
@@ -102,6 +103,7 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
               {t("chat.openLink")}
             </a>
           </Button>
+          {chat!.login && <ChatLoginBox login={chat!.login} />}
           <p className="text-xs text-muted-foreground">
             {t("chat.expiresOn", { date: when(chat!.expiresAt) })}
           </p>
@@ -130,7 +132,8 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
         </>
       )}
 
-      <p className="text-xs text-muted-foreground">{t("chat.demo")}</p>
+      {/* Sans identifiants, le salon est simulé (front ou serveur en mode mock). */}
+      {!chat?.login && <p className="text-xs text-muted-foreground">{t("chat.demo")}</p>}
     </section>
   );
 }

@@ -2,13 +2,13 @@
 
 ## Qui accède au chat
 
-| État de la hunt   | Créateur·rice                  | Engagé·e                       | Externe     |
-|-------------------|--------------------------------|--------------------------------|-------------|
-| Active            | Pas de chat                    | Pas de chat                    | Aucun accès |
-| Activée           | Peut ouvrir le chat            | Peut rejoindre un chat ouvert  | Aucun accès |
-| Expirée           | Pas de chat                    | Pas de chat                    | Aucun accès |
-| Résolue — succès  | Accessible jusqu'à expiration  | Accessible jusqu'à expiration  | Aucun accès |
-| Résolue — échec   | Pas de chat                    | Pas de chat                    | Aucun accès |
+| État de la hunt  | Créateur·rice                 | Engagé·e                      | Externe     |
+| ---------------- | ----------------------------- | ----------------------------- | ----------- |
+| Active           | Pas de chat                   | Pas de chat                   | Aucun accès |
+| Activée          | Peut ouvrir le chat           | Peut rejoindre un chat ouvert | Aucun accès |
+| Expirée          | Pas de chat                   | Pas de chat                   | Aucun accès |
+| Résolue — succès | Accessible jusqu'à expiration | Accessible jusqu'à expiration | Aucun accès |
+| Résolue — échec  | Pas de chat                   | Pas de chat                   | Aucun accès |
 
 ## Comment ça marche
 
@@ -23,7 +23,8 @@ Le jeton reste en mémoire dans la page : il n'est jamais enregistré dans le na
 
 - Aucune clé privée ni seed phrase n'est transmise.
 - Le token du bot Matrix reste côté serveur (`backend/.env`), jamais dans une variable `VITE_`.
-- Le front ne reçoit jamais l'identifiant du salon ; le lien d'invitation est opaque.
+- Matrix ne reçoit jamais le wallet : chaque personne a un compte temporaire propre à la chasse (identifiant aléatoire), supprimé avec le salon. Le lien vers Element contient l'identifiant du salon, accessible seulement aux comptes invités (voir `docs/matrix.md`).
+- Les identifiants temporaires ne sont remis qu'à la personne concernée et ne sont jamais enregistrés sur l'appareil.
 - Les logs ne contiennent que des événements anonymes (`chat_created`, `chat_expired`).
 
 ## Limite du MVP (mock)
@@ -41,4 +42,4 @@ L'état des hunts et les rôles viennent d'un store mémoire de développement ;
 
 ## Salons éphémères
 
-Les salons expirent 24 h après la date limite de la hunt et sont fermés automatiquement.
+Les salons expirent 24 h après la date limite de la hunt : ils sont supprimés (historique purgé) et les comptes temporaires désactivés et effacés.
