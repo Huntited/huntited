@@ -5,6 +5,8 @@
 // pour les valeurs fournies ici.
 import { defineConfig } from "@playwright/test";
 
+import { GENESIS } from "./e2e/genesis";
+
 const FRONT_PORT = 5199;
 const API_PORT = 3099;
 
@@ -40,6 +42,9 @@ export default defineConfig({
         REGISTRY_FILE: "",
         // Une dizaine de personnes simulées depuis la même machine (même IP).
         RATE_LIMIT_MULTIPLIER: "10",
+        // Pass exigés pour s'engager (anti-bots), amorcés par des invitations de test.
+        PASS_REQUIRED: "true",
+        PASS_GENESIS_INVITES: GENESIS.join(","),
       },
     },
     {

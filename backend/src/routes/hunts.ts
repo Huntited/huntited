@@ -2,7 +2,8 @@
 //   GET  /api/hunts             → liste publique
 //   GET  /api/hunts/:id         → une chasse (compteur masqué si demandé)
 //   POST /api/hunts             → (session) créer une chasse
-//   POST /api/hunts/:id/commit  → (session) s'engager (une fois par wallet)
+//   POST /api/hunts/:id/commit  → (session) s'engager (une fois par wallet, et
+//                                 une fois par pass si les pass sont exigés)
 //   POST /api/hunts/:id/settle  → DEV : résolution simulée (aucun KAS)
 // Aucun KAS n'est déplacé : les montants sont calculés côté front (simulation).
 import { Router } from "express";
@@ -12,6 +13,8 @@ import { rateLimit } from "../middleware/rate-limit.js";
 import { requireSession } from "../middleware/require-session.js";
 import type { AuthService } from "../services/auth-service.js";
 import { RegistryError, type HuntRegistry } from "../services/hunt-registry.js";
+import type { PassRegistry } from "../services/pass-registry.js";
+import { checkProof, huntScope, proofSchema } from "../services/semaphore.js";
 
 const huntIdSchema = z.string().regex(/^[\w-]{1,64}$/);
 const MAX_DEADLINE_MS = 366 * 24 * 3600 * 1000;
@@ -30,6 +33,8 @@ export function huntsRouter(deps: {
   now?: () => number;
   minThreshold?: number;
   rateLimitMultiplier?: number;
+  /** Pass Huntited : si `required`, chaque engagement doit porter une preuve de pass. */
+  passes?: { registry: PassRegistry; required: boolean };
 }): Router {
   const { registry, auth } = deps;
   const minThreshold = deps.minThreshold ?? MIN_HUNT_THRESHOLD;
@@ -64,6 +69,7 @@ export function huntsRouter(deps: {
       not_found: 404,
       closed: 409,
       already_committed: 409,
+      person_already_committed: 409,
       not_settleable: 409,
       invalid_threshold: 400,
     }[e.code];
@@ -103,19 +109,44 @@ export function huntsRouter(deps: {
     return res.status(201).json(registry.publicView(hunt));
   });
 
-  router.post("/:id/commit", writeLimiter, requireSession(auth), (req, res) => {
+  router.post("/:id/commit", writeLimiter, requireSession(auth), async (req, res, next) => {
     const id = huntIdSchema.safeParse(req.params["id"]);
     if (!id.success) return res.status(404).json({ error: "Chasse introuvable." });
-    // Seuil personnel facultatif (« je viens si au moins N personnes viennent »).
+    // Seuil personnel facultatif (« je viens si au moins N personnes viennent »)
+    // et preuve de pass (une personne = un engagement), exigée si activé.
     const body = z
-      .object({ personalThreshold: z.number().int().positive().optional() })
+      .object({
+        personalThreshold: z.number().int().positive().optional(),
+        proof: proofSchema.optional(),
+      })
       .safeParse(req.body ?? {});
     if (!body.success) return res.status(400).json({ error: "Requête invalide." });
     try {
+      let personKey: string | undefined;
+      if (deps.passes?.required) {
+        const proof = body.data.proof;
+        if (!proof) {
+          return res.status(403).json({
+            error: "Il faut un pass Huntited pour s'engager.",
+            code: "pass_required",
+          });
+        }
+        // Le seuil personnel est scellé dans la preuve : il ne peut pas être modifié.
+        const ok = await checkProof(proof, {
+          scope: huntScope(id.data),
+          message: body.data.personalThreshold ?? 0,
+          roots: deps.passes.registry.knownRoots(),
+        });
+        if (!ok) {
+          return res.status(403).json({ error: "Preuve de pass invalide.", code: "invalid_proof" });
+        }
+        personKey = proof.nullifier;
+      }
       const { rank, hunt } = registry.commit(
         id.data,
         req.session!.walletKey,
         body.data.personalThreshold,
+        personKey,
       );
       // Rang masqué pour une chasse à progression masquée encore active :
       // il révélerait le nombre d'engagés.
@@ -124,7 +155,7 @@ export function huntsRouter(deps: {
         .json({ rank: registry.visibleRank(hunt, rank), hunt: registry.publicView(hunt) });
     } catch (e) {
       if (e instanceof RegistryError) return sendRegistryError(res, e);
-      throw e;
+      return next(e);
     }
   });
 

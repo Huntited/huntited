@@ -43,6 +43,7 @@ UI → covenants.ts → mock-zk.ts (localStorage)
 
 - **Création de chasse** : titre, description, lieu, date limite, seuil de participants (7 au moins) et caution fixe de 30 KAS. Parcours en deux temps : formulaire → récapitulatif → création.
 - **Économie d'engagement** : le dépôt d'engagement (5 KAS) est toujours rendu. En cas de succès seulement, le créateur récompense les engagés sur sa caution : jusqu'à 1 KAS chacun (14,25 KAS au plus), 0,75 KAS à la treasury. En cas d'échec : 1 KAS à la treasury, le créateur récupère 29 KAS. Détails : `docs/economics.md`.
+- **Pass Huntited (anti-bots)** : une personne = un engagement par chasse, prouvé anonymement (preuves Semaphore calculées sur l'appareil). On rejoint avec une invitation d'un membre (3 par mois, sans que le serveur sache qui invite qui). Détails : `docs/anti-bots.md` ; essai : `bun run dev:shared:pass`.
 - **Répondre à un tweet** : on colle l'adresse d'un tweet, X s'ouvre sur une réponse préremplie avec le lien de la chasse (aucune API X, l'utilisateur publie lui-même). Les liens de chasse ont un aperçu riche (titre, seuil, date limite ; image si `VITE_SITE_URL` est défini).
 - **Engagement privé** : commitment = SHA-256(huntId | secret aléatoire). Seule l'empreinte est stockée ; dans ce prototype, le secret n'est pas conservé (il sera géré par le vrai wallet). L'adresse du wallet n'entre jamais dans l'empreinte.
 - **Wallet mocké** : connexion/déconnexion, requis pour s'engager (et plus tard pour payer le dépôt).
@@ -103,7 +104,8 @@ accès au chat. Les tests du backend : `cd backend && bun run test`.
 
 Routes du backend : `GET /health`, `GET|POST /api/hunts`, `GET /api/hunts/:id`,
 `POST /api/hunts/:id/commit`, `GET /api/me`, `POST /api/auth/challenge|session|chat-access`,
-`POST /api/chats`, `GET /api/chats/:huntId`.
+`POST /api/chats`, `GET /api/chats/:huntId`, `GET /api/passes/config|group`,
+`POST /api/passes/redeem|invitations`.
 
 ## Principes non négociables
 

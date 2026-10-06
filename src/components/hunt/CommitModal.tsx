@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { getPassConfig, hasPass, onPassChange } from "@/lib/pass";
 import { COMMIT_DEPOSIT_TERMS, COMMIT_REFUND_HIGHLIGHT, termsShort, termsFull } from "@/lib/terms";
 import type { Hunt } from "@/lib/types";
 import type { UseCommitmentResult } from "@/lib/useCommitment";
@@ -57,6 +59,13 @@ export function CommitModal({
   // Seuil personnel : « je viens si au moins N personnes viennent » (N ≥ seuil de la chasse).
   const [personal, setPersonal] = useState(String(hunt.threshold));
   const { isConnected, isCommitted, canCommit, isSubmitting, error, commit } = commitment;
+  // Pass exigé par le serveur et absent de cet appareil.
+  const [needsPass, setNeedsPass] = useState(false);
+  useEffect(() => {
+    const check = () => void getPassConfig().then((c) => setNeedsPass(c.required && !hasPass()));
+    check();
+    return onPassChange(check);
+  }, []);
   const personalValue = Number(personal);
   const personalValid =
     Number.isInteger(personalValue) && personalValue >= hunt.threshold && personalValue <= 100_000;
@@ -180,6 +189,15 @@ export function CommitModal({
           </span>
         </label>
 
+        {needsPass && !isCommitted && (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            Il te faut un pass Huntited pour t'engager (une personne = un engagement).{" "}
+            <Link to="/pass" className="font-medium underline">
+              Obtenir mon pass
+            </Link>
+          </p>
+        )}
+
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error}
@@ -195,8 +213,11 @@ export function CommitModal({
               {walletLoading ? "Connexion…" : "Connecter le wallet"}
             </Button>
           ) : (
-            <Button onClick={handleConfirm} disabled={!accepted || !canCommit || !personalValid}>
-              {isSubmitting ? "Engagement…" : "Confirmer l'engagement"}
+            <Button
+              onClick={handleConfirm}
+              disabled={!accepted || !canCommit || !personalValid || needsPass}
+            >
+              {isSubmitting ? "Engagement… (preuve en cours)" : "Confirmer l'engagement"}
             </Button>
           )}
         </DialogFooter>

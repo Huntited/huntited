@@ -7,6 +7,8 @@
   ./scripts/dev-shared.ps1                 # wallet Kastle (signatures réelles, testnet-10)
   ./scripts/dev-shared.ps1 -Wallet mock    # wallet factice (téléphones sans extension)
   ./scripts/dev-shared.ps1 -MinThreshold 2 # seuil minimum abaissé (tester à 2 navigateurs)
+  ./scripts/dev-shared.ps1 -Pass           # pass exigés pour s'engager (anti-bots) :
+                                           # affiche 3 invitations de départ
 
 .NOTES
   Les réglages sont passés aux deux serveurs le temps de la session : tes
@@ -20,7 +22,9 @@ param(
   [int]$ApiPort = 3001,
   # Seuil minimum d'une chasse (7 = règle réelle ; plus bas pour tester à peu).
   [ValidateRange(1, 7)]
-  [int]$MinThreshold = 7
+  [int]$MinThreshold = 7,
+  # Pass Huntited exigés pour s'engager (une personne = un engagement).
+  [switch]$Pass
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,6 +38,20 @@ if (-not $ip) { $ip = "localhost" }
 
 $authMode = if ($Wallet -eq "mock") { "mock" } else { "signature" }
 
+# Invitations de départ (aléatoires, valables pour cette session) : le
+# premier pass ne peut venir que d'elles. Les pass restent dans data/passes.json.
+$genesis = @()
+if ($Pass) {
+  $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+  $genesis = 1..3 | ForEach-Object {
+    $bytes = New-Object byte[] 24
+    $rng.GetBytes($bytes)
+    [Convert]::ToBase64String($bytes).Replace('+', '-').Replace('/', '_').TrimEnd('=')
+  }
+}
+$passRequired = if ($Pass) { "true" } else { "false" }
+$genesisList = $genesis -join ","
+
 $backend = @"
 `$env:Path=[Environment]::GetEnvironmentVariable('Path','Machine')+';'+[Environment]::GetEnvironmentVariable('Path','User')
 `$env:PORT='$ApiPort'
@@ -41,6 +59,9 @@ $backend = @"
 `$env:WALLET_AUTH_MODE='$authMode'
 `$env:REGISTRY_FILE='data/registry.json'
 `$env:MIN_HUNT_THRESHOLD='$MinThreshold'
+`$env:PASS_REQUIRED='$passRequired'
+`$env:PASS_FILE='data/passes.json'
+`$env:PASS_GENESIS_INVITES='$genesisList'
 Set-Location '$root\backend'
 bun run dev
 "@
@@ -65,6 +86,12 @@ Write-Host "  Sur ce PC          : http://localhost:$FrontPort"
 Write-Host "  Autres appareils   : http://${ip}:$FrontPort  (même Wi-Fi)"
 Write-Host "  Backend            : http://${ip}:$ApiPort/health"
 Write-Host ""
+if ($Pass) {
+  Write-Host "Pass exigés pour s'engager. Invitations de départ (une personne chacune) :" -ForegroundColor Yellow
+  foreach ($g in $genesis) { Write-Host "  http://localhost:$FrontPort/pass#$g" }
+  Write-Host "Ensuite, chaque membre invite les autres depuis « Mon pass »."
+  Write-Host ""
+}
 Write-Host "Deux fenêtres se sont ouvertes (backend, front). Ferme-les pour tout arrêter."
 Write-Host "Au premier lancement, Windows peut demander d'autoriser Node sur le réseau privé :"
 Write-Host "accepte pour que les autres appareils puissent se connecter."

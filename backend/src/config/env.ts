@@ -44,6 +44,23 @@ const schema = z
     // Seuil minimum d'une chasse. Abaissable en développement uniquement
     // (tests à 2 navigateurs) ; toujours 7 en production.
     MIN_HUNT_THRESHOLD: z.coerce.number().int().min(1).max(7).default(7),
+    // Pass Huntited (anti-bots, voir docs/anti-bots.md). Exigé pour s'engager :
+    // « true »/« false » ; par défaut, exigé en production seulement.
+    PASS_REQUIRED: z.enum(["true", "false"]).optional(),
+    // Fichier JSON des pass (empreintes anonymes) ; vide = mémoire seulement.
+    PASS_FILE: z.string().default(""),
+    // Invitations de départ (amorçage), séparées par des virgules, 24 caractères min.
+    PASS_GENESIS_INVITES: z
+      .string()
+      .default("")
+      .transform((s) =>
+        s
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.string().regex(/^[\w-]{24,128}$/))),
+    PASS_INVITES_PER_MONTH: z.coerce.number().int().min(1).max(20).default(3),
   })
   .refine((e) => e.NODE_ENV !== "production" || e.MIN_HUNT_THRESHOLD === 7, {
     message: "MIN_HUNT_THRESHOLD ne peut pas être abaissé en production",

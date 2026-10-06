@@ -12,4 +12,12 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // Pass Huntited (preuves ZK) : chargé à la demande, donc découvert tard par
+    // le serveur de dev, qui rechargerait la page en pleine action. On le
+    // prépare dès le démarrage.
+    optimizeDeps: {
+      include: ["@semaphore-protocol/core", "snarkjs", "ethers", "@zk-kit/utils/proof-packing"],
+    },
+  },
 });

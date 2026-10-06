@@ -26,7 +26,12 @@ export const MAX_PERSONAL_THRESHOLD = 100_000;
 export class RegistryError extends Error {
   constructor(
     public readonly code:
-      "not_found" | "closed" | "already_committed" | "not_settleable" | "invalid_threshold",
+      | "not_found"
+      | "closed"
+      | "already_committed"
+      | "person_already_committed"
+      | "not_settleable"
+      | "invalid_threshold",
     message: string,
   ) {
     super(message);
@@ -178,6 +183,7 @@ export class HuntRegistry implements HuntAccessStore {
     huntId: string,
     walletKey: string,
     personalThreshold?: number,
+    personKey?: string,
   ): { rank: number; hunt: StoredHunt } {
     const hunt = this.hunts.get(huntId);
     if (!hunt) throw new RegistryError("not_found", "Chasse introuvable.");
@@ -196,12 +202,19 @@ export class HuntRegistry implements HuntAccessStore {
     if (list.some((c) => c.commitKey === key)) {
       throw new RegistryError("already_committed", "Tu es déjà engagé·e dans cette chasse.");
     }
+    if (personKey !== undefined && list.some((c) => c.personKey === personKey)) {
+      throw new RegistryError(
+        "person_already_committed",
+        "Ce pass est déjà engagé dans cette chasse (une personne = un engagement).",
+      );
+    }
     const iso = new Date(this.now()).toISOString();
     list.push({
       huntId,
       commitKey: key,
       createdAt: iso,
       ...(t !== hunt.threshold ? { personalThreshold: t } : {}),
+      ...(personKey !== undefined ? { personKey } : {}),
     });
     this.commits.set(huntId, list);
     // Activation dès que le groupe retenu existe (il atteint alors le seuil).

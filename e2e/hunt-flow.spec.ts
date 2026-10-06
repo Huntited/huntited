@@ -2,6 +2,7 @@
 // partagé, sessions signées par le wallet factice, chat simulé).
 import { expect, test } from "@playwright/test";
 
+import { GENESIS } from "./genesis";
 import {
   API,
   apiCommit,
@@ -10,6 +11,7 @@ import {
   createHunt,
   fillCreateFields,
   fillCreateForm,
+  getPass,
   newPerson,
   open,
   reload,
@@ -32,6 +34,8 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
   browser,
   request,
 }) => {
+  // Pass et preuves ZK réels pour chaque personne : plus long que les autres tests.
+  test.setTimeout(240_000);
   // Alice crée une chasse à seuil 7, progression masquée, et s'engage.
   const alice = await newPerson(browser);
   await open(alice, "/");
@@ -42,14 +46,25 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
     hideProgress: true,
   });
   const huntId = url.split("/").pop()!;
+  // Pass exigé pour s'engager : Alice a une invitation de départ.
+  await getPass(alice, GENESIS[0]!);
+  await open(alice, url);
   await commit(alice);
   await expect(alice.getByText("Progression masquée")).toBeVisible();
 
   // Cinq autres personnes s'engagent (par l'API) : 6 engagés.
-  for (let i = 0; i < 5; i += 1) await apiCommit(request, huntId);
+  for (let i = 0; i < 5; i += 1) await apiCommit(request, huntId, GENESIS[1 + i]!);
+
+  // Alice invite Bruno depuis « Mon pass » (lien à lui envoyer, ex. par Signal).
+  await open(alice, "/pass");
+  await alice.getByRole("button", { name: "Créer une invitation" }).click();
+  const invitation = alice.getByRole("textbox", { name: "Lien d'invitation" });
+  await expect(invitation).toHaveValue(/\/pass#/, { timeout: 30_000 });
+  const inviteLink = await invitation.inputValue();
 
   // Bruno ouvre le lien partagé (autre appareil) et exige au moins 8 personnes.
   const bruno = await newPerson(browser);
+  await getPass(bruno, inviteLink);
   await open(bruno, url);
   await connectWallet(bruno);
   await commit(bruno, 8);
@@ -63,6 +78,7 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
 
   // Chloé s'engage : 8 personnes acceptent un groupe de 8, la chasse s'active, Bruno est retenu.
   const chloe = await newPerson(browser);
+  await getPass(chloe, GENESIS[6]!);
   await open(chloe, url);
   await connectWallet(chloe);
   await commit(chloe);
@@ -74,6 +90,7 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
 
   // David s'engage après l'activation (engagements ouverts) mais exige 20 : non retenu.
   const david = await newPerson(browser);
+  await getPass(david, GENESIS[7]!);
   await open(david, url);
   await connectWallet(david);
   await commit(david, 20);
@@ -84,7 +101,7 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
   await expect(david.getByText("Récompense par engagé·e")).toBeVisible();
 
   // Alice (créatrice) ouvre le chat ; Bruno (retenu) le voit ; David (non retenu) non.
-  await reload(alice);
+  await open(alice, url);
   await alice.getByRole("button", { name: "Activer le chat" }).click();
   await expect(alice.getByRole("link", { name: "Ouvrir le chat Matrix" })).toBeVisible();
 
@@ -110,6 +127,22 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
   const html = await (await request.get(url)).text();
   expect(html).toContain('property="og:title" content="Parcours automatique — Huntited"');
   expect(html).toContain("il faut au moins 7 personnes avant le");
+});
+
+test("sans pass, l'engagement est bloqué", async ({ browser }) => {
+  const alice = await newPerson(browser);
+  await open(alice, "/");
+  await connectWallet(alice);
+  const url = await createHunt(alice, { title: "Sans pass", threshold: 7 });
+
+  const eve = await newPerson(browser);
+  await open(eve, url);
+  await connectWallet(eve);
+  await eve.getByRole("button", { name: /S'engager/ }).click();
+  const dialog = eve.getByRole("dialog");
+  await expect(dialog.getByText(/Il te faut un pass Huntited/)).toBeVisible();
+  await dialog.getByRole("checkbox").click();
+  await expect(dialog.getByRole("button", { name: "Confirmer l'engagement" })).toBeDisabled();
 });
 
 test("répondre à un tweet ouvre X avec une réponse préremplie", async ({ browser }) => {

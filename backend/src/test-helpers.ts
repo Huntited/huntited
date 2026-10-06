@@ -12,6 +12,7 @@ import { MemoryChatStore } from "./services/chat-store.js";
 import { HuntRegistry } from "./services/hunt-registry.js";
 import { encodeKaspaAddress, personalMessageHash } from "./services/kaspa-signature.js";
 import { MockMatrixService } from "./services/matrix-service.js";
+import { PassRegistry } from "./services/pass-registry.js";
 import { createSignatureVerifier } from "./services/wallet-auth.js";
 
 export interface TestWallet {
@@ -35,9 +36,14 @@ export async function startApp(
     registry?: HuntRegistry;
     /** Seuil minimum ; 1 par défaut (petits scénarios), "default" = règle réelle. */
     minThreshold?: number | "default";
+    /** Pass Huntited activés (invitations de départ, pass exigé ou non). */
+    passes?: { required: boolean; genesis?: string[] };
   } = {},
 ) {
   const now = opts.now ?? Date.now;
+  const passes = opts.passes
+    ? new PassRegistry({ now, genesisInvites: opts.passes.genesis ?? [] })
+    : undefined;
   const registry = opts.registry ?? new HuntRegistry({ now });
   const auth = new AuthService(SECRET, 900, now, 3600);
   const app = createApp({
@@ -50,6 +56,9 @@ export async function startApp(
     nodeEnv: "test",
     now,
     ...(opts.minThreshold === "default" ? {} : { minThreshold: opts.minThreshold ?? 1 }),
+    ...(passes
+      ? { passes: { registry: passes, required: opts.passes!.required, invitesPerMonth: 3 } }
+      : {}),
   });
   const server: Server = app.listen(0);
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -99,5 +108,5 @@ export async function startApp(
       token,
     );
 
-  return { server, registry, auth, post, get, login, createHunt };
+  return { server, registry, auth, passes, post, get, login, createHunt };
 }

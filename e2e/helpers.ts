@@ -1,21 +1,46 @@
 // Actions de parcours réutilisables (une « personne » = un contexte de
 // navigateur isolé : son propre stockage, donc son propre wallet factice).
 import { randomBytes } from "node:crypto";
+import { fileURLToPath } from "node:url";
 
 import { expect, type APIRequestContext, type Browser, type Page } from "@playwright/test";
+import { Group, Identity } from "@semaphore-protocol/core";
+
+import { generateProofSingleThread } from "../src/lib/zk-prove";
 
 export const API = "http://localhost:3099";
 
+const ZK = {
+  wasm: fileURLToPath(new URL("../public/zk/semaphore-20.wasm", import.meta.url)),
+  zkey: fileURLToPath(new URL("../public/zk/semaphore-20.zkey", import.meta.url)),
+};
+
 /**
- * Participant « de remplissage » engagé directement par l'API (wallet
- * factice : même format d'adresse et de signature que le wallet mock du
- * front). Sert à atteindre le seuil minimum de 7 sans ouvrir 7 navigateurs.
+ * Participant « de remplissage » engagé directement par l'API : pass créé
+ * avec une invitation de départ, preuve calculée ici (Node), wallet factice
+ * (même format d'adresse et de signature que le wallet mock du front).
+ * Sert à atteindre le seuil minimum de 7 sans ouvrir 7 navigateurs.
  */
 export async function apiCommit(
   request: APIRequestContext,
   huntId: string,
+  invitation: string,
   personalThreshold?: number,
 ) {
+  const pass = new Identity();
+  const redeem = await request.post(`${API}/api/passes/redeem`, {
+    data: { invitation, commitment: pass.commitment.toString() },
+  });
+  expect(redeem.status()).toBe(201);
+  const { members } = await (await request.get(`${API}/api/passes/group`)).json();
+  const proof = await generateProofSingleThread(
+    pass,
+    new Group((members as string[]).map(BigInt)),
+    personalThreshold ?? 0,
+    `hunt:${huntId}`,
+    20,
+    ZK,
+  );
   const walletAddress = `kaspa:mock${randomBytes(20).toString("hex")}`;
   const challenge = await (
     await request.post(`${API}/api/auth/challenge`, { data: { walletAddress } })
@@ -31,9 +56,19 @@ export async function apiCommit(
   ).json();
   const res = await request.post(`${API}/api/hunts/${huntId}/commit`, {
     headers: { Authorization: `Bearer ${session.accessToken}` },
-    data: personalThreshold === undefined ? {} : { personalThreshold },
+    data: { ...(personalThreshold === undefined ? {} : { personalThreshold }), proof },
   });
   expect(res.status()).toBe(201);
+}
+
+/** Crée le pass de cette personne avec une invitation (code ou lien). */
+export async function getPass(page: Page, invitation: string) {
+  const url = invitation.startsWith("http") ? invitation : `/pass#${invitation}`;
+  await open(page, url);
+  await page.getByRole("button", { name: "Créer mon pass" }).click();
+  await expect(page.getByText("Ton pass est actif sur cet appareil.")).toBeVisible({
+    timeout: 20_000,
+  });
 }
 
 export async function newPerson(browser: Browser): Promise<Page> {
@@ -136,5 +171,8 @@ export async function commit(page: Page, personalThreshold?: number) {
   }
   await dialog.getByRole("checkbox").click();
   await dialog.getByRole("button", { name: "Confirmer l'engagement" }).click();
-  await expect(page.getByRole("button", { name: "Déjà engagé·e" })).toBeVisible();
+  // La preuve de pass est calculée dans le navigateur : quelques secondes.
+  await expect(page.getByRole("button", { name: "Déjà engagé·e" })).toBeVisible({
+    timeout: 30_000,
+  });
 }

@@ -12,6 +12,8 @@ import type { AuthService } from "./services/auth-service.js";
 import type { ChallengeService } from "./services/challenge-service.js";
 import type { ChatService } from "./services/chat-service.js";
 import type { HuntRegistry } from "./services/hunt-registry.js";
+import type { PassRegistry } from "./services/pass-registry.js";
+import { passesRouter } from "./routes/passes.js";
 
 export interface AppDeps {
   chat: ChatService;
@@ -28,6 +30,8 @@ export interface AppDeps {
   minThreshold?: number;
   /** Multiplie toutes les limites de fréquence (1 par défaut). */
   rateLimitMultiplier?: number;
+  /** Pass Huntited (anti-bots) ; absent = fonctionnalité désactivée. */
+  passes?: { registry: PassRegistry; required: boolean; invitesPerMonth: number };
 }
 
 export function createApp(d: AppDeps) {
@@ -64,8 +68,21 @@ export function createApp(d: AppDeps) {
       ...(d.now ? { now: d.now } : {}),
       ...(d.minThreshold !== undefined ? { minThreshold: d.minThreshold } : {}),
       ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
+      ...(d.passes ? { passes: { registry: d.passes.registry, required: d.passes.required } } : {}),
     }),
   );
+  if (d.passes) {
+    app.use(
+      "/api/passes",
+      passesRouter({
+        passes: d.passes.registry,
+        required: d.passes.required,
+        invitesPerMonth: d.passes.invitesPerMonth,
+        ...(d.now ? { now: d.now } : {}),
+        ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
+      }),
+    );
+  }
   app.use(
     "/api/me",
     meRouter({

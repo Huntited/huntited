@@ -31,6 +31,11 @@ export interface StoredCommit {
   createdAt: string;
   /** Seuil personnel (≥ seuil de la chasse) ; absent = seuil de la chasse. Privé. */
   personalThreshold?: number;
+  /**
+   * Code de pass pour cette chasse (nullifier Semaphore) : une personne = un
+   * engagement. Ne permet ni de retrouver le pass, ni de relier deux chasses.
+   */
+  personKey?: string;
 }
 
 export interface NewHuntInput {

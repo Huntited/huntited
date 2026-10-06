@@ -26,6 +26,7 @@ import {
 } from "./hunt-state-store";
 import { getMockPersonalThreshold, hasMockCommitment } from "./mock-zk";
 import { getMyCommitment, rememberCommitment } from "./my-commitments";
+import { getPassConfig, hasPass, proveWithPass } from "./pass";
 import { isRetained } from "./retained-group";
 import type { Hunt, HuntFormData, HuntStatus, ProgressVisibility } from "./types";
 import { addUserHunt } from "./user-hunts";
@@ -240,13 +241,27 @@ export async function commit(
     await localCommit(huntId, address, personalThreshold);
     return;
   }
+  // Pass exigé : preuve anonyme « une personne = un engagement », calculée
+  // sur l'appareil, avec le seuil personnel scellé dedans.
+  const { required } = await getPassConfig();
+  if (required && !hasPass()) {
+    throw new Error(
+      "Il te faut un pass Huntited pour t'engager : demande une invitation à un membre.",
+    );
+  }
   try {
     const token = await getSessionToken(address);
+    const proof = required
+      ? await proveWithPass(`hunt:${huntId}`, personalThreshold ?? 0)
+      : undefined;
     // Rang null : chasse à progression masquée encore active (révélé plus tard).
     const r = await apiFetch<{ rank: number | null; hunt: PublicHunt }>(
       "POST",
       `/api/hunts/${encodeURIComponent(huntId)}/commit`,
-      personalThreshold === undefined ? {} : { personalThreshold },
+      {
+        ...(personalThreshold === undefined ? {} : { personalThreshold }),
+        ...(proof ? { proof } : {}),
+      },
       token,
     );
     rememberCommitment(address, huntId, {

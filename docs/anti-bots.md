@@ -81,9 +81,39 @@ wallets. Et comme les nullifiers de deux chasses n'ont rien en commun,
   de route.
 - Génération de preuve sur téléphone : quelques secondes.
 
-## Ordre proposé
+## Où on en est
 
-1. **Maintenant** : récompense de succès uniquement, plafonnée (fait).
-2. **Avant les vrais KAS** : inscription par parrainage, liste des personnes
-   vérifiées (d'abord tenue par le serveur, sans lien avec les engagements).
-3. **Ensuite** : engagements avec preuve ZK et nullifier, vérifiés on-chain.
+1. **Fait** : récompense de succès uniquement, plafonnée.
+2. **Fait (prototype)** : pass Huntited.
+   - **Inscription par invitation** : un membre crée un lien d'invitation
+     depuis « Mon pass » (3 par mois). Il prouve anonymement qu'il a un pass
+     (preuve Semaphore, scope `invite:<mois>:<n>`) : le serveur applique le
+     quota **sans savoir quel membre invite**, et ne garde jamais le lien
+     parrain → filleul. Le code est dans la partie `#` du lien (jamais envoyé
+     au serveur de la page), valable 7 jours, une seule fois.
+   - **Amorçage** : `PASS_GENESIS_INVITES` (invitations de départ).
+   - **Engagement** : si `PASS_REQUIRED=true`, chaque engagement porte une
+     preuve Semaphore (scope `hunt:<id>`, seuil personnel scellé dans le
+     message). Le serveur refuse un même code (nullifier) deux fois dans une
+     chasse, même depuis un autre wallet.
+   - **Preuves calculées sur l'appareil** (≈ 1 à 5 s), sur un seul fil pour
+     ménager la mémoire des téléphones ; fichiers de calcul servis par le site
+     (`public/zk`, profondeur 20 : la taille réelle du groupe n'est pas révélée).
+3. **À faire** :
+   - vérifier les preuves dans le covenant Kaspa (aujourd'hui : le serveur) ;
+   - un dépôt qui ne relie pas le wallet à l'engagement (aujourd'hui, le
+     serveur sait quel wallet s'engage, comme avant les pass) ;
+   - d'autres portes d'entrée au choix : rencontre en personne (QR code qui
+     change), passeport ZK en option.
+
+## Données conservées par le serveur
+
+| Donnée                                            | Pourquoi                     | Révèle                                               |
+| ------------------------------------------------- | ---------------------------- | ---------------------------------------------------- |
+| Empreintes des pass (commitments)                 | Calculer les preuves         | Rien sur qui est qui                                 |
+| Empreintes (sha256) des invitations non utilisées | Les accepter une fois        | Rien                                                 |
+| Codes d'emplacements d'invitation utilisés        | Quota mensuel                | Rien (codes différents à chaque mois et emplacement) |
+| Code de pass par engagement                       | Une personne = un engagement | Rien hors de cette chasse                            |
+
+Le secret du pass reste sur l'appareil (stockage du navigateur). Sans
+sauvegarde (écran « Mon pass »), il est perdu avec l'appareil.

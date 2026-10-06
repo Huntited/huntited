@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as CreateReviewRouteImport } from './routes/create-review'
 import { Route as MyHuntsRouteImport } from './routes/my-hunts'
+import { Route as PassRouteImport } from './routes/pass'
 import { Route as HuntIdRouteImport } from './routes/hunt.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const MyHuntsRoute = MyHuntsRouteImport.update({
   path: '/my-hunts',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PassRoute = PassRouteImport.update({
+  id: '/pass',
+  path: '/pass',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HuntIdRoute = HuntIdRouteImport.update({
   id: '/hunt/$id',
   path: '/hunt/$id',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
   '/my-hunts': typeof MyHuntsRoute
+  '/pass': typeof PassRoute
   '/hunt/$id': typeof HuntIdRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
   '/my-hunts': typeof MyHuntsRoute
+  '/pass': typeof PassRoute
   '/hunt/$id': typeof HuntIdRoute
 }
 export interface FileRoutesById {
@@ -61,15 +69,23 @@ export interface FileRoutesById {
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
   '/my-hunts': typeof MyHuntsRoute
+  '/pass': typeof PassRoute
   '/hunt/$id': typeof HuntIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/create-review' | '/my-hunts' | '/hunt/$id'
+  fullPaths:
+    '/' | '/create' | '/create-review' | '/my-hunts' | '/pass' | '/hunt/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/create-review' | '/my-hunts' | '/hunt/$id'
+  to: '/' | '/create' | '/create-review' | '/my-hunts' | '/pass' | '/hunt/$id'
   id:
-    '__root__' | '/' | '/create' | '/create-review' | '/my-hunts' | '/hunt/$id'
+    | '__root__'
+    | '/'
+    | '/create'
+    | '/create-review'
+    | '/my-hunts'
+    | '/pass'
+    | '/hunt/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +93,7 @@ export interface RootRouteChildren {
   CreateRoute: typeof CreateRoute
   CreateReviewRoute: typeof CreateReviewRoute
   MyHuntsRoute: typeof MyHuntsRoute
+  PassRoute: typeof PassRoute
   HuntIdRoute: typeof HuntIdRoute
 }
 
@@ -110,6 +127,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MyHuntsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pass': {
+      id: '/pass'
+      path: '/pass'
+      fullPath: '/pass'
+      preLoaderRoute: typeof PassRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hunt/$id': {
       id: '/hunt/$id'
       path: '/hunt/$id'
@@ -125,6 +149,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreateRoute: CreateRoute,
   CreateReviewRoute: CreateReviewRoute,
   MyHuntsRoute: MyHuntsRoute,
+  PassRoute: PassRoute,
   HuntIdRoute: HuntIdRoute,
 }
 export const routeTree = rootRouteImport

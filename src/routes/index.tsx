@@ -112,6 +112,12 @@ function Index() {
           >
             Mes chasses
           </Link>
+          <Link
+            to="/pass"
+            className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+          >
+            Mon pass
+          </Link>
           {isConnected && address ? (
             <div className="flex items-center gap-2">
               <code className="hidden text-xs text-muted-foreground sm:inline">

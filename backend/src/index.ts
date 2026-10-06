@@ -7,6 +7,7 @@ import { ChatService } from "./services/chat-service.js";
 import { MemoryChatStore } from "./services/chat-store.js";
 import { HuntRegistry } from "./services/hunt-registry.js";
 import { createMatrixService } from "./services/matrix-service.js";
+import { PassRegistry } from "./services/pass-registry.js";
 import { createSignatureVerifier } from "./services/wallet-auth.js";
 
 const chat = new ChatService(
@@ -30,6 +31,14 @@ const app = createApp({
   trustProxy: env.TRUST_PROXY,
   rateLimitMultiplier: env.RATE_LIMIT_MULTIPLIER,
   minThreshold: env.MIN_HUNT_THRESHOLD,
+  passes: {
+    registry: new PassRegistry({
+      ...(env.PASS_FILE ? { file: env.PASS_FILE } : {}),
+      genesisInvites: env.PASS_GENESIS_INVITES,
+    }),
+    required: (env.PASS_REQUIRED ?? (env.NODE_ENV === "production" ? "true" : "false")) === "true",
+    invitesPerMonth: env.PASS_INVITES_PER_MONTH,
+  },
 });
 
 // Nettoyage périodique des salons expirés.
