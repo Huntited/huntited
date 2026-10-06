@@ -80,7 +80,7 @@ const fr: LegalSection[] = [
       {
         heading: "Ce qui reste sur ton appareil",
         paragraphs: [
-          "Dans le stockage de ton navigateur : l'état de connexion de ton wallet, ta langue et ton thème, le brouillon de création, la liste des chasses que tu as créées, rejointes ou suivies, tes réglages de badges, et le secret de ton pass. Ces données ne quittent pas ton appareil ; tu peux les effacer en vidant les données du site.",
+          "Dans le stockage de ton navigateur : l'état de connexion de ton wallet, ta langue et ton thème, le brouillon de création, la liste des chasses que tu as créées, rejointes ou suivies, tes réglages de badges, et le secret de ton pass. Ces données ne quittent pas ton appareil ; la page « Tes données » permet de les voir, de les exporter et de les effacer.",
           "La recherche de villes se fait sur ton appareil : aucune lettre tapée n'est envoyée (données GeoNames, CC BY 4.0).",
         ],
       },
@@ -205,7 +205,7 @@ const en: LegalSection[] = [
       {
         heading: "What stays on your device",
         paragraphs: [
-          "In your browser's storage: your wallet connection state, your language and theme, the creation draft, the hunts you created, joined or follow, your badge settings, and your pass secret. This data doesn't leave your device; you can erase it by clearing the site's data.",
+          "In your browser's storage: your wallet connection state, your language and theme, the creation draft, the hunts you created, joined or follow, your badge settings, and your pass secret. This data doesn't leave your device; the “Your data” page lets you view, export and erase it.",
           "City search runs on your device: no keystroke is sent anywhere (GeoNames data, CC BY 4.0).",
         ],
       },

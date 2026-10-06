@@ -193,6 +193,10 @@ export function AppFooter() {
         <Link to="/legal" className="underline-offset-2 hover:underline">
           {t("footer.legal")}
         </Link>
+        {" · "}
+        <Link to="/my-data" className="underline-offset-2 hover:underline">
+          {t("footer.data")}
+        </Link>
       </p>
       <p className="mt-1">
         <a
