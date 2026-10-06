@@ -78,7 +78,7 @@ export const en: Messages = {
     "You're still free: Huntited doesn't force anyone. But you know you won't be alone, and the chat helps you get organised.",
   "home.faq.cost.q": "Does it cost anything?",
   "home.faq.cost.a":
-    "Not to commit: your deposit is returned. The hunt's creator puts down a guarantee, part of which rewards participants if the action happens.",
+    "Not to commit: your deposit is returned. To create a hunt, yes: the guarantee isn't fully returned. Part of it pays participants if the action happens, and a small part goes to Huntited, which funds the development and hosting of the service.",
   "home.create": "Create a hunt",
   "home.search": "Search hunts…",
   "home.filter": "Filter by status",
@@ -269,6 +269,8 @@ export const en: Messages = {
   "form.caution.successText":
     "up to {cap} per participant ({pool} at most), {fee} to Huntited, the rest is returned to you.",
   "form.caution.failure": "Action cancelled:",
+  "form.caution.why":
+    "So your deposit isn't fully returned: it pays participants and Huntited, which funds the development and hosting of the service.",
   "form.caution.failureText": "{fee} to Huntited, {refund} returned to you.",
   "form.caution.min": "Minimum {min} KAS. A higher deposit rewards participants more.",
   "form.commitDeposit": "Commitment deposit (per participant)",

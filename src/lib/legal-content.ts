@@ -37,6 +37,7 @@ const fr: LegalSection[] = [
         paragraphs: [
           "En t'engageant, tu bloques un dépôt (5 KAS) rendu à la fin, et tu acceptes les règles de résolution affichées au moment de l'engagement (récompense du créateur, seuil personnel).",
           "Un engagement ne peut pas être retiré avant la fin de la chasse. Huntited n'a aucun moyen de forcer quiconque à participer à l'action : le déclenchement signifie seulement que le seuil est atteint.",
+          "Si tu crées une chasse, ta caution n'est pas rendue en entier : une partie récompense les participants si l'action a lieu, et une partie revient à Huntited pour financer le développement et l'hébergement du service. Le détail exact est affiché avant la création.",
         ],
       },
       {
@@ -162,6 +163,7 @@ const en: LegalSection[] = [
         paragraphs: [
           "By committing, you lock a deposit (5 KAS) that is returned at the end, and you accept the settlement rules shown when you commit (creator's reward, personal threshold).",
           "A commitment can't be withdrawn before the end of the hunt. Huntited has no way to force anyone to take part in the action: triggering only means the threshold was reached.",
+          "If you create a hunt, your deposit isn't fully returned: part of it rewards participants if the action happens, and part goes to Huntited to fund the development and hosting of the service. The exact breakdown is shown before you create it.",
         ],
       },
       {

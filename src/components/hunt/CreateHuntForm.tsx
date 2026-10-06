@@ -54,6 +54,7 @@ function CautionBreakdown({ deposit }: { deposit: number }) {
           refund: kas(caution - c.failureTreasurySompi),
         })}
       </li>
+      <li>{t("form.caution.why")}</li>
       <li>{t("form.caution.min", { min: MIN_CAUTION_KAS })}</li>
     </ul>
   );

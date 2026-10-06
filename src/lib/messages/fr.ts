@@ -77,7 +77,7 @@ export const fr = {
     "Tu restes libre : Huntited ne force personne. Mais tu sais que tu ne seras pas seul·e, et le chat permet de s'organiser.",
   "home.faq.cost.q": "Ça coûte quelque chose ?",
   "home.faq.cost.a":
-    "Pas pour s'engager : ton dépôt t'est rendu. La personne qui crée la chasse met une caution, dont une partie récompense les participants si l'action a lieu.",
+    "Pas pour s'engager : ton dépôt t'est rendu. Pour créer une chasse, oui : la caution n'est pas rendue en entier. Une partie paie les participants si l'action a lieu, et une petite partie revient à Huntited, ce qui finance le développement et l'hébergement du service.",
   "home.create": "Créer une chasse",
   "home.search": "Rechercher une chasse…",
   "home.filter": "Filtrer par statut",
@@ -274,6 +274,8 @@ export const fr = {
   "form.caution.successText":
     "jusqu'à {cap} par engagé ({pool} au plus), {fee} à Huntited, le reste t'est rendu.",
   "form.caution.failure": "Action annulée :",
+  "form.caution.why":
+    "Ta caution n'est donc pas rendue en entier : elle paie les participants et Huntited, ce qui finance le développement et l'hébergement du service.",
   "form.caution.failureText": "{fee} à Huntited, {refund} te sont rendus.",
   "form.caution.min":
     "Minimum {min} KAS. Une caution plus élevée récompense davantage les engagés.",

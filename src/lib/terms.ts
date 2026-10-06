@@ -118,6 +118,8 @@ least). They never gain anything from it: part of it is returned.
 - The action doesn't happen (threshold not reached by the deadline): no
   reward. ${a.failureTreasury} go to Huntited, ${a.failureRefund} are returned
   to the creator.
+- What goes to Huntited funds the development and hosting of the
+  service.
 - You set a personal threshold ("I'll come if at least N people come")
   and it isn't reached while the action happens: you don't take part
   and you get your 5 KAS back, without a reward.
@@ -153,6 +155,8 @@ moins). Il n'y gagne jamais rien : on lui en rend une partie.
 - L'action n'a pas lieu (seuil pas atteint à la date limite) : pas de
   récompense. ${a.failureTreasury} vont à Huntited, ${a.failureRefund} sont rendus
   au créateur.
+- Ce qui va à Huntited finance le développement et l'hébergement du
+  service.
 - Tu as fixé un seuil personnel (« je viens si au moins N personnes
   viennent ») et il n'est pas atteint alors que l'action a lieu : tu
   ne participes pas et tu récupères tes 5 KAS, sans part de la
