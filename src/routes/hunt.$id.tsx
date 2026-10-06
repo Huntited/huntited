@@ -114,6 +114,20 @@ function HuntDetailPage() {
         )}
       </div>
 
+      {/* Pour qui découvre Huntited (souvent via un lien partagé) */}
+      {commitsOpen && !commitment.isCommitted && !isCreator && (
+        <p className="mt-4 text-sm text-muted-foreground">
+          {t("hunt.explain", { threshold: hunt.threshold })}{" "}
+          <Link
+            to="/"
+            hash="how"
+            className="whitespace-nowrap text-foreground underline underline-offset-2"
+          >
+            {t("hunt.explain.link")}
+          </Link>
+        </p>
+      )}
+
       {/* Infos de la chasse */}
       <dl className="mt-6 space-y-3 rounded-lg border p-5 text-sm">
         <Info label={t("hunt.location")}>{hunt.location}</Info>

@@ -47,14 +47,38 @@ export const en: Messages = {
   // Home
   "home.title": "Act together, never alone",
   "home.lead":
-    "Everyone commits privately. The action only happens if enough people join; otherwise, everyone gets their deposit back.",
-  "home.step1.title": "A hunt",
-  "home.step1.text": "An action, a place, a deadline and a minimum number of people.",
-  "home.step2.title": "Private commitments",
-  "home.step2.text": "Everyone commits without showing up: nobody takes a risk alone.",
-  "home.step3.title": "Everyone or no one",
-  "home.step3.text":
-    "Threshold reached: the action happens. Otherwise, everyone gets their deposit back.",
+    "You'd like to act, but not alone. Here you commit privately, and the action only happens if enough people join.",
+  "hunt.explain":
+    "Nobody goes alone here: your commitment only counts if at least {threshold} people commit before the deadline. Otherwise, your deposit is returned.",
+  "hunt.explain.link": "How does it work?",
+  "home.browse": "Browse hunts",
+  "home.example.title": "How it works, with an example",
+  "home.example.1":
+    'Sam wants to defend the local park at the council meeting on 12 March. Alone, Sam won\'t go. So Sam creates a hunt: "We go if there are at least 20 of us".',
+  "home.example.2":
+    "Neighbours commit, each on their own, with a 5 KAS deposit. Nobody can see who committed, not even Sam.",
+  "home.example.3":
+    "The 20th commitment triggers the hunt: everyone is notified and an encrypted chat opens to get organised. If it doesn't reach 20, nothing happens: everyone gets their deposit back, and nobody will ever know who was in.",
+  "home.example.cardLabel": "Example hunt",
+  "home.example.cardTitle": "Council meeting: save the park",
+  "home.example.cardMeta": "Town hall · before 12 March",
+  "home.example.cardProgress": "14 of 20 committed",
+  "home.faq.title": "Questions",
+  "home.faq.wallet.q": "Do I need a wallet?",
+  "home.faq.wallet.a":
+    "Yes, a Kaspa wallet such as Kastle. For now everything runs on the test network: no real KAS is used.",
+  "home.faq.deposit.q": "Why a deposit?",
+  "home.faq.deposit.a":
+    "So a commitment means something: you think before clicking, and fake commitments get expensive. The deposit is always returned at the end.",
+  "home.faq.who.q": "Who knows I committed?",
+  "home.faq.who.a":
+    "Nobody. The server only keeps a fingerprint that can't be traced back to your wallet, and the hunt's creator can't see who committed.",
+  "home.faq.after.q": "What if the hunt triggers?",
+  "home.faq.after.a":
+    "You're still free: Huntited doesn't force anyone. But you know you won't be alone, and the chat helps you get organised.",
+  "home.faq.cost.q": "Does it cost anything?",
+  "home.faq.cost.a":
+    "Not to commit: your deposit is returned. The hunt's creator puts down a guarantee, part of which rewards participants if the action happens.",
   "home.create": "Create a hunt",
   "home.search": "Search hunts…",
   "home.filter": "Filter by status",

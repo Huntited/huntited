@@ -46,13 +46,38 @@ export const fr = {
   // Accueil
   "home.title": "Agir ensemble, sans y aller seul",
   "home.lead":
-    "Chacun s'engage en privé. L'action n'a lieu que si assez de monde suit ; sinon, tout le monde est remboursé.",
-  "home.step1.title": "Une chasse",
-  "home.step1.text": "Une action, un lieu, une date limite et un nombre minimum de personnes.",
-  "home.step2.title": "Des engagements privés",
-  "home.step2.text": "Chacun s'engage sans se montrer : personne ne prend de risque seul.",
-  "home.step3.title": "Tout le monde ou personne",
-  "home.step3.text": "Seuil atteint : l'action a lieu. Sinon, chacun récupère son dépôt.",
+    "Tu voudrais agir, mais pas seul·e. Ici, tu t'engages en privé, et l'action n'a lieu que si assez de monde suit.",
+  "hunt.explain":
+    "Ici, personne n'y va seul·e : ton engagement ne compte que si au moins {threshold} personnes s'engagent avant la date limite. Sinon, ton dépôt t'est rendu.",
+  "hunt.explain.link": "Comment ça marche ?",
+  "home.browse": "Voir les chasses",
+  "home.example.title": "Comment ça marche, avec un exemple",
+  "home.example.1":
+    "Sam veut défendre le parc du quartier au conseil municipal du 12 mars. Seul·e, Sam n'ira pas. Sam crée une chasse : « On y va si on est au moins 20 ».",
+  "home.example.2":
+    "Les voisins s'engagent, chacun de son côté, avec un dépôt de 5 KAS. Personne ne voit qui s'est engagé, pas même Sam.",
+  "home.example.3":
+    "Au 20e engagement, la chasse se déclenche : tout le monde est prévenu et un chat chiffré s'ouvre pour s'organiser. Si on n'arrive pas à 20, rien ne se passe : chacun récupère son dépôt, et personne ne saura qui était partant.",
+  "home.example.cardLabel": "Exemple de chasse",
+  "home.example.cardTitle": "Conseil municipal : sauvons le parc",
+  "home.example.cardMeta": "Mairie · avant le 12 mars",
+  "home.example.cardProgress": "14 sur 20 engagés",
+  "home.faq.title": "Questions",
+  "home.faq.wallet.q": "Il faut un wallet ?",
+  "home.faq.wallet.a":
+    "Oui, un wallet Kaspa, par exemple Kastle. Pour l'instant, tout se passe sur le réseau de test : aucun vrai KAS n'est utilisé.",
+  "home.faq.deposit.q": "Pourquoi un dépôt ?",
+  "home.faq.deposit.a":
+    "Pour que l'engagement compte : on réfléchit avant de cliquer, et créer de faux engagements coûte cher. Le dépôt est toujours rendu à la fin.",
+  "home.faq.who.q": "Qui sait que je me suis engagé·e ?",
+  "home.faq.who.a":
+    "Personne. Le serveur ne garde qu'une empreinte qui ne permet pas de remonter à ton wallet, et la personne qui a créé la chasse ne voit pas qui s'est engagé.",
+  "home.faq.after.q": "Et si la chasse se déclenche ?",
+  "home.faq.after.a":
+    "Tu restes libre : Huntited ne force personne. Mais tu sais que tu ne seras pas seul·e, et le chat permet de s'organiser.",
+  "home.faq.cost.q": "Ça coûte quelque chose ?",
+  "home.faq.cost.a":
+    "Pas pour s'engager : ton dépôt t'est rendu. La personne qui crée la chasse met une caution, dont une partie récompense les participants si l'action a lieu.",
   "home.create": "Créer une chasse",
   "home.search": "Rechercher une chasse…",
   "home.filter": "Filtrer par statut",

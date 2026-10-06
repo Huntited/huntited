@@ -48,12 +48,6 @@ const SECTION_TITLE: Record<StatusFilter, MessageKey> = {
   expired: "home.section.expired",
 };
 
-const STEPS: { title: MessageKey; text: MessageKey }[] = [
-  { title: "home.step1.title", text: "home.step1.text" },
-  { title: "home.step2.title", text: "home.step2.text" },
-  { title: "home.step3.title", text: "home.step3.text" },
-];
-
 function Index() {
   const { t } = useI18n();
 
@@ -113,26 +107,33 @@ function Index() {
       <section>
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("home.title")}</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">{t("home.lead")}</p>
-        <Button asChild className="mt-5">
-          <Link to="/create">{t("home.create")}</Link>
-        </Button>
-        <ol className="mt-8 grid gap-4 sm:grid-cols-3">
-          {STEPS.map((step, i) => (
-            <li key={step.title} className="flex gap-3 sm:flex-col sm:gap-2">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
-                {i + 1}
-              </span>
-              <div>
-                <p className="text-sm font-semibold">{t(step.title)}</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">{t(step.text)}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Button asChild>
+            <a href="#hunts">{t("home.browse")}</a>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/create">{t("home.create")}</Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Un exemple concret plutôt qu'un schéma */}
+      <section id="how" aria-labelledby="how-title" className="mt-12 scroll-mt-6">
+        <h2 id="how-title" className="text-lg font-semibold">
+          {t("home.example.title")}
+        </h2>
+        <div className="mt-3 grid gap-6 sm:grid-cols-[1fr_15rem] sm:items-start">
+          <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>{t("home.example.1")}</p>
+            <p>{t("home.example.2")}</p>
+            <p>{t("home.example.3")}</p>
+          </div>
+          <ExampleCard />
+        </div>
       </section>
 
       {/* Filtres : recherche + statut */}
-      <section className="mt-12">
+      <section id="hunts" className="mt-12 scroll-mt-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           {/* Recherche plein texte (titre, lieu, description) — filtrage
               local uniquement, rien n'est envoyé nulle part. */}
@@ -196,6 +197,54 @@ function Index() {
           </ul>
         )}
       </section>
+
+      {/* Questions fréquentes */}
+      <section aria-labelledby="faq-title" className="mt-14">
+        <h2 id="faq-title" className="text-lg font-semibold">
+          {t("home.faq.title")}
+        </h2>
+        <div className="mt-3 divide-y border-y">
+          {FAQ.map((q) => (
+            <details key={q} className="group py-3">
+              <summary className="cursor-pointer list-none text-sm font-medium marker:hidden">
+                <span className="mr-2 inline-block text-muted-foreground transition-transform group-open:rotate-90">
+                  ›
+                </span>
+                {t(`${q}.q` as MessageKey)}
+              </summary>
+              <p className="mt-2 pl-5 text-sm leading-relaxed text-muted-foreground">
+                {t(`${q}.a` as MessageKey)}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
     </div>
+  );
+}
+
+const FAQ = [
+  "home.faq.wallet",
+  "home.faq.deposit",
+  "home.faq.who",
+  "home.faq.after",
+  "home.faq.cost",
+] as const;
+
+/** Chasse fictive de l'exemple, au format d'une vraie carte. */
+function ExampleCard() {
+  const { t } = useI18n();
+  return (
+    <figure
+      aria-label={t("home.example.cardLabel")}
+      className="rounded-lg border bg-card p-4 text-sm"
+    >
+      <p className="font-medium">{t("home.example.cardTitle")}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{t("home.example.cardMeta")}</p>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+        <div className="h-full w-[70%] rounded-full bg-green-500" />
+      </div>
+      <p className="mt-1.5 text-xs text-muted-foreground">{t("home.example.cardProgress")}</p>
+    </figure>
   );
 }
