@@ -25,7 +25,7 @@ async function setTheme(page: Page, theme: "light" | "dark") {
 
 for (const theme of ["light", "dark"] as const) {
   test(`accessibilité des pages principales (${theme})`, async ({ page }) => {
-    for (const path of ["/", "/create", "/pass", "/my-hunts", "/nulle-part"]) {
+    for (const path of ["/", "/create", "/pass", "/my-hunts", "/legal", "/nulle-part"]) {
       await open(page, path);
       await setTheme(page, theme);
       await audit(page, `${path} ${theme}`);

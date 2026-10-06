@@ -173,6 +173,14 @@ export function CommitModal({
           <div className="mt-2 max-h-40 overflow-auto whitespace-pre-line rounded border p-2">
             {termsFullFor(hunt.deposit, locale)}
           </div>
+          <Link
+            to="/legal"
+            hash="conditions"
+            target="_blank"
+            className="mt-2 inline-block font-medium underline"
+          >
+            {t("commit.legalLink")}
+          </Link>
         </details>
 
         <Separator />

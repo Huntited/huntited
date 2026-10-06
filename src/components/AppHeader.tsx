@@ -190,6 +190,11 @@ export function AppFooter() {
       <p>{t("footer.tagline")}</p>
       <p className="mt-1">{t("footer.testnet")}</p>
       <p className="mt-1">
+        <Link to="/legal" className="underline-offset-2 hover:underline">
+          {t("footer.legal")}
+        </Link>
+      </p>
+      <p className="mt-1">
         <a
           href="https://www.geonames.org/"
           target="_blank"

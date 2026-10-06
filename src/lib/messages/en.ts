@@ -344,6 +344,13 @@ export const en: Messages = {
   "city.suggestions": "Suggested cities",
   "city.population": "{count} people",
   "footer.geonames": "Cities: GeoNames (CC BY 4.0)",
+  "footer.legal": "Terms, privacy and charter",
+  "legal.title": "Terms, privacy and charter",
+  "legal.updated": "Updated: {date}",
+  "legal.draft":
+    "Test version: this text is provisional and will be reviewed before opening to the public. Items in brackets will be completed at launch.",
+  "legal.toc": "Contents",
+  "commit.legalLink": "Terms of use and privacy",
 
   // Cards, sections, steps
   "card.endsIn": "Ends {when}",

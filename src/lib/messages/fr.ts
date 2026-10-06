@@ -350,6 +350,13 @@ export const fr = {
   "city.suggestions": "Villes suggérées",
   "city.population": "{count} hab.",
   "footer.geonames": "Villes : GeoNames (CC BY 4.0)",
+  "footer.legal": "Conditions, vie privée et charte",
+  "legal.title": "Conditions, vie privée et charte",
+  "legal.updated": "Mise à jour : {date}",
+  "legal.draft":
+    "Version de test : ce texte est provisoire et sera relu avant l'ouverture au public. Les éléments entre crochets seront complétés à la mise en ligne.",
+  "legal.toc": "Sommaire",
+  "commit.legalLink": "Conditions d'utilisation et vie privée",
 
   // Cartes, sections, étapes
   "card.endsIn": "Se termine {when}",
