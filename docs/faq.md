@@ -2,9 +2,9 @@
 
 ## Que devient mon dépôt ?
 
-Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. Si elle a lieu, tu reçois en plus une récompense du créateur, jusqu'à 1 KAS.
+Tes 5 KAS sont bloqués puis rendus à la fin, que l'action ait lieu ou non. Si elle a lieu, tu reçois en plus une récompense du créateur : jusqu'à 1 KAS pour 30 KAS de caution (le créateur peut mettre plus).
 
-Le créateur bloque une caution de 30 KAS. Action réussie : jusqu'à 1 KAS par engagé (14,25 KAS au plus), 0,75 KAS à Huntited, il récupère le reste. Action annulée : 1 KAS à Huntited, il récupère 29 KAS.
+Le créateur bloque une caution de 30 KAS au moins et n'y gagne jamais rien : on lui en rend une partie. Avec 30 KAS : action réussie, jusqu'à 1 KAS par engagé (14,25 KAS au plus) et 0,75 KAS à Huntited, le reste lui est rendu ; action annulée, 1 KAS à Huntited et 29 KAS lui sont rendus. Tout est proportionnel à la caution.
 
 ## Pourquoi au moins 7 personnes ?
 

@@ -12,6 +12,8 @@ import {
   COMMIT_REFUND_HIGHLIGHT,
   COMMIT_REFUND_SHORT,
   CREATE_DEPOSIT_TERMS,
+  commitRefundShort,
+  createDepositTerms,
   termsFull,
   termsShort,
 } from "./terms";
@@ -135,6 +137,50 @@ describe("calculateSettlement", () => {
         expect(s.creatorCreationRefundSompi >= 0n).toBe(true);
       }
     }
+  });
+});
+
+describe("caution au choix (proportionnelle)", () => {
+  it("caution de 60 KAS : tout double (plafond 2 KAS, 28,5 KAS au plus, 1,5 / 2 KAS à Huntited)", () => {
+    const c = kas(60n);
+    const ok = calculateSettlement(10, "success", c);
+    expect(ok.participantBonusPerCommitSompi).toBe(kas(2n));
+    expect(ok.treasurySompi).toBe(kas(1n, 50n));
+    expect(ok.creatorCreationRefundSompi).toBe(kas(38n, 50n));
+    expect(calculateSettlement(100, "success", c).participantBonusPerCommitSompi * 100n).toBe(
+      kas(28n, 50n),
+    );
+    const ko = calculateSettlement(10, "failure", c);
+    expect(ko.treasurySompi).toBe(kas(2n));
+    expect(ko.creatorCreationRefundSompi).toBe(kas(58n));
+  });
+
+  it("le créateur ne gagne jamais : on lui rend au plus sa caution", () => {
+    for (const caution of [30n, 31n, 45n, 60n, 1_000n]) {
+      for (const n of [0, 1, 7, 13, 29, 100, 10_000]) {
+        for (const outcome of ["success", "failure"] as const) {
+          const s = calculateSettlement(n, outcome, kas(caution));
+          expect(s.creatorCreationRefundSompi <= kas(caution)).toBe(true);
+          expect(s.creatorCreationRefundSompi >= 0n).toBe(true);
+          // Sorties = entrées, au sompi près.
+          expect(
+            s.creatorCreationRefundSompi +
+              s.treasurySompi +
+              BigInt(n) * (s.participantRefundPerCommitSompi + s.participantBonusPerCommitSompi),
+          ).toBe(kas(caution) + BigInt(n) * COMMIT_DEPOSIT_SOMPI);
+        }
+      }
+    }
+  });
+
+  it("refuse une caution inférieure à 30 KAS", () => {
+    expect(() => calculateSettlement(7, "success", kas(29n))).toThrow("Caution insuffisante.");
+  });
+
+  it("les textes d'une chasse suivent sa caution", () => {
+    expect(commitRefundShort(60)).toContain("jusqu'à 2 KAS");
+    expect(createDepositTerms(60)).toContain("28,5 KAS au plus");
+    expect(createDepositTerms(60)).toContain("58 KAS lui sont rendus");
   });
 });
 

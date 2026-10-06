@@ -20,16 +20,16 @@
 // ---------------------------------------------------------------------------
 // Constantes du protocole (en sompis, 1 KAS = 10^8 sompis)
 // ---------------------------------------------------------------------------
-const CREATE_DEPOSIT_SOMPI  = 30 * 10^8;   // dépôt de création d'une chasse
-const COMMIT_DEPOSIT_SOMPI  = 5 * 10^8;    // dépôt d'engagement
-const MIN_THRESHOLD = 7;                    // actions vraiment collectives
+const MIN_CAUTION_SOMPI    = 30 * 10^8;   // caution minimale (le créateur peut mettre plus)
+const COMMIT_DEPOSIT_SOMPI = 5 * 10^8;    // dépôt d'engagement
+const MIN_THRESHOLD = 7;                   // actions vraiment collectives
 // Le dépôt d'engagement est toujours rendu. En cas de succès seulement, le
-// créateur finance une récompense prise sur sa caution (rien à gagner en
-// engageant des bots sur une chasse vouée à l'échec).
-const SUCCESS_PARTICIPANTS_POOL_SOMPI = 1425 * 10^6; // 14,25 KAS au plus aux engagés
-const SUCCESS_TREASURY_SOMPI = 75 * 10^6;            // 0,75 KAS
-const REWARD_CAP_PER_COMMIT_SOMPI = 1 * 10^8;        // 1 KAS au plus par engagé
-const FAILURE_TREASURY_SOMPI = 1 * 10^8;             // échec : le créateur récupère 29 KAS
+// créateur finance une récompense prise sur sa caution C (rien à gagner en
+// engageant des bots sur une chasse vouée à l'échec). Tout est proportionnel
+// à C, et le créateur ne gagne jamais rien (on lui rend au plus C).
+const SUCCESS_PARTICIPANTS_PERMILLE = 475; // 47,5 % de C au plus aux engagés
+const SUCCESS_TREASURY_PERMILLE = 25;      // 2,5 % de C
+const CAP_AND_FAILURE_DIVISOR = 30;        // plafond par engagé et frais d'échec : C / 30
 const TREASURY_ADDRESS = treasury_multisig_hash;
 
 // ---------------------------------------------------------------------------
@@ -51,6 +51,7 @@ struct HuntCovenant {
   deadline: timestamp;        // date limite d'engagement
   threshold: u64;             // seuil de participants
   creator: pubkey_hash;       // créateur (reçoit la redistribution éventuelle)
+  caution: amount;            // caution déposée (≥ MIN_CAUTION_SOMPI)
 
   // Engagements : arbre de Merkle de commitments anonymes.
   // La taille réelle de l'arbre n'est JAMAIS publiée en clair :
@@ -72,9 +73,9 @@ struct HuntCovenant {
 fn settle(covenant: HuntCovenant, participants_pool: amount, treasury: amount) {
   let n = covenant.commit_count_hidden;
   let even = if (n == 0) { 0 } else { participants_pool / n };
-  covenant.reward_share_per_commit = min(even, REWARD_CAP_PER_COMMIT_SOMPI);
+  covenant.reward_share_per_commit = min(even, covenant.caution / CAP_AND_FAILURE_DIVISOR);
   send(TREASURY_ADDRESS, treasury);
-  send(covenant.creator, CREATE_DEPOSIT_SOMPI - treasury
+  send(covenant.creator, covenant.caution - treasury
     - n * covenant.reward_share_per_commit);
   covenant.balance = n * (COMMIT_DEPOSIT_SOMPI + covenant.reward_share_per_commit);
 }
@@ -114,13 +115,14 @@ fn merkle_insert(root: hash, commitment: hash) -> hash {
 fn create_hunt(deadline: timestamp, threshold: u64) -> HuntCovenant {
   require(deadline > now(), "la date limite doit être dans le futur");
   require(threshold >= MIN_THRESHOLD, "le seuil doit être d'au moins 7 personnes");
-  require(tx.value >= CREATE_DEPOSIT_SOMPI, "dépôt de création de 30 KAS requis");
+  require(tx.value >= MIN_CAUTION_SOMPI, "caution d'au moins 30 KAS requise");
 
   return HuntCovenant {
     state: State.Active,
     deadline: deadline,
     threshold: threshold,
     creator: tx.sender,
+    caution: tx.value,
     commitments_root: 0,
     commit_count_hidden: 0,
     balance: tx.value,
@@ -160,7 +162,9 @@ fn activate(covenant: HuntCovenant, zk_proof: bytes) {
 // distribute_deposit_on_success : récompense plafonnée à 1 KAS par engagé (succès).
 fn distribute_deposit_on_success(covenant: HuntCovenant) {
   require(covenant.state == State.Activated, "la chasse n'est pas activée");
-  settle(covenant, SUCCESS_PARTICIPANTS_POOL_SOMPI, SUCCESS_TREASURY_SOMPI);
+  settle(covenant,
+    covenant.caution * SUCCESS_PARTICIPANTS_PERMILLE / 1000,
+    covenant.caution * SUCCESS_TREASURY_PERMILLE / 1000);
 }
 
 // expire : clôture la chasse si la date limite est passée sans activation.
@@ -168,7 +172,7 @@ fn distribute_deposit_on_success(covenant: HuntCovenant) {
 fn expire(covenant: HuntCovenant) {
   require(covenant.state == State.Active, "chasse déjà close");
   require(now() >= covenant.deadline, "la date limite n'est pas passée");
-  settle(covenant, 0, FAILURE_TREASURY_SOMPI);
+  settle(covenant, 0, covenant.caution / CAP_AND_FAILURE_DIVISOR);
   covenant.state = State.Expired;
 }
 

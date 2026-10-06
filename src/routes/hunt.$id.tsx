@@ -18,7 +18,7 @@ import {
 } from "@/lib/hunt-lifecycle";
 import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
 import { getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
-import { COMMIT_REFUND_SHORT } from "@/lib/terms";
+import { commitRefundShort } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
 import { useHunt } from "@/lib/useHunt";
 import { useWallet } from "@/lib/useWallet";
@@ -135,6 +135,10 @@ function HuntDetailPage() {
           <span className="text-muted-foreground">Dépôt d'engagement (rendu à la fin)</span>
           <span className="font-medium">{hunt.commitDeposit} KAS</span>
         </div>
+        <div className="flex justify-between gap-4">
+          <span className="text-muted-foreground">Caution du créateur</span>
+          <span className="font-medium">{hunt.deposit} KAS</span>
+        </div>
       </div>
 
       <p className="mt-6 text-sm leading-relaxed">{hunt.description}</p>
@@ -222,7 +226,9 @@ function HuntDetailPage() {
         )}
       </div>
       {commitsOpen && !commitment.isCommitted && (
-        <p className="mt-2 text-right text-sm font-medium text-green-700">{COMMIT_REFUND_SHORT}</p>
+        <p className="mt-2 text-right text-sm font-medium text-green-700">
+          {commitRefundShort(hunt.deposit)}
+        </p>
       )}
 
       {/* Condition personnelle (visible seulement par l'engagé·e concerné·e) */}

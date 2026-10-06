@@ -48,6 +48,15 @@ describe("création", () => {
     expect((await app.createHunt(t, { threshold: 7 })).status).toBe(201);
   });
 
+  it("caution au choix : 30 KAS par défaut, au moins 30, entière", async () => {
+    const app = await setup();
+    const t = await app.login(CREATOR);
+    expect((await app.createHunt(t)).body).toMatchObject({ deposit: 30 });
+    expect((await app.createHunt(t, { deposit: 60 })).body).toMatchObject({ deposit: 60 });
+    expect((await app.createHunt(t, { deposit: 29 })).status).toBe(400);
+    expect((await app.createHunt(t, { deposit: 30.5 })).status).toBe(400);
+  });
+
   it("une chasse créée est visible par tout le monde, sans session", async () => {
     const app = await setup();
     const t = await app.login(CREATOR);

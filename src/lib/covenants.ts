@@ -19,7 +19,7 @@ import { getStoredHuntState } from "./hunt-state-store";
 import { computeRetainedGroup, type RetainedGroup } from "./retained-group";
 import type { Hunt, HuntFormData } from "./types";
 
-/** Paramètres économiques fixes du MVP. */
+/** Paramètres économiques du MVP (caution : minimum et valeur par défaut). */
 export const CREATE_DEPOSIT_KAS = 30;
 export const COMMIT_DEPOSIT_KAS = 5;
 
@@ -206,7 +206,7 @@ export async function createHuntCovenant(data: HuntFormData): Promise<HuntCovena
     location: data.location.trim(),
     deadline: new Date(data.deadline).toISOString(),
     threshold: data.threshold,
-    deposit: CREATE_DEPOSIT_KAS,
+    deposit: data.deposit,
     commitDeposit: COMMIT_DEPOSIT_KAS,
     commitCount: 0,
     status: "active",
@@ -218,7 +218,7 @@ export async function createHuntCovenant(data: HuntFormData): Promise<HuntCovena
   return {
     huntId,
     txId: randomHex(32),
-    depositKas: CREATE_DEPOSIT_KAS,
+    depositKas: data.deposit,
   };
 }
 

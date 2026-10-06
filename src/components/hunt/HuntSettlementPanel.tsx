@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { calculateSettlement, sompiToKasText } from "@/lib/hunt-economics";
-import { COMMIT_DEPOSIT_TERMS, CREATE_DEPOSIT_TERMS } from "@/lib/terms";
+import { SOMPI_PER_KAS, calculateSettlement, sompiToKasText } from "@/lib/hunt-economics";
+import { commitDepositTerms, createDepositTerms } from "@/lib/terms";
 import type { SettlementOutcome } from "@/lib/hunt-state-store";
 import type { Hunt, HuntStatus } from "@/lib/types";
 
@@ -47,6 +47,7 @@ export function HuntSettlementPanel({
   const s = calculateSettlement(
     success ? retainedCount : commitCount,
     success ? "success" : "failure",
+    BigInt(hunt.deposit) * SOMPI_PER_KAS,
   );
   const nonRetained = Math.max(0, commitCount - retainedCount);
 
@@ -75,7 +76,7 @@ export function HuntSettlementPanel({
       </dl>
 
       <p className="text-xs text-muted-foreground">
-        {COMMIT_DEPOSIT_TERMS} {CREATE_DEPOSIT_TERMS}
+        {commitDepositTerms(hunt.deposit)} {createDepositTerms(hunt.deposit)}
       </p>
       <p className="text-xs font-medium">Simulation locale — Aucun KAS transféré.</p>
 

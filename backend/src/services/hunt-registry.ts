@@ -120,6 +120,7 @@ export class HuntRegistry implements HuntAccessStore {
       location: hunt.location,
       deadline: hunt.deadline,
       threshold: hunt.threshold,
+      deposit: hunt.deposit ?? 30,
       progressVisibility: hunt.progressVisibility,
       status,
       commitCount: masked ? null : this.commitCount(hunt.id),

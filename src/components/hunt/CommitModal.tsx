@@ -13,7 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { getPassConfig, hasPass, onPassChange } from "@/lib/pass";
-import { COMMIT_DEPOSIT_TERMS, COMMIT_REFUND_HIGHLIGHT, termsShort, termsFull } from "@/lib/terms";
+import {
+  commitDepositTerms,
+  commitRefundHighlight,
+  termsFullFor,
+  termsShortFor,
+} from "@/lib/terms";
 import type { Hunt } from "@/lib/types";
 import type { UseCommitmentResult } from "@/lib/useCommitment";
 
@@ -102,14 +107,14 @@ export function CommitModal({
         ) : (
           <>
             <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-700">
-              {COMMIT_REFUND_HIGHLIGHT}
+              {commitRefundHighlight(hunt.deposit)}
             </p>
             <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
               <p>
                 <strong>Tu bloques {hunt.commitDeposit} KAS</strong>, rendus à la fin (version de
                 test : aucun vrai KAS n'est utilisé).
               </p>
-              <p>{COMMIT_DEPOSIT_TERMS}</p>
+              <p>{commitDepositTerms(hunt.deposit)}</p>
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">Date limite</span>
                 <span className="font-medium">
@@ -160,7 +165,7 @@ export function CommitModal({
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">Conditions clés</h3>
           <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            {termsShort.map((line) => (
+            {termsShortFor(hunt.deposit).map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
@@ -169,7 +174,7 @@ export function CommitModal({
         <details className="text-xs text-muted-foreground">
           <summary className="cursor-pointer font-medium">Voir les conditions complètes</summary>
           <div className="mt-2 max-h-40 overflow-auto whitespace-pre-line rounded border p-2">
-            {termsFull}
+            {termsFullFor(hunt.deposit)}
           </div>
         </details>
 

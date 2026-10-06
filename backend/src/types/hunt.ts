@@ -13,6 +13,8 @@ export interface StoredHunt {
   /** ISO 8601. */
   deadline: string;
   threshold: number;
+  /** Caution du créateur en KAS (absente des anciennes chasses : 30). */
+  deposit?: number;
   progressVisibility: ProgressVisibility;
   /** Empreinte du wallet créateur (fingerprintWallet). */
   creatorKey: string;
@@ -44,6 +46,7 @@ export interface NewHuntInput {
   location: string;
   deadline: string;
   threshold: number;
+  deposit: number;
   progressVisibility: ProgressVisibility;
 }
 
@@ -55,6 +58,8 @@ export interface PublicHunt {
   location: string;
   deadline: string;
   threshold: number;
+  /** Caution du créateur, en KAS. */
+  deposit: number;
   progressVisibility: ProgressVisibility;
   status: RegistryHuntStatus;
   /** null tant qu'une chasse à progression masquée est en phase d'engagement. */

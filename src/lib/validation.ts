@@ -1,4 +1,4 @@
-import { MIN_THRESHOLD } from "@/lib/hunt-economics";
+import { MAX_CAUTION_KAS, MIN_CAUTION_KAS, MIN_THRESHOLD } from "@/lib/hunt-economics";
 import type { HuntFormData } from "@/lib/types";
 
 /**
@@ -19,6 +19,7 @@ export interface FormErrors {
   location?: string;
   deadline?: string;
   threshold?: string;
+  deposit?: string;
   global?: string;
 }
 
@@ -61,6 +62,12 @@ export function validateHuntForm(data: HuntFormData): FormErrors {
     errors.threshold = `Le seuil doit être d'au moins ${minHuntThreshold()} personnes.`;
   } else if (data.threshold > 100000) {
     errors.threshold = "Le seuil est trop élevé.";
+  }
+
+  if (!Number.isInteger(data.deposit) || data.deposit < MIN_CAUTION_KAS) {
+    errors.deposit = `La caution doit être un nombre entier d'au moins ${MIN_CAUTION_KAS} KAS.`;
+  } else if (data.deposit > MAX_CAUTION_KAS) {
+    errors.deposit = "La caution est trop élevée.";
   }
 
   return errors;

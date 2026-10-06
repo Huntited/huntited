@@ -9,6 +9,38 @@ import type { HuntFormData } from "@/lib/types";
 import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
 import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
+import {
+  MAX_CAUTION_KAS,
+  MIN_CAUTION_KAS,
+  SOMPI_PER_KAS,
+  cautionTerms,
+  sompiToKasFr,
+} from "@/lib/hunt-economics";
+
+/** Ce que devient la caution saisie, selon l'issue (recalculé à chaque saisie). */
+function CautionBreakdown({ deposit }: { deposit: number }) {
+  const valid =
+    Number.isInteger(deposit) && deposit >= MIN_CAUTION_KAS && deposit <= MAX_CAUTION_KAS;
+  const caution = BigInt(valid ? deposit : MIN_CAUTION_KAS) * SOMPI_PER_KAS;
+  const c = cautionTerms(caution);
+  const kas = (s: bigint) => `${sompiToKasFr(s)} KAS`;
+  return (
+    <ul className="space-y-0.5 text-xs text-muted-foreground">
+      <li>
+        <strong>Action réussie :</strong> jusqu'à {kas(c.capPerCommitSompi)} par engagé (
+        {kas(c.successPoolSompi)} au plus), {kas(c.successTreasurySompi)} à Huntited, le reste t'est
+        rendu.
+      </li>
+      <li>
+        <strong>Action annulée :</strong> {kas(c.failureTreasurySompi)} à Huntited,{" "}
+        {kas(caution - c.failureTreasurySompi)} te sont rendus.
+      </li>
+      <li>
+        Minimum {MIN_CAUTION_KAS} KAS. Une caution plus élevée récompense davantage les engagés.
+      </li>
+    </ul>
+  );
+}
 
 interface CreateHuntFormValues {
   title: string;
@@ -16,6 +48,7 @@ interface CreateHuntFormValues {
   location: string;
   deadline: string;
   threshold: string;
+  deposit: string;
   hideProgress: boolean;
 }
 
@@ -33,6 +66,7 @@ export function CreateHuntForm() {
     location: "",
     deadline: "",
     threshold: "",
+    deposit: String(CREATE_DEPOSIT_KAS),
     hideProgress: false,
   });
   const [submitted, setSubmitted] = useState(false);
@@ -53,7 +87,7 @@ export function CreateHuntForm() {
     location: values.location,
     deadline: values.deadline,
     threshold: Number(values.threshold),
-    deposit: CREATE_DEPOSIT_KAS,
+    deposit: Number(values.deposit),
     commitDeposit: COMMIT_DEPOSIT_KAS,
     progressVisibility: values.hideProgress ? "hidden" : "visible",
   });
@@ -89,6 +123,7 @@ export function CreateHuntForm() {
       location: draft.location,
       deadline: draft.deadline,
       threshold: String(draft.threshold),
+      deposit: String(draft.deposit),
       hideProgress: draft.progressVisibility === "hidden",
     });
   }, []);
@@ -201,21 +236,25 @@ export function CreateHuntForm() {
           Personne ne voit le nombre d'engagés avant la fin. (Version de test : caché à l'écran
           seulement.)
         </p>
+        <p className="text-xs font-medium text-green-700">
+          Recommandé : sans compteur visible, personne n'attend de voir les autres pour se lancer,
+          et s'engager le premier n'expose pas.
+        </p>
       </div>
 
-      {/* Dépôt de création — fixé, non modifiable pour l'instant */}
+      {/* Caution du créateur : 30 KAS au moins, au choix ; jamais de gain. */}
       <div className="space-y-2">
-        <Label htmlFor="deposit">Ta caution</Label>
-        <Input id="deposit" value={`${CREATE_DEPOSIT_KAS} KAS`} readOnly disabled />
-        <ul className="space-y-0.5 text-xs text-muted-foreground">
-          <li>
-            <strong>Action réussie :</strong> jusqu'à 1 KAS par engagé (14,25 KAS au plus), 0,75 KAS
-            à Huntited, le reste pour toi.
-          </li>
-          <li>
-            <strong>Action annulée :</strong> 29 KAS pour toi, 1 KAS à Huntited.
-          </li>
-        </ul>
+        <Label htmlFor="deposit">Ta caution (KAS)</Label>
+        <Input
+          id="deposit"
+          type="number"
+          min={MIN_CAUTION_KAS}
+          step={1}
+          value={values.deposit}
+          onChange={setField("deposit")}
+        />
+        <ErrorText msg={errors.deposit} />
+        <CautionBreakdown deposit={Number(values.deposit)} />
       </div>
 
       {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}

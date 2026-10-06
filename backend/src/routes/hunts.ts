@@ -26,6 +26,9 @@ const MAX_DEADLINE_MS = 366 * 24 * 3600 * 1000;
  */
 export const MIN_HUNT_THRESHOLD = 7;
 
+/** Caution minimale du créateur, en KAS (le créateur peut en mettre plus). */
+export const MIN_CAUTION_KAS = 30;
+
 export function huntsRouter(deps: {
   registry: HuntRegistry;
   auth: AuthService;
@@ -61,6 +64,8 @@ export function huntsRouter(deps: {
       .int()
       .min(minThreshold, `Le seuil doit être d'au moins ${minThreshold} personnes.`)
       .max(100_000),
+    // Caution du créateur, en KAS entiers : 30 au moins (MIN_CAUTION_KAS côté front).
+    deposit: z.number().int().min(MIN_CAUTION_KAS).max(100_000).default(MIN_CAUTION_KAS),
     progressVisibility: z.enum(["visible", "hidden"]).default("visible"),
   });
 
