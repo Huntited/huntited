@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useI18n } from "@/lib/i18n";
+
 interface CountdownProps {
   /** Date cible (Date, chaîne ISO/datetime-local ou timestamp) */
   targetDate: Date | string | number;
@@ -36,6 +38,7 @@ function getTimeLeft(targetDate: Date | string | number): TimeLeft {
  * le rendu serveur et le navigateur.
  */
 export default function Countdown({ targetDate, onExpire }: CountdownProps) {
+  const { t } = useI18n();
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   // Référence vers le dernier callback, pour ne pas relancer l'intervalle
   const onExpireRef = useRef(onExpire);
@@ -67,11 +70,11 @@ export default function Countdown({ targetDate, onExpire }: CountdownProps) {
   if (!timeLeft) return <span className="font-mono text-sm text-muted-foreground">…</span>;
 
   if (timeLeft.total <= 0) {
-    return <span className="text-muted-foreground">Expiré</span>;
+    return <span className="text-muted-foreground">{t("countdown.expired")}</span>;
   }
 
   const parts: string[] = [];
-  if (timeLeft.days > 0) parts.push(`${timeLeft.days}j`);
+  if (timeLeft.days > 0) parts.push(`${timeLeft.days}${t("countdown.days")}`);
   if (timeLeft.days > 0 || timeLeft.hours > 0) parts.push(`${timeLeft.hours}h`);
   parts.push(`${timeLeft.minutes}m`, `${timeLeft.seconds}s`);
 

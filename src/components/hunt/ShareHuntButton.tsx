@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { recordShare } from "@/lib/badge-store";
+import { useI18n } from "@/lib/i18n";
 import { huntShareUrl } from "@/lib/share";
 import { getWalletState } from "@/lib/wallet";
 import type { Hunt } from "@/lib/types";
@@ -12,6 +13,7 @@ import type { Hunt } from "@/lib/types";
  * sinon copie du lien dans le presse-papiers.
  */
 export function ShareHuntButton({ hunt }: { hunt: Pick<Hunt, "id" | "title"> }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   async function handleShare() {
@@ -31,16 +33,16 @@ export function ShareHuntButton({ hunt }: { hunt: Pick<Hunt, "id" | "title"> }) 
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success("Lien copié.");
+      toast.success(t("share.copied"));
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Impossible de copier le lien. Copie l'adresse de la page.");
+      toast.error(t("share.copyFailed"));
     }
   }
 
   return (
     <Button variant="outline" size="sm" onClick={() => void handleShare()}>
-      {copied ? "Lien copié" : "Partager"}
+      {copied ? t("share.copiedShort") : t("share.share")}
     </Button>
   );
 }

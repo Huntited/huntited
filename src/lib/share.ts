@@ -22,8 +22,13 @@ export function parseTweetId(input: string): string | null {
 }
 
 /** Message proposé sous un tweet (l'utilisateur peut le modifier avant de publier). */
-export function huntReplyText(hunt: { title: string; threshold: number }): string {
-  return `Rejoins « ${hunt.title} » sur Huntited : l'action n'a lieu que si au moins ${hunt.threshold} personnes s'engagent. Sinon, tout le monde est remboursé.`;
+export function huntReplyText(
+  hunt: { title: string; threshold: number },
+  locale: "fr" | "en" = "fr",
+): string {
+  return locale === "fr"
+    ? `Rejoins « ${hunt.title} » sur Huntited : l'action n'a lieu que si au moins ${hunt.threshold} personnes s'engagent. Sinon, tout le monde est remboursé.`
+    : `Join "${hunt.title}" on Huntited: the action only happens if at least ${hunt.threshold} people commit. Otherwise, everyone gets their deposit back.`;
 }
 
 /**

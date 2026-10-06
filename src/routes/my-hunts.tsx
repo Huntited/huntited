@@ -11,6 +11,7 @@ import {
   syncMyActivity,
   type HuntView,
 } from "@/lib/hunt-repository";
+import { useI18n } from "@/lib/i18n";
 import { useWallet } from "@/lib/useWallet";
 import { getUserHunts } from "@/lib/user-hunts";
 
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/my-hunts")({
  */
 function MyHuntsPage() {
   const { address, isConnected, isLoading, connectWallet } = useWallet();
+  const { t, date } = useI18n();
   const [version, setVersion] = useState(0);
   const [engagements, setEngagements] = useState<HuntView[]>([]);
   const [sync, setSync] = useState<{ busy: boolean; message: string | null }>({
@@ -69,12 +71,12 @@ function MyHuntsPage() {
       const r = await syncMyActivity(address);
       setSync({
         busy: false,
-        message: `Synchronisé : ${r.created} chasse(s) créée(s), ${r.commitments} engagement(s).`,
+        message: t("my.synced", { created: r.created, commitments: r.commitments }),
       });
     } catch (e) {
       setSync({
         busy: false,
-        message: e instanceof Error ? e.message : "La synchronisation a échoué.",
+        message: e instanceof Error ? e.message : t("my.syncFailed"),
       });
     }
   };
@@ -82,34 +84,28 @@ function MyHuntsPage() {
   if (!isConnected || !address) {
     return (
       <div className="mx-auto max-w-xl px-4 py-16">
-        <h1 className="text-2xl font-semibold tracking-tight">Mes chasses</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Connecte ton wallet pour voir les chasses que tu as créées.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("nav.myHunts")}</h1>
+        <p className="mt-3 text-sm text-muted-foreground">{t("my.connect")}</p>
         <Button className="mt-4" size="sm" onClick={() => connectWallet()} disabled={isLoading}>
-          {isLoading ? "Connexion…" : "Connecter le wallet"}
+          {isLoading ? t("wallet.connecting") : t("wallet.connect")}
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
-      <h1 className="text-2xl font-semibold tracking-tight">Mes chasses</h1>
+    <div className="mx-auto max-w-2xl px-4 py-10">
+      <h1 className="text-2xl font-semibold tracking-tight">{t("nav.myHunts")}</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Les chasses créées avec ce wallet
-        {getDataMode() === "api" ? "." : ", sur cet appareil."}
+        {t(getDataMode() === "api" ? "my.lead" : "my.leadLocal")}
       </p>
 
       {getDataMode() === "api" && (
         <div className="mt-4 rounded-lg border p-3 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-muted-foreground">
-              Tu as utilisé ce wallet sur un autre appareil ? Récupère tes chasses et tes
-              engagements (une signature, aucun KAS).
-            </span>
+            <span className="text-muted-foreground">{t("my.syncText")}</span>
             <Button size="sm" variant="outline" onClick={handleSync} disabled={sync.busy}>
-              {sync.busy ? "Synchronisation…" : "Synchroniser"}
+              {sync.busy ? t("my.syncing") : t("my.sync")}
             </Button>
           </div>
           {sync.message && (
@@ -121,7 +117,7 @@ function MyHuntsPage() {
       )}
 
       {hunts.length === 0 ? (
-        <p className="mt-6 text-sm text-muted-foreground">Tu n'as pas encore créé de chasse.</p>
+        <p className="mt-6 text-sm text-muted-foreground">{t("my.noHunts")}</p>
       ) : (
         <ul className="mt-6 space-y-3">
           {hunts.map((hunt) => (
@@ -133,12 +129,11 @@ function MyHuntsPage() {
               >
                 <div className="font-medium">{hunt.title}</div>
                 <div className="mt-1 text-sm text-muted-foreground">
-                  {hunt.location} · avant le{" "}
-                  {new Date(hunt.deadline).toLocaleString("fr-FR", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
+                  {hunt.location} ·{" "}
+                  {t("home.card.before", {
+                    date: date(hunt.deadline, { dateStyle: "medium", timeStyle: "short" }),
                   })}{" "}
-                  · seuil {hunt.threshold}
+                  · {t("my.threshold", { threshold: hunt.threshold })}
                 </div>
               </Link>
             </li>
@@ -148,14 +143,14 @@ function MyHuntsPage() {
 
       <div className="mt-6">
         <Button asChild>
-          <Link to="/create">Créer une chasse</Link>
+          <Link to="/create">{t("home.create")}</Link>
         </Button>
       </div>
 
       <section className="mt-10">
-        <h2 className="text-lg font-semibold">Mes engagements</h2>
+        <h2 className="text-lg font-semibold">{t("my.commitments")}</h2>
         {engagements.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">Aucun engagement pour l'instant.</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t("my.noCommitments")}</p>
         ) : (
           <ul className="mt-3 space-y-3">
             {engagements.map(({ hunt, status }) => (

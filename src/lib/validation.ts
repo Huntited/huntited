@@ -1,4 +1,5 @@
 import { MAX_CAUTION_KAS, MIN_CAUTION_KAS, MIN_THRESHOLD } from "@/lib/hunt-economics";
+import { translate, type Locale } from "@/lib/i18n";
 import type { HuntFormData } from "@/lib/types";
 
 /**
@@ -23,51 +24,54 @@ export interface FormErrors {
   global?: string;
 }
 
-export function validateHuntForm(data: HuntFormData): FormErrors {
+/** Messages dans la langue demandée (français par défaut). */
+export function validateHuntForm(data: HuntFormData, locale: Locale = "fr"): FormErrors {
   const errors: FormErrors = {};
+  const m = (key: Parameters<typeof translate>[1], vars?: Record<string, number>) =>
+    translate(locale, key, vars);
 
   if (!data.title || data.title.trim().length === 0) {
-    errors.title = "Le titre est requis.";
+    errors.title = m("val.title.required");
   } else if (data.title.length > 80) {
-    errors.title = "Le titre ne doit pas dépasser 80 caractères.";
+    errors.title = m("val.title.long");
   }
 
   if (!data.description || data.description.trim().length === 0) {
-    errors.description = "La description est requise.";
+    errors.description = m("val.description.required");
   } else if (data.description.length > 1000) {
-    errors.description = "La description ne doit pas dépasser 1000 caractères.";
+    errors.description = m("val.description.long");
   }
 
   if (!data.location || data.location.trim().length === 0) {
-    errors.location = "Le lieu est requis.";
+    errors.location = m("val.location.required");
   }
 
   if (!data.deadline) {
-    errors.deadline = "La date limite est requise.";
+    errors.deadline = m("val.deadline.required");
   } else {
     const deadlineDate = new Date(data.deadline);
     const now = new Date();
     if (isNaN(deadlineDate.getTime())) {
-      errors.deadline = "La date limite n'est pas valide.";
+      errors.deadline = m("val.deadline.invalid");
     } else if (deadlineDate <= now) {
-      errors.deadline = "La date limite doit être dans le futur.";
+      errors.deadline = m("val.deadline.past");
     }
   }
 
   if (!data.threshold || data.threshold <= 0) {
-    errors.threshold = "Le seuil doit être un nombre strictement positif.";
+    errors.threshold = m("val.threshold.positive");
   } else if (!Number.isInteger(data.threshold)) {
-    errors.threshold = "Le seuil doit être un nombre entier.";
+    errors.threshold = m("val.threshold.integer");
   } else if (data.threshold < minHuntThreshold()) {
-    errors.threshold = `Le seuil doit être d'au moins ${minHuntThreshold()} personnes.`;
+    errors.threshold = m("val.threshold.min", { min: minHuntThreshold() });
   } else if (data.threshold > 100000) {
-    errors.threshold = "Le seuil est trop élevé.";
+    errors.threshold = m("val.threshold.max");
   }
 
   if (!Number.isInteger(data.deposit) || data.deposit < MIN_CAUTION_KAS) {
-    errors.deposit = `La caution doit être un nombre entier d'au moins ${MIN_CAUTION_KAS} KAS.`;
+    errors.deposit = m("val.caution.min", { min: MIN_CAUTION_KAS });
   } else if (data.deposit > MAX_CAUTION_KAS) {
-    errors.deposit = "La caution est trop élevée.";
+    errors.deposit = m("val.caution.max");
   }
 
   return errors;

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { HuntFormData } from "@/lib/types";
 import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
+import { useI18n } from "@/lib/i18n";
 import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
 import {
   MAX_CAUTION_KAS,
@@ -15,29 +16,36 @@ import {
   SOMPI_PER_KAS,
   cautionTerms,
   sompiToKasFr,
+  sompiToKasText,
 } from "@/lib/hunt-economics";
 
 /** Ce que devient la caution saisie, selon l'issue (recalculé à chaque saisie). */
 function CautionBreakdown({ deposit }: { deposit: number }) {
+  const { t, locale } = useI18n();
   const valid =
     Number.isInteger(deposit) && deposit >= MIN_CAUTION_KAS && deposit <= MAX_CAUTION_KAS;
   const caution = BigInt(valid ? deposit : MIN_CAUTION_KAS) * SOMPI_PER_KAS;
   const c = cautionTerms(caution);
-  const kas = (s: bigint) => `${sompiToKasFr(s)} KAS`;
+  const kas = (s: bigint) =>
+    `${locale === "fr" ? sompiToKasFr(s) : sompiToKasText(((s + 500_000n) / 1_000_000n) * 1_000_000n)} KAS`;
   return (
     <ul className="space-y-0.5 text-xs text-muted-foreground">
       <li>
-        <strong>Action réussie :</strong> jusqu'à {kas(c.capPerCommitSompi)} par engagé (
-        {kas(c.successPoolSompi)} au plus), {kas(c.successTreasurySompi)} à Huntited, le reste t'est
-        rendu.
+        <strong>{t("form.caution.success")}</strong>{" "}
+        {t("form.caution.successText", {
+          cap: kas(c.capPerCommitSompi),
+          pool: kas(c.successPoolSompi),
+          fee: kas(c.successTreasurySompi),
+        })}
       </li>
       <li>
-        <strong>Action annulée :</strong> {kas(c.failureTreasurySompi)} à Huntited,{" "}
-        {kas(caution - c.failureTreasurySompi)} te sont rendus.
+        <strong>{t("form.caution.failure")}</strong>{" "}
+        {t("form.caution.failureText", {
+          fee: kas(c.failureTreasurySompi),
+          refund: kas(caution - c.failureTreasurySompi),
+        })}
       </li>
-      <li>
-        Minimum {MIN_CAUTION_KAS} KAS. Une caution plus élevée récompense davantage les engagés.
-      </li>
+      <li>{t("form.caution.min", { min: MIN_CAUTION_KAS })}</li>
     </ul>
   );
 }
@@ -54,12 +62,12 @@ interface CreateHuntFormValues {
 
 /**
  * Formulaire de création d'une chasse.
- * Le MVP ne fait que simuler la création (délai + log) puis redirige
- * vers une chasse de démonstration : la connexion au contrat Kaspa
- * viendra ensuite.
+ * Le brouillon est gardé sur l'appareil ; la création réelle se fait sur
+ * le récapitulatif (/create-review).
  */
 export function CreateHuntForm() {
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   const [values, setValues] = useState<CreateHuntFormValues>({
     title: "",
     description: "",
@@ -71,8 +79,7 @@ export function CreateHuntForm() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Erreur globale (échec de la création côté covenant), distincte des
-  // erreurs de validation champ par champ.
+  // Erreur globale, distincte des erreurs de validation champ par champ.
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   const setField =
@@ -97,18 +104,17 @@ export function CreateHuntForm() {
     setSubmitted(true);
 
     // Validation centralisée (src/lib/validation.ts)
-    const errs = validateHuntForm(toFormData());
+    const errs = validateHuntForm(toFormData(), locale);
     if (hasErrors(errs)) return;
 
     setIsSubmitting(true);
     setGlobalError(null);
     try {
       // On garde le brouillon sur l'appareil puis on passe au récapitulatif.
-      // La création réelle se fait sur /create-review.
       setCreateHuntDraft(toFormData());
       navigate({ to: "/create-review" });
     } catch {
-      setGlobalError("Impossible d'enregistrer le brouillon. Réessaie.");
+      setGlobalError(t("form.draftError"));
       setIsSubmitting(false);
     }
   };
@@ -129,10 +135,9 @@ export function CreateHuntForm() {
   }, []);
 
   // Les erreurs ne s'affichent qu'après une première tentative d'envoi
-  const errors: FormErrors = submitted ? validateHuntForm(toFormData()) : {};
+  const errors: FormErrors = submitted ? validateHuntForm(toFormData(), locale) : {};
 
-  // Bouton désactivé tant que tous les champs ne sont pas remplis
-  // (ou pendant la simulation de création).
+  // Bouton désactivé tant que tous les champs ne sont pas remplis.
   const isSubmitDisabled =
     isSubmitting ||
     !values.title.trim() ||
@@ -145,30 +150,30 @@ export function CreateHuntForm() {
     msg ? <p className="text-xs text-destructive">{msg}</p> : null;
 
   return (
-    // noValidate : nos messages (en français, avec la raison) plutôt que ceux du navigateur.
+    // noValidate : nos messages (traduits, avec la raison) plutôt que ceux du navigateur.
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       {/* Titre */}
       <div className="space-y-2">
-        <Label htmlFor="title">Titre</Label>
+        <Label htmlFor="title">{t("form.title")}</Label>
         <Input
           id="title"
           aria-invalid={errors.title ? true : undefined}
           value={values.title}
           onChange={setField("title")}
-          placeholder="Ex. Rassemblement place de la République"
+          placeholder={t("form.title.placeholder")}
         />
         <ErrorText msg={errors.title} />
       </div>
 
       {/* Description */}
       <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{t("form.description")}</Label>
         <Textarea
           id="description"
           aria-invalid={errors.description ? true : undefined}
           value={values.description}
           onChange={setField("description")}
-          placeholder="Décrivez l'action collective en quelques lignes."
+          placeholder={t("form.description.placeholder")}
           rows={4}
         />
         <ErrorText msg={errors.description} />
@@ -176,23 +181,21 @@ export function CreateHuntForm() {
 
       {/* Lieu — texte libre, aucune donnée de géoloc */}
       <div className="space-y-2">
-        <Label htmlFor="location">Lieu</Label>
+        <Label htmlFor="location">{t("hunt.location")}</Label>
         <Input
           id="location"
           aria-invalid={errors.location ? true : undefined}
           value={values.location}
           onChange={setField("location")}
-          placeholder="Ex. Paris, place de la République"
+          placeholder={t("form.location.placeholder")}
         />
         <ErrorText msg={errors.location} />
-        <p className="text-xs text-muted-foreground">
-          Texte libre. Aucune position n'est collectée.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
       </div>
 
       {/* Date/heure limite */}
       <div className="space-y-2">
-        <Label htmlFor="deadline">Date et heure limite</Label>
+        <Label htmlFor="deadline">{t("form.deadline")}</Label>
         <Input
           id="deadline"
           aria-invalid={errors.deadline ? true : undefined}
@@ -201,14 +204,12 @@ export function CreateHuntForm() {
           onChange={setField("deadline")}
         />
         <ErrorText msg={errors.deadline} />
-        <p className="text-xs text-muted-foreground">
-          Seuil pas atteint à cette date : action annulée.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("form.deadline.help")}</p>
       </div>
 
       {/* Seuil de participants */}
       <div className="space-y-2">
-        <Label htmlFor="threshold">Seuil de participants</Label>
+        <Label htmlFor="threshold">{t("form.threshold")}</Label>
         <Input
           id="threshold"
           aria-invalid={errors.threshold ? true : undefined}
@@ -216,11 +217,11 @@ export function CreateHuntForm() {
           min={minHuntThreshold()}
           value={values.threshold}
           onChange={setField("threshold")}
-          placeholder="Ex. 50"
+          placeholder={t("form.threshold.placeholder")}
         />
         <ErrorText msg={errors.threshold} />
         <p className="text-xs text-muted-foreground">
-          Personnes nécessaires pour que l'action ait lieu. Minimum {minHuntThreshold()}.
+          {t("form.threshold.help", { min: minHuntThreshold() })}
         </p>
       </div>
 
@@ -235,21 +236,15 @@ export function CreateHuntForm() {
             }
             className="mt-0.5"
           />
-          <span>Masquer la progression</span>
+          <span>{t("form.hide")}</span>
         </label>
-        <p className="text-xs text-muted-foreground">
-          Personne ne voit le nombre d'engagés avant la fin. (Version de test : caché à l'écran
-          seulement.)
-        </p>
-        <p className="text-xs font-medium text-green-700">
-          Recommandé : sans compteur visible, personne n'attend de voir les autres pour se lancer,
-          et s'engager le premier n'expose pas.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("form.hide.help")}</p>
+        <p className="text-xs font-medium text-green-700">{t("form.hide.recommended")}</p>
       </div>
 
       {/* Caution du créateur : 30 KAS au moins, au choix ; jamais de gain. */}
       <div className="space-y-2">
-        <Label htmlFor="deposit">Ta caution (KAS)</Label>
+        <Label htmlFor="deposit">{t("form.caution.label")}</Label>
         <Input
           id="deposit"
           aria-invalid={errors.deposit ? true : undefined}
@@ -265,14 +260,12 @@ export function CreateHuntForm() {
 
       {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
       <div className="space-y-2">
-        <Label htmlFor="commit-deposit">Dépôt d'engagement (par participant)</Label>
+        <Label htmlFor="commit-deposit">{t("form.commitDeposit")}</Label>
         <Input id="commit-deposit" value={`${COMMIT_DEPOSIT_KAS} KAS`} readOnly disabled />
-        <p className="text-xs text-muted-foreground">
-          Rendu au participant à la fin, que l'action réussisse ou non.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("form.commitDeposit.help")}</p>
       </div>
 
-      {/* Erreur globale de création (distincte des erreurs de validation) */}
+      {/* Erreur globale (distincte des erreurs de validation) */}
       {globalError && (
         <p className="text-sm text-destructive" role="alert">
           {globalError}
@@ -280,7 +273,7 @@ export function CreateHuntForm() {
       )}
 
       <Button type="submit" className="w-full" disabled={isSubmitDisabled}>
-        {isSubmitting ? "Chargement…" : "Vérifier ma chasse"}
+        {isSubmitting ? t("common.loading") : t("form.submit")}
       </Button>
     </form>
   );

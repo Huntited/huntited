@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { useI18n } from "@/lib/i18n";
 import { getPassConfig, hasPass, onPassChange } from "@/lib/pass";
 import {
   commitDepositTerms,
@@ -60,6 +61,7 @@ export function CommitModal({
   walletLoading = false,
   onCommitted,
 }: CommitModalProps) {
+  const { t, date, locale } = useI18n();
   const [accepted, setAccepted] = useState(false);
   // Seuil personnel : « je viens si au moins N personnes viennent » (N ≥ seuil de la chasse).
   const [personal, setPersonal] = useState(String(hunt.threshold));
@@ -96,32 +98,26 @@ export function CommitModal({
     >
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Engagement de {hunt.commitDeposit} KAS</DialogTitle>
+          <DialogTitle>{t("commit.title", { amount: hunt.commitDeposit })}</DialogTitle>
           <DialogDescription>{hunt.title}</DialogDescription>
         </DialogHeader>
 
         {isCommitted ? (
           <p role="status" className="rounded-lg border bg-muted/40 p-4 text-sm">
-            Tu es déjà engagé·e dans cette chasse.
+            {t("commit.already")}
           </p>
         ) : (
           <>
             <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-700">
-              {commitRefundHighlight(hunt.deposit)}
+              {commitRefundHighlight(hunt.deposit, locale)}
             </p>
             <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
-              <p>
-                <strong>Tu bloques {hunt.commitDeposit} KAS</strong>, rendus à la fin (version de
-                test : aucun vrai KAS n'est utilisé).
-              </p>
-              <p>{commitDepositTerms(hunt.deposit)}</p>
+              <p>{commitDepositTerms(hunt.deposit, locale)}</p>
+              <p className="text-xs text-muted-foreground">{t("commit.testNote")}</p>
               <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Date limite</span>
+                <span className="text-muted-foreground">{t("hunt.deadline")}</span>
                 <span className="font-medium">
-                  {new Date(hunt.deadline).toLocaleString("fr-FR", {
-                    dateStyle: "long",
-                    timeStyle: "short",
-                  })}
+                  {date(hunt.deadline, { dateStyle: "long", timeStyle: "short" })}
                 </span>
               </div>
               {walletAddress && (
@@ -135,7 +131,7 @@ export function CommitModal({
             {/* Seuil personnel (facultatif) */}
             <div className="space-y-2 rounded-lg border p-4 text-sm">
               <label htmlFor="personal-threshold" className="flex items-center gap-2">
-                <span>Je viens si au moins</span>
+                <span>{t("commit.personal.before")}</span>
                 <Input
                   id="personal-threshold"
                   type="number"
@@ -146,16 +142,17 @@ export function CommitModal({
                   className="h-8 w-24"
                   aria-invalid={!personalValid}
                 />
-                <span>personnes viennent</span>
+                <span>{t("commit.personal.after")}</span>
               </label>
               <p className="text-xs text-muted-foreground">
-                Facultatif. Laisse {hunt.threshold} si tu viens dès que la chasse se déclenche. Si
-                tu mets plus et que ce nombre n'est pas atteint, tu ne viens pas et tes{" "}
-                {hunt.commitDeposit} KAS te sont rendus. Personne d'autre ne voit ce chiffre.
+                {t("commit.personal.help", {
+                  threshold: hunt.threshold,
+                  amount: hunt.commitDeposit,
+                })}
               </p>
               {!personalValid && (
                 <p className="text-xs text-destructive" role="alert">
-                  Indique un nombre entier d'au moins {hunt.threshold}.
+                  {t("commit.personal.invalid", { threshold: hunt.threshold })}
                 </p>
               )}
             </div>
@@ -163,18 +160,18 @@ export function CommitModal({
         )}
 
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold">Conditions clés</h3>
+          <h3 className="text-sm font-semibold">{t("commit.keyTerms")}</h3>
           <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            {termsShortFor(hunt.deposit).map((line) => (
+            {termsShortFor(hunt.deposit, locale).map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
         </div>
 
         <details className="text-xs text-muted-foreground">
-          <summary className="cursor-pointer font-medium">Voir les conditions complètes</summary>
+          <summary className="cursor-pointer font-medium">{t("commit.fullTerms")}</summary>
           <div className="mt-2 max-h-40 overflow-auto whitespace-pre-line rounded border p-2">
-            {termsFullFor(hunt.deposit)}
+            {termsFullFor(hunt.deposit, locale)}
           </div>
         </details>
 
@@ -188,17 +185,14 @@ export function CommitModal({
             disabled={isCommitted}
             className="mt-0.5"
           />
-          <span>
-            J'ai compris que mon dépôt reste verrouillé jusqu'au succès ou à l'expiration de la
-            chasse.
-          </span>
+          <span>{t("commit.accept")}</span>
         </label>
 
         {needsPass && !isCommitted && (
           <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-            Il te faut un pass Huntited pour t'engager (une personne = un engagement).{" "}
+            {t("commit.needPass")}{" "}
             <Link to="/pass" className="font-medium underline">
-              Obtenir mon pass
+              {t("commit.getPass")}
             </Link>
           </p>
         )}
@@ -211,18 +205,18 @@ export function CommitModal({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
+            {t("common.cancel")}
           </Button>
           {!isConnected ? (
             <Button onClick={onConnectWallet} disabled={walletLoading}>
-              {walletLoading ? "Connexion…" : "Connecter le wallet"}
+              {walletLoading ? t("wallet.connecting") : t("wallet.connect")}
             </Button>
           ) : (
             <Button
               onClick={handleConfirm}
               disabled={!accepted || !canCommit || !personalValid || needsPass}
             >
-              {isSubmitting ? "Engagement… (preuve en cours)" : "Confirmer l'engagement"}
+              {isSubmitting ? t("commit.submitting") : t("commit.confirm")}
             </Button>
           )}
         </DialogFooter>

@@ -15,6 +15,7 @@ import { chatMode } from "./chat-client";
 import { isCommitted, isRetainedHere, onHuntsChange } from "./hunt-repository";
 import type { SettlementOutcome } from "./hunt-state-store";
 import { canCreateRoom } from "./matrix-mock";
+import type { MessageKey } from "./i18n";
 import type { HuntStatus } from "./types";
 import { getUserHunts } from "./user-hunts";
 import { useWallet } from "./useWallet";
@@ -25,7 +26,8 @@ export interface UseChatAccessResult {
   isAuthorized: boolean;
   role: ChatRole | null;
   isLoading: boolean;
-  error: string | null;
+  /** Erreur à afficher (clé de traduction). */
+  error: MessageKey | null;
   /** Jeton courant (null en mode mock ou s'il a expiré). */
   getAccessToken: () => string | null;
 }
@@ -40,11 +42,9 @@ function localRole(huntId: string, address: string): ChatRole | null {
   return null;
 }
 
-const MSG_FORBIDDEN =
-  "Le chat est réservé à la personne qui a créé la chasse et aux engagé·es retenu·es (dont la condition est remplie).";
-const MSG_UNAVAILABLE = "Le chat est temporairement indisponible.";
-const MSG_SIGNATURE_REFUSED =
-  "Signature refusée : signe le message dans ton wallet pour accéder au chat.";
+const MSG_FORBIDDEN: MessageKey = "chat.forbidden";
+const MSG_UNAVAILABLE: MessageKey = "chat.unavailable";
+const MSG_SIGNATURE_REFUSED: MessageKey = "chat.signatureRefused";
 
 export function useChatAccess(
   huntId: string,
@@ -55,7 +55,7 @@ export function useChatAccess(
   const [role, setRole] = useState<ChatRole | null>(null);
   const [token, setToken] = useState<ChatAccessToken | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<MessageKey | null>(null);
   const allowed = canCreateRoom(status, outcome);
   // Rôle connu localement, relu à chaque engagement : un·e engagé·e peut
   // devenir retenu·e quand d'autres s'engagent (seuils personnels).

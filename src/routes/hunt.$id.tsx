@@ -9,7 +9,6 @@ import { ReplyOnXButton } from "@/components/hunt/ReplyOnXButton";
 import { ShareHuntButton } from "@/components/hunt/ShareHuntButton";
 import { Button } from "@/components/ui/button";
 import Countdown from "@/components/ui/Countdown";
-import { Separator } from "@/components/ui/separator";
 import {
   canOpenChat,
   canSettle,
@@ -18,6 +17,7 @@ import {
 } from "@/lib/hunt-lifecycle";
 import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
 import { getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
+import { useI18n } from "@/lib/i18n";
 import { commitRefundShort } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
 import { useHunt } from "@/lib/useHunt";
@@ -34,6 +34,7 @@ export const Route = createFileRoute("/hunt/$id")({
 
 function HuntDetailPage() {
   const { id } = Route.useParams();
+  const { t, date, locale } = useI18n();
   const [commitOpen, setCommitOpen] = useState(false);
 
   // État de la chasse via hunt-repository (mock local ou registre partagé,
@@ -56,34 +57,31 @@ function HuntDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">Chargement…</div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="mx-auto max-w-xl px-4 py-10">
-        <Link to="/" className="text-sm text-muted-foreground hover:underline">
-          ← Retour
-        </Link>
-        <p className="mt-4 text-sm text-muted-foreground" role="alert">
-          {error}
-        </p>
+      <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">
+        {t("common.loading")}
       </div>
     );
   }
 
-  // Chasse inconnue : état explicite plutôt que fallback silencieux.
-  if (!hunt) {
+  if (error || !hunt) {
+    // Chasse inconnue ou registre indisponible : état explicite.
     return (
       <div className="mx-auto max-w-xl px-4 py-10">
         <Link to="/" className="text-sm text-muted-foreground hover:underline">
-          ← Retour
+          {t("common.back")}
         </Link>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">Chasse introuvable</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          La chasse que tu cherches n'existe pas ou a été supprimée.
-        </p>
+        {error ? (
+          <p className="mt-4 text-sm text-muted-foreground" role="alert">
+            {t("hunt.loadError")}
+          </p>
+        ) : (
+          <>
+            <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+              {t("hunt.notFound.title")}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">{t("hunt.notFound.text")}</p>
+          </>
+        )}
       </div>
     );
   }
@@ -91,20 +89,15 @@ function HuntDetailPage() {
   const isExpired = status === "expired";
   const isActivated = status === "activated";
 
-  const deadlineFr = new Date(hunt.deadline).toLocaleString("fr-FR", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
-
   return (
-    <div className="mx-auto max-w-xl px-4 py-10">
+    <div className="mx-auto max-w-xl px-4 py-8">
       <Link to="/" className="text-sm text-muted-foreground hover:underline">
-        ← Retour
+        {t("common.back")}
       </Link>
 
       <h1 className="mt-4 text-2xl font-semibold tracking-tight">{hunt.title}</h1>
 
-      <div className="mt-2 flex items-center justify-between gap-3">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <HuntStatusBadge status={status} />
         <div className="flex flex-wrap justify-end gap-2">
           <ReplyOnXButton hunt={hunt} />
@@ -113,35 +106,113 @@ function HuntDetailPage() {
       </div>
 
       {/* Infos de la chasse */}
-      <div className="mt-6 space-y-3 rounded-lg border p-5 text-sm">
-        <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Lieu</span>
-          <span className="text-right font-medium">{hunt.location}</span>
-        </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Date limite</span>
-          <span className="text-right font-medium">
-            {deadlineFr}{" "}
-            <span className="text-muted-foreground">
-              (<Countdown targetDate={hunt.deadline} onExpire={refresh} />)
-            </span>
+      <dl className="mt-6 space-y-3 rounded-lg border p-5 text-sm">
+        <Info label={t("hunt.location")}>{hunt.location}</Info>
+        <Info label={t("hunt.deadline")}>
+          {date(hunt.deadline, { dateStyle: "long", timeStyle: "short" })}{" "}
+          <span className="text-muted-foreground">
+            (<Countdown targetDate={hunt.deadline} onExpire={refresh} />)
           </span>
-        </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Seuil</span>
-          <span className="font-medium">{hunt.threshold} participants</span>
-        </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Dépôt d'engagement (rendu à la fin)</span>
-          <span className="font-medium">{hunt.commitDeposit} KAS</span>
-        </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Caution du créateur</span>
-          <span className="font-medium">{hunt.deposit} KAS</span>
-        </div>
-      </div>
+        </Info>
+        <Info label={t("hunt.threshold")}>
+          {t("hunt.thresholdValue", { count: hunt.threshold })}
+        </Info>
+        <Info label={t("hunt.commitDeposit")}>{hunt.commitDeposit} KAS</Info>
+        <Info label={t("hunt.caution")}>{hunt.deposit} KAS</Info>
+      </dl>
 
-      <p className="mt-6 text-sm leading-relaxed">{hunt.description}</p>
+      <p className="mt-6 whitespace-pre-line text-sm leading-relaxed">{hunt.description}</p>
+
+      {/* Progression et engagement : l'action principale de la page */}
+      <section className="mt-8 rounded-lg border bg-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {isProgressVisible(hunt, status) ? (
+            <div>
+              <p className="text-sm text-muted-foreground">{t("hunt.progress.label")}</p>
+              <p className="text-3xl font-semibold">
+                {commitCount}
+                <span className="text-base font-normal text-muted-foreground">
+                  {" "}
+                  {t("hunt.progress.of", { threshold: hunt.threshold })}
+                </span>
+              </p>
+              <ProgressBar value={retainedCount ?? commitCount} max={hunt.threshold} />
+              {retainedCount !== null && retainedCount !== commitCount && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t("hunt.progress.retained", { count: retainedCount })}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="max-w-xs">
+              <p className="text-sm text-muted-foreground">{t("hunt.progress.hidden")}</p>
+              <p className="text-sm">
+                {t("hunt.progress.hiddenText", { threshold: hunt.threshold })}
+              </p>
+            </div>
+          )}
+          {/* Engagements ouverts jusqu'à la date limite, même après l'activation */}
+          {!commitsOpen ? (
+            <Button size="lg" disabled>
+              {t("hunt.cta.closed")}
+            </Button>
+          ) : !wallet.isConnected ? (
+            <Button size="lg" onClick={() => wallet.connectWallet()} disabled={wallet.isLoading}>
+              {wallet.isLoading ? t("wallet.connecting") : t("wallet.connect")}
+            </Button>
+          ) : commitment.isCommitted ? (
+            <Button size="lg" variant="secondary" disabled>
+              {t("hunt.cta.committed")}
+            </Button>
+          ) : (
+            <Button size="lg" onClick={() => setCommitOpen(true)}>
+              {t("hunt.cta.commit", { amount: hunt.commitDeposit })}
+            </Button>
+          )}
+        </div>
+        {commitsOpen && !commitment.isCommitted && (
+          <p className="mt-3 text-sm font-medium text-green-700">
+            {commitRefundShort(hunt.deposit, locale)}
+          </p>
+        )}
+
+        {/* Condition personnelle (visible seulement par l'engagé·e concerné·e) */}
+        {commitment.isCommitted &&
+          wallet.address &&
+          (() => {
+            const mine = getMyPersonalThreshold(hunt, wallet.address);
+            if (mine === undefined) return null;
+            const met = retainedThreshold !== null && mine <= retainedThreshold;
+            return (
+              <p className="mt-3 text-sm" role="status">
+                {t("hunt.condition", { count: mine })}{" "}
+                {met ? (
+                  <span className="font-medium text-green-700">{t("hunt.condition.met")}</span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    {t("hunt.condition.pending", { amount: hunt.commitDeposit })}
+                  </span>
+                )}
+              </p>
+            );
+          })()}
+      </section>
+
+      {/* Bannières d'état */}
+      {isActivated && (
+        <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+          {t("hunt.banner.activated", {
+            count: retainedCount ?? commitCount,
+            threshold: hunt.threshold,
+          })}
+          {commitsOpen && ` ${t("hunt.banner.stillOpen")}`}
+        </div>
+      )}
+      {isExpired && !isActivated && (
+        <div className="mt-4 rounded-md border bg-muted p-3 text-sm text-muted-foreground">
+          {t("hunt.banner.expired", { count: commitCount, threshold: hunt.threshold })}
+        </div>
+      )}
 
       {/* Chat Matrix : n'existe qu'après l'activation (jamais avant). */}
       <div className="mt-6">
@@ -149,10 +220,10 @@ function HuntDetailPage() {
           <ChatPanel hunt={hunt} status={status} outcome={outcome} />
         ) : (
           <section className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
-            <h2 className="mb-1 font-semibold text-foreground">Chat de coordination</h2>
+            <h2 className="mb-1 font-semibold text-foreground">{t("hunt.chat.title")}</h2>
             {isExpired || (status === "settled" && outcome === "failure")
-              ? "Cette hunt a expiré avant d'atteindre son seuil ; aucun chat n'a été ouvert."
-              : "Le chat Matrix s'ouvrira si le seuil est atteint."}
+              ? t("hunt.chat.expired")
+              : t("hunt.chat.later")}
           </section>
         )}
       </div>
@@ -176,100 +247,6 @@ function HuntDetailPage() {
         />
       </div>
 
-      <Separator className="my-8" />
-
-      {/* Compteur fourni par useHunt (mock ZK-lite) */}
-      <div className="flex items-center justify-between">
-        {isProgressVisible(hunt, status) ? (
-          <div>
-            <p className="text-sm text-muted-foreground">Participants engagés</p>
-            <p className="text-3xl font-semibold">
-              {commitCount}
-              <span className="text-base font-normal text-muted-foreground">
-                {" "}
-                sur {hunt.threshold} requis
-              </span>
-            </p>
-            {retainedCount !== null && retainedCount !== commitCount && (
-              <p className="text-sm text-muted-foreground">
-                Groupe retenu : {retainedCount} (les autres attendent que leur propre condition soit
-                remplie)
-              </p>
-            )}
-          </div>
-        ) : (
-          <div>
-            <p className="text-sm text-muted-foreground">Progression masquée</p>
-            <p className="text-sm">
-              Seuil : {hunt.threshold} participants. Le nombre d'engagés sera révélé à l'activation
-              ou à la date limite.
-            </p>
-          </div>
-        )}
-        {/* Engagements ouverts jusqu'à la date limite, même après l'activation */}
-        {!commitsOpen ? (
-          <Button size="lg" disabled>
-            Engagements fermés
-          </Button>
-        ) : !wallet.isConnected ? (
-          <Button size="lg" onClick={() => wallet.connectWallet()} disabled={wallet.isLoading}>
-            {wallet.isLoading ? "Connexion…" : "Connecter le wallet"}
-          </Button>
-        ) : commitment.isCommitted ? (
-          <Button size="lg" variant="secondary" disabled>
-            Déjà engagé·e
-          </Button>
-        ) : (
-          <Button size="lg" onClick={() => setCommitOpen(true)}>
-            S'engager — {hunt.commitDeposit} KAS
-          </Button>
-        )}
-      </div>
-      {commitsOpen && !commitment.isCommitted && (
-        <p className="mt-2 text-right text-sm font-medium text-green-700">
-          {commitRefundShort(hunt.deposit)}
-        </p>
-      )}
-
-      {/* Condition personnelle (visible seulement par l'engagé·e concerné·e) */}
-      {commitment.isCommitted &&
-        wallet.address &&
-        (() => {
-          const mine = getMyPersonalThreshold(hunt, wallet.address);
-          if (mine === undefined) return null;
-          const met = retainedThreshold !== null && mine <= retainedThreshold;
-          return (
-            <p className="mt-3 text-sm" role="status">
-              Ta condition : au moins {mine} personnes —{" "}
-              {met ? (
-                <span className="font-medium text-green-700">
-                  remplie, tu fais partie du groupe.
-                </span>
-              ) : (
-                <span className="text-muted-foreground">
-                  en attente. Si elle n'est pas remplie, tes {hunt.commitDeposit} KAS te sont
-                  rendus.
-                </span>
-              )}
-            </p>
-          );
-        })()}
-
-      {/* Bannières d'état */}
-      {isActivated && (
-        <div className="mt-6 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-          Cette chasse a atteint son seuil ({retainedCount ?? commitCount} / {hunt.threshold}) :
-          l'action aura lieu.
-          {commitsOpen &&
-            " Les engagements restent ouverts jusqu'à la date limite : le groupe peut encore grandir."}
-        </div>
-      )}
-      {isExpired && !isActivated && (
-        <div className="mt-6 rounded-md border bg-muted p-3 text-sm text-muted-foreground">
-          Cette chasse est expirée sans avoir atteint son seuil ({commitCount} / {hunt.threshold}).
-        </div>
-      )}
-
       {/* Modal de confirmation d'engagement */}
       <CommitModal
         hunt={hunt}
@@ -284,6 +261,31 @@ function HuntDetailPage() {
           setCommitOpen(false);
           refresh();
         }}
+      />
+    </div>
+  );
+}
+
+function Info({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex justify-between gap-4">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="text-right font-medium">{children}</dd>
+    </div>
+  );
+}
+
+/** Barre de progression vers le seuil (visuelle ; le nombre reste écrit à côté). */
+function ProgressBar({ value, max }: { value: number; max: number }) {
+  const percent = Math.min(100, Math.round((value / Math.max(1, max)) * 100));
+  return (
+    <div
+      className="mt-2 h-2 w-48 max-w-full overflow-hidden rounded-full bg-muted"
+      aria-hidden="true"
+    >
+      <div
+        className="h-full rounded-full bg-green-500 transition-[width] duration-500"
+        style={{ width: `${percent}%` }}
       />
     </div>
   );

@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
+import { COMMIT_DEPOSIT_KAS } from "@/lib/covenants";
 import { clearCreateHuntDraft, getCreateHuntDraft } from "@/lib/create-hunt-store";
 import { createHunt, HuntActionError } from "@/lib/hunt-repository";
+import { useI18n } from "@/lib/i18n";
 import { addUserHunt } from "@/lib/user-hunts";
 import { useWallet } from "@/lib/useWallet";
 import type { HuntFormData } from "@/lib/types";
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/create-review")({
  */
 function CreateReviewPage() {
   const navigate = useNavigate();
+  const { t, date } = useI18n();
   const wallet = useWallet();
   const { address } = wallet;
   const [draft, setDraft] = useState<HuntFormData | null>(null);
@@ -53,7 +55,9 @@ function CreateReviewPage() {
 
   if (!draft) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">Chargement…</div>
+      <div className="mx-auto max-w-xl px-4 py-10 text-sm text-muted-foreground">
+        {t("common.loading")}
+      </div>
     );
   }
 
@@ -81,46 +85,35 @@ function CreateReviewPage() {
       clearCreateHuntDraft();
       navigate({ to: "/hunt/$id", params: { id: huntId } });
     } catch (e) {
-      setError(
-        e instanceof HuntActionError
-          ? e.message
-          : "Une erreur est survenue lors de la création de la chasse. Réessaie.",
-      );
+      setError(e instanceof HuntActionError ? e.message : t("review.createError"));
       setIsCreating(false);
     }
   };
 
-  const deadlineFr = new Date(draft.deadline).toLocaleString("fr-FR", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
-
   const rows: Array<[string, string]> = [
-    ["Lieu", draft.location],
-    ["Date limite", deadlineFr],
-    ["Seuil", `${draft.threshold} participants`],
+    [t("hunt.location"), draft.location],
+    [t("hunt.deadline"), date(draft.deadline, { dateStyle: "long", timeStyle: "short" })],
+    [t("hunt.threshold"), t("hunt.thresholdValue", { count: draft.threshold })],
     [
-      "Progression",
-      draft.progressVisibility === "hidden" ? "Masquée jusqu'à la fin" : "Visible par tous",
+      t("review.progress"),
+      draft.progressVisibility === "hidden" ? t("review.hidden") : t("review.visible"),
     ],
-    ["Ta caution", `${draft.deposit} KAS`],
-    ["Dépôt d'engagement (rendu à la fin)", `${COMMIT_DEPOSIT_KAS} KAS`],
+    [t("form.caution"), `${draft.deposit} KAS`],
+    [t("hunt.commitDeposit"), `${COMMIT_DEPOSIT_KAS} KAS`],
   ];
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight">Récapitulatif de ta chasse</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Vérifie les informations. Une fois créée, la chasse ne pourra plus être modifiée.
-      </p>
+      <h1 className="text-2xl font-semibold tracking-tight">{t("review.title")}</h1>
+      <p className="mt-1 text-sm text-muted-foreground">{t("review.lead")}</p>
 
       <div className="mt-6 space-y-4 rounded-lg border p-5 text-sm">
         <div>
-          <div className="text-muted-foreground">Titre</div>
+          <div className="text-muted-foreground">{t("form.title")}</div>
           <div className="font-medium">{draft.title}</div>
         </div>
         <div>
-          <div className="text-muted-foreground">Description</div>
+          <div className="text-muted-foreground">{t("form.description")}</div>
           <p className="whitespace-pre-line">{draft.description}</p>
         </div>
         {rows.map(([label, value]) => (
@@ -139,22 +132,21 @@ function CreateReviewPage() {
 
       {!address && (
         <p className="mt-4 text-sm text-muted-foreground" role="status">
-          Connecte ton wallet pour créer la chasse : il t'identifie comme créateur·rice et te
-          permettra d'ouvrir le chat une fois le seuil atteint.
+          {t("review.needWallet")}
         </p>
       )}
 
       <div className="mt-6 flex justify-end gap-3">
         <Button variant="outline" disabled={isCreating} onClick={() => navigate({ to: "/create" })}>
-          Retour
+          {t("review.back")}
         </Button>
         {address ? (
           <Button disabled={isCreating} onClick={handleConfirm}>
-            {isCreating ? "Création en cours…" : "Confirmer et créer la chasse"}
+            {isCreating ? t("review.creating") : t("review.confirm")}
           </Button>
         ) : (
           <Button disabled={wallet.isLoading} onClick={() => void wallet.connectWallet()}>
-            {wallet.isLoading ? "Connexion…" : "Connecter le wallet"}
+            {wallet.isLoading ? t("wallet.connecting") : t("wallet.connect")}
           </Button>
         )}
       </div>

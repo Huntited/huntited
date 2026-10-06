@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { recordShare } from "@/lib/badge-store";
 import { huntReplyText, huntShareUrl, parseTweetId, xReplyIntentUrl } from "@/lib/share";
 import type { Hunt } from "@/lib/types";
+import { useI18n } from "@/lib/i18n";
 import { getWalletState } from "@/lib/wallet";
 
 /**
@@ -14,6 +15,7 @@ import { getWalletState } from "@/lib/wallet";
  * L'adresse du tweet ne quitte pas le navigateur (hors ouverture de X).
  */
 export function ReplyOnXButton({ hunt }: { hunt: Pick<Hunt, "id" | "title" | "threshold"> }) {
+  const { t, locale } = useI18n();
   const [open, setOpen] = useState(false);
   const [tweetUrl, setTweetUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,12 +24,12 @@ export function ReplyOnXButton({ hunt }: { hunt: Pick<Hunt, "id" | "title" | "th
     event.preventDefault();
     const tweetId = parseTweetId(tweetUrl);
     if (!tweetId) {
-      setError("Colle l'adresse d'un tweet, par exemple https://x.com/nom/status/123…");
+      setError(t("x.invalid"));
       return;
     }
     const url = huntShareUrl(hunt.id, window.location.origin);
     window.open(
-      xReplyIntentUrl(tweetId, huntReplyText(hunt), url),
+      xReplyIntentUrl(tweetId, huntReplyText(hunt, locale), url),
       "_blank",
       "noopener,noreferrer",
     );
@@ -42,7 +44,7 @@ export function ReplyOnXButton({ hunt }: { hunt: Pick<Hunt, "id" | "title" | "th
   if (!open) {
     return (
       <Button variant="outline" size="sm" onClick={() => setOpen(true)} aria-expanded={false}>
-        Répondre à un tweet
+        {t("x.reply")}
       </Button>
     );
   }
@@ -53,7 +55,7 @@ export function ReplyOnXButton({ hunt }: { hunt: Pick<Hunt, "id" | "title" | "th
       className="w-full space-y-2 rounded-lg border bg-card p-3 text-sm sm:w-80"
     >
       <label htmlFor="tweet-url" className="font-medium">
-        Adresse du tweet
+        {t("x.tweetUrl")}
       </label>
       <Input
         id="tweet-url"
@@ -72,13 +74,10 @@ export function ReplyOnXButton({ hunt }: { hunt: Pick<Hunt, "id" | "title" | "th
           {error}
         </p>
       )}
-      <p className="text-xs text-muted-foreground">
-        X s'ouvre avec une réponse déjà rédigée et le lien de la chasse. Tu peux la modifier avant
-        de publier, depuis ton compte.
-      </p>
+      <p className="text-xs text-muted-foreground">{t("x.help")}</p>
       <div className="flex gap-2">
         <Button type="submit" size="sm" className="flex-1">
-          Ouvrir la réponse sur X
+          {t("x.open")}
         </Button>
         <Button
           type="button"
@@ -89,7 +88,7 @@ export function ReplyOnXButton({ hunt }: { hunt: Pick<Hunt, "id" | "title" | "th
             setError(null);
           }}
         >
-          Annuler
+          {t("common.cancel")}
         </Button>
       </div>
     </form>

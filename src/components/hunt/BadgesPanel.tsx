@@ -5,14 +5,22 @@ import { loadWalletBadges } from "@/lib/badge-activity";
 import { getBadgeVisibility, setBadgeVisibility, subscribeBadges } from "@/lib/badge-store";
 import { BADGES, type BadgeTier, type EarnedBadge } from "@/lib/badges";
 import { onHuntsChange } from "@/lib/hunt-repository";
+import { useI18n, type MessageKey } from "@/lib/i18n";
 
-const TIER_LABEL: Record<BadgeTier, string> = { bronze: "bronze", argent: "argent", or: "or" };
+const TIER_LABEL: Record<BadgeTier, MessageKey> = {
+  bronze: "badge.tier.bronze",
+  argent: "badge.tier.argent",
+  or: "badge.tier.or",
+};
+const badgeName = (id: string) => `badge.${id}.name` as MessageKey;
+const badgeText = (id: string) => `badge.${id}.text` as MessageKey;
 
 /**
  * Badges du wallet connecté (non financiers) et choix de leur visibilité.
  * Calculés sur cet appareil ; privés par défaut.
  */
 export function BadgesPanel({ address }: { address: string }) {
+  const { t } = useI18n();
   const [version, setVersion] = useState(0);
   const [earned, setEarned] = useState<EarnedBadge[]>([]);
   const [isPublic, setIsPublic] = useState(false);
@@ -40,14 +48,12 @@ export function BadgesPanel({ address }: { address: string }) {
   return (
     <section className="mt-10 space-y-4">
       <div>
-        <h2 className="text-lg font-semibold">Mes badges</h2>
-        <p className="text-sm text-muted-foreground">
-          Des récompenses symboliques : elles ne changent jamais les montants en KAS.
-        </p>
+        <h2 className="text-lg font-semibold">{t("badges.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("badges.lead")}</p>
       </div>
 
       {earned.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Pas encore de badge.</p>
+        <p className="text-sm text-muted-foreground">{t("badges.none")}</p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2">
           {BADGES.filter((b) => earnedById.has(b.id)).map((b) => {
@@ -55,15 +61,17 @@ export function BadgesPanel({ address }: { address: string }) {
             return (
               <li key={b.id} className="rounded-lg border p-3">
                 <div className="font-medium">
-                  {b.name}
+                  {t(badgeName(b.id))}
                   {e.tier && (
-                    <span className="ml-2 text-xs text-muted-foreground">{TIER_LABEL[e.tier]}</span>
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      {t(TIER_LABEL[e.tier])}
+                    </span>
                   )}
                   {e.count > 1 && !e.tier && (
                     <span className="ml-2 text-xs text-muted-foreground">×{e.count}</span>
                   )}
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">{b.description}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t(badgeText(b.id))}</p>
               </li>
             );
           })}
@@ -73,12 +81,12 @@ export function BadgesPanel({ address }: { address: string }) {
       {locked.length > 0 && (
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground">
-            À débloquer ({locked.length})
+            {t("badges.locked", { count: locked.length })}
           </summary>
           <ul className="mt-2 space-y-1 text-muted-foreground">
             {locked.map((b) => (
               <li key={b.id}>
-                <span className="font-medium">{b.name}</span> — {b.description}
+                <span className="font-medium">{t(badgeName(b.id))}</span> — {t(badgeText(b.id))}
               </li>
             ))}
           </ul>
@@ -87,20 +95,16 @@ export function BadgesPanel({ address }: { address: string }) {
 
       <div className="rounded-lg border p-3">
         <label className="flex cursor-pointer items-center justify-between gap-4 text-sm">
-          <span className="font-medium">Badges visibles publiquement</span>
+          <span className="font-medium">{t("badges.public")}</span>
           <Switch
             checked={isPublic}
             onCheckedChange={(checked) => {
               setBadgeVisibility(address, checked ? "public" : "private");
             }}
-            aria-label="Badges visibles publiquement"
+            aria-label={t("badges.public")}
           />
         </label>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Réglage propre à ce wallet. Désactivé, tes badges ne sont visibles que par toi : ils
-          pourraient sinon révéler les chasses auxquelles tu as participé. Aucun profil public
-          n'existe encore dans ce prototype ; ce choix sera appliqué dès qu'il y en aura un.
-        </p>
+        <p className="mt-2 text-xs text-muted-foreground">{t("badges.publicHelp")}</p>
       </div>
     </section>
   );

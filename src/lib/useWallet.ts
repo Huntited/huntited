@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+
+import { getLocale, translate } from "./i18n";
 import { toast } from "sonner";
 
 import {
@@ -39,7 +41,7 @@ export function useWallet(): UseWalletResult {
     } catch (e) {
       // Message neutre : aucune adresse ni détail technique affiché.
       const message =
-        e instanceof WalletError ? e.message : "Connexion au wallet impossible. Réessaie.";
+        e instanceof WalletError ? e.message : translate(getLocale(), "wallet.err.generic");
       setError(message);
       toast.error(message);
     } finally {

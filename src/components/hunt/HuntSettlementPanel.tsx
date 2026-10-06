@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SOMPI_PER_KAS, calculateSettlement, sompiToKasText } from "@/lib/hunt-economics";
+import { useI18n } from "@/lib/i18n";
 import { commitDepositTerms, createDepositTerms } from "@/lib/terms";
 import type { SettlementOutcome } from "@/lib/hunt-state-store";
 import type { Hunt, HuntStatus } from "@/lib/types";
@@ -29,12 +30,12 @@ export function HuntSettlementPanel({
   outcome,
   onSettle,
 }: HuntSettlementPanelProps) {
+  const { t, locale } = useI18n();
   if (status === "active" || status === "draft") {
     return (
       <section className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
-        <h2 className="mb-1 font-semibold text-foreground">Résolution</h2>
-        La résolution n'est pas encore disponible : elle aura lieu quand le seuil sera atteint ou à
-        la date limite.
+        <h2 className="mb-1 font-semibold text-foreground">{t("settle.title")}</h2>
+        {t("settle.notYet")}
       </section>
     );
   }
@@ -50,50 +51,53 @@ export function HuntSettlementPanel({
     BigInt(hunt.deposit) * SOMPI_PER_KAS,
   );
   const nonRetained = Math.max(0, commitCount - retainedCount);
+  const fr = locale === "fr";
 
   return (
     <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Résolution {status === "settled" ? "(effectuée)" : "(simulation)"}
+          {t(status === "settled" ? "settle.done" : "settle.simulation")}
         </p>
-        <h2 className="text-lg font-bold">{success ? "Succès" : "Échec"}</h2>
+        <h2 className="text-lg font-bold">{t(success ? "settle.success" : "settle.failure")}</h2>
       </div>
 
       <dl className="space-y-1">
-        <Row label="Remboursement par engagé·e" value={s.participantRefundPerCommitSompi} />
+        <Row label={t("settle.refund")} value={s.participantRefundPerCommitSompi} fr={fr} />
         {success && (
-          <Row label="Récompense par engagé·e" value={s.participantBonusPerCommitSompi} />
+          <Row label={t("settle.reward")} value={s.participantBonusPerCommitSompi} fr={fr} />
         )}
-        <Row label="Caution rendue au créateur" value={s.creatorCreationRefundSompi} />
-        <Row label="Huntited" value={s.treasurySompi} />
+        <Row label={t("settle.creatorRefund")} value={s.creatorCreationRefundSompi} fr={fr} />
+        <Row label="Huntited" value={s.treasurySompi} fr={fr} />
         {success && nonRetained > 0 && (
           <Row
-            label={`Remboursement par non-retenu·e (${nonRetained})`}
+            label={t("settle.nonRetained", { count: nonRetained })}
             value={s.nonRetainedRefundPerCommitSompi}
+            fr={fr}
           />
         )}
       </dl>
 
       <p className="text-xs text-muted-foreground">
-        {commitDepositTerms(hunt.deposit)} {createDepositTerms(hunt.deposit)}
+        {commitDepositTerms(hunt.deposit, locale)} {createDepositTerms(hunt.deposit, locale)}
       </p>
-      <p className="text-xs font-medium">Simulation locale — Aucun KAS transféré.</p>
+      <p className="text-xs font-medium">{t("settle.noTransfer")}</p>
 
       {import.meta.env.DEV && onSettle && status !== "settled" && (
         <Button variant="outline" size="sm" onClick={onSettle}>
-          Simuler le règlement
+          {t("settle.simulate")}
         </Button>
       )}
     </section>
   );
 }
 
-function Row({ label, value }: { label: string; value: bigint }) {
+function Row({ label, value, fr }: { label: string; value: bigint; fr: boolean }) {
+  const amount = sompiToKasText(value);
   return (
     <div className="flex justify-between gap-2">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium">{sompiToKasText(value)} KAS</dd>
+      <dd className="font-medium">{fr ? amount.replace(".", ",") : amount} KAS</dd>
     </div>
   );
 }

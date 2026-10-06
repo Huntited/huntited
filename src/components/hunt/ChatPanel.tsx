@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import type { Hunt, HuntStatus } from "@/lib/types";
 import type { SettlementOutcome } from "@/lib/hunt-state-store";
 import { getChat, openChat, type ChatAccess } from "@/lib/chat-client";
+import { useI18n, type MessageKey } from "@/lib/i18n";
 import { matrixConfig } from "@/lib/matrix-config";
 import { useChatAccess } from "@/lib/useChatAccess";
 
@@ -20,12 +21,14 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
+  const { t, date } = useI18n();
   const [chat, setChat] = useState<ChatAccess | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<MessageKey | null>(null);
   // Accès réservé au créateur et aux engagé·es (jeton court en mode API).
   const access = useChatAccess(hunt.id, status, outcome);
   const token = access.getAccessToken();
+  const when = (ms: number) => date(ms, { dateStyle: "long", timeStyle: "short" });
 
   // Le salon reste accessible tant que son expiration n'est pas passée
   // (la vie du chat se poursuit 24 h après la date limite de la chasse).
@@ -44,7 +47,7 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
         if (!cancelled && res) setChat(res);
       })
       .catch(() => {
-        if (!cancelled) setError("Le chat est temporairement indisponible.");
+        if (!cancelled) setError("chat.unavailable");
       })
       .finally(() => !cancelled && setIsLoading(false));
     return () => {
@@ -61,59 +64,46 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
       const expiresAt = new Date(hunt.deadline).getTime() + matrixConfig.defaultRoomTtlMs;
       setChat(await openChat(hunt, expiresAt, status, outcome, token));
     } catch {
-      setError("Le chat est temporairement indisponible.");
+      setError("chat.unavailable");
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card p-4 space-y-3">
-      <h2 className="font-semibold">Chat de coordination</h2>
+    <section className="space-y-3 rounded-lg border border-border bg-card p-4">
+      <h2 className="font-semibold">{t("hunt.chat.title")}</h2>
 
       {status === "expired" && (
-        <p className="text-sm text-muted-foreground">
-          Cette hunt a expiré avant d'atteindre son seuil ; aucun chat n'a été ouvert.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("hunt.chat.expired")}</p>
       )}
 
       {(status === "active" || status === "draft") && (
-        <p className="text-sm text-muted-foreground">
-          Le chat Matrix sera ouvert lorsque le seuil sera atteint.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("hunt.chat.later")}</p>
       )}
 
       {(status === "activated" || status === "settled") && !access.isAuthorized && (
         <p className="text-sm text-muted-foreground">
-          {access.isLoading
-            ? "Vérification de l'accès…"
-            : (access.error ??
-              "Connecte ton wallet pour accéder au chat (réservé au créateur et aux engagé·es).")}
+          {access.isLoading ? t("chat.checking") : t(access.error ?? "chat.connect")}
         </p>
       )}
 
       {status === "settled" && access.isAuthorized && !isLoading && !chatAlive && (
         <p className="text-sm text-muted-foreground">
-          {chat
-            ? `Le salon a expiré le ${new Date(chat.expiresAt).toLocaleString("fr-FR", { dateStyle: "long", timeStyle: "short" })}.`
-            : "Aucun salon n'a été ouvert pour cette chasse."}
+          {chat ? t("chat.expiredOn", { date: when(chat.expiresAt) }) : t("chat.neverOpened")}
         </p>
       )}
 
       {(status === "activated" || status === "settled") && access.isAuthorized && chatAlive && (
         <>
-          <p className="text-sm">Le chat est ouvert. Rejoins-le pour coordonner l'action.</p>
+          <p className="text-sm">{t("chat.open")}</p>
           <Button asChild>
             <a href={chat!.inviteLink} target="_blank" rel="noopener noreferrer">
-              Ouvrir le chat Matrix
+              {t("chat.openLink")}
             </a>
           </Button>
           <p className="text-xs text-muted-foreground">
-            {status === "settled" ? "Le salon expire le" : "Expire le"}{" "}
-            {new Date(chat!.expiresAt).toLocaleString("fr-FR", {
-              dateStyle: "long",
-              timeStyle: "short",
-            })}
+            {t("chat.expiresOn", { date: when(chat!.expiresAt) })}
           </p>
         </>
       )}
@@ -123,31 +113,24 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
         access.role === "participant" &&
         !chat &&
         !isLoading && (
-          <p className="text-sm text-muted-foreground">
-            {error ??
-              "Le chat n'est pas encore ouvert. La personne qui a créé la chasse va l'activer."}
-          </p>
+          <p className="text-sm text-muted-foreground">{t(error ?? "chat.waitCreator")}</p>
         )}
 
       {status === "activated" && access.isAuthorized && access.role === "creator" && !chat && (
         <>
-          <p className="text-sm">
-            La chasse est activée. Active le chat pour commencer la coordination.
-          </p>
+          <p className="text-sm">{t("chat.creatorActivate")}</p>
           {error && (
             <p role="alert" className="text-sm text-destructive">
-              {error}
+              {t(error)}
             </p>
           )}
           <Button onClick={handleActivate} disabled={isLoading}>
-            {isLoading ? "Chargement…" : "Activer le chat"}
+            {isLoading ? t("common.loading") : t("chat.activate")}
           </Button>
         </>
       )}
 
-      <p className="text-xs text-muted-foreground">
-        (Démonstration — Matrix auto-hébergé, intégration réelle à venir)
-      </p>
+      <p className="text-xs text-muted-foreground">{t("chat.demo")}</p>
     </section>
   );
 }

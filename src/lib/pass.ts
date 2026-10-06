@@ -10,12 +10,20 @@
 import { createClientOnlyFn } from "@tanstack/react-start";
 
 import { apiFetch, ApiError } from "./api-client";
+import type { MessageKey } from "./i18n";
 import { getDataMode } from "./hunt-repository";
 
 const STORAGE_KEY = "huntited:pass";
 const SLOTS_KEY = "huntited:pass-invite-slots";
 const PROOF_DEPTH = 20;
 const isBrowser = () => typeof window !== "undefined";
+
+/** Erreur affichable, sous forme de clé de traduction (voir messages/). */
+export class PassError extends Error {
+  constructor(public readonly key: MessageKey) {
+    super(key);
+  }
+}
 
 export interface PassConfig {
   /** Le registre partagé gère les pass (sinon : mode local, pas de pass). */
@@ -85,7 +93,7 @@ const prover = createClientOnlyFn(() => import("./zk-prove"));
 
 async function identity() {
   const secret = readSecret();
-  if (!secret) throw new Error("Aucun pass sur cet appareil.");
+  if (!secret) throw new PassError("pass.err.noPass");
   const { Identity } = await lib();
   return Identity.import(secret);
 }
@@ -97,10 +105,10 @@ export async function importPass(secret: string): Promise<void> {
   try {
     commitment = Identity.import(secret.trim()).commitment.toString();
   } catch {
-    throw new Error("Sauvegarde de pass invalide.");
+    throw new PassError("pass.err.badBackup");
   }
   const { members } = await apiFetch<{ members: string[] }>("GET", "/api/passes/group");
-  if (!members.includes(commitment)) throw new Error("Ce pass n'est pas enregistré.");
+  if (!members.includes(commitment)) throw new PassError("pass.err.unknown");
   window.localStorage.setItem(STORAGE_KEY, secret.trim());
   notify();
 }
@@ -109,7 +117,7 @@ export async function importPass(secret: string): Promise<void> {
 
 /** Crée un pass sur cet appareil avec une invitation reçue d'un membre. */
 export async function joinWithInvitation(invitation: string): Promise<void> {
-  if (hasPass()) throw new Error("Cet appareil a déjà un pass.");
+  if (hasPass()) throw new PassError("pass.err.alreadyHere");
   const { Identity } = await lib();
   const id = new Identity();
   try {
@@ -118,8 +126,13 @@ export async function joinWithInvitation(invitation: string): Promise<void> {
       commitment: id.commitment.toString(),
     });
   } catch (e) {
-    if (e instanceof ApiError && e.message !== e.reason) throw new Error(e.message);
-    throw new Error("Impossible de créer le pass. Réessaie.");
+    if (e instanceof ApiError && e.code === "invalid_invitation") {
+      throw new PassError("pass.err.invalidInvitation");
+    }
+    if (e instanceof ApiError && e.code === "already_member") {
+      throw new PassError("pass.err.alreadyMember");
+    }
+    throw new PassError("pass.err.createFailed");
   }
   window.localStorage.setItem(STORAGE_KEY, id.export());
   notify();
@@ -189,8 +202,8 @@ export async function createInvitation(perMonth: number): Promise<string> {
         markSlot(slot);
         continue;
       }
-      throw new Error("Impossible de créer l'invitation. Réessaie.");
+      throw new PassError("pass.err.inviteFailed");
     }
   }
-  throw new Error("Tu as utilisé toutes tes invitations ce mois-ci.");
+  throw new PassError("pass.err.noInvitesLeft");
 }

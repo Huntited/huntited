@@ -5,6 +5,11 @@
 // Aucun envoi de KAS : seules la connexion et la signature de message sont
 // utilisées. Confidentialité : aucun log ; l'adresse ne quitte jamais l'appareil.
 
+import { getLocale, translate, type MessageKey } from "./i18n";
+
+/** Message d'erreur dans la langue active. */
+const msg = (key: MessageKey) => translate(getLocale(), key);
+
 // Simple mémoire d'interface : ce n'est JAMAIS une preuve d'identité.
 const STORAGE_KEY = "huntited:wallet";
 /** Ancienne clé (prototype mock), migrée à la première lecture. */
@@ -47,7 +52,7 @@ function getKastle(): KastleProvider | undefined {
 function requireKastle(): KastleProvider {
   const kastle = getKastle();
   if (!kastle) {
-    throw new WalletError("Extension Kastle introuvable. Installe-la puis recharge la page.");
+    throw new WalletError(msg("wallet.err.noKastle"));
   }
   return kastle;
 }
@@ -129,8 +134,6 @@ function randomHex(bytes: number): string {
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const MSG_WRONG_NETWORK = "Passe Kastle sur le réseau testnet-10 pour continuer.";
-
 async function connectKastle(): Promise<string> {
   const kastle = requireKastle();
   bindKastle();
@@ -142,14 +145,14 @@ async function connectKastle(): Promise<string> {
     } catch {
       connected = false;
     }
-    if (!connected) throw new WalletError("Connexion refusée dans Kastle.");
+    if (!connected) throw new WalletError(msg("wallet.err.refused"));
 
     try {
       if ((await kastle.getNetwork()) !== KASTLE_NETWORK) {
         await kastle.switchNetwork(KASTLE_NETWORK);
       }
     } catch {
-      throw new WalletError(MSG_WRONG_NETWORK);
+      throw new WalletError(msg("wallet.err.network"));
     }
 
     // Relecture finale : réseau et compte doivent être valides ensemble.
@@ -158,14 +161,14 @@ async function connectKastle(): Promise<string> {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const seen = kastleEvents;
       const [network, account] = await Promise.all([kastle.getNetwork(), kastle.getAccount()]);
-      if (network !== KASTLE_NETWORK) throw new WalletError(MSG_WRONG_NETWORK);
-      if (!account.address) throw new WalletError("Aucun compte disponible dans Kastle.");
+      if (network !== KASTLE_NETWORK) throw new WalletError(msg("wallet.err.network"));
+      if (!account.address) throw new WalletError(msg("wallet.err.noAccount"));
       if (kastleEvents !== seen) continue;
 
       setState({ isConnected: true, address: account.address });
       return account.address;
     }
-    throw new WalletError("Le compte Kastle a changé pendant la connexion. Réessaie.");
+    throw new WalletError(msg("wallet.err.accountChanged"));
   } catch (e) {
     // Aucun état partiel : tout échec laisse le wallet déconnecté.
     setState(DISCONNECTED);
@@ -215,7 +218,7 @@ export function subscribeWallet(cb: (s: WalletState) => void): () => void {
 
 /** Signe un message (Kastle : signature réelle ; mock : aléatoire, non vérifiable). */
 export async function signMessage(message: string): Promise<string> {
-  if (!load().isConnected) throw new WalletError("Wallet non connecté.");
+  if (!load().isConnected) throw new WalletError(msg("wallet.err.notConnected"));
   if (getWalletMode() === "kastle") return requireKastle().signMessage(message);
   await delay(300);
   return `mocksig_${randomHex(32)}`;

@@ -25,7 +25,9 @@ function detect(): Locale {
   } catch {
     /* stockage indisponible : langue du navigateur */
   }
-  return navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+  // Langue inconnue : français, la langue par défaut du site.
+  const language = (navigator.language as string | undefined)?.toLowerCase();
+  return !language || language.startsWith("fr") ? "fr" : "en";
 }
 
 /** Langue active côté navigateur (« fr » côté serveur). */

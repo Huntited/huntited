@@ -5,6 +5,7 @@ import {
   isCommitted as checkCommitted,
   onHuntsChange,
 } from "./hunt-repository";
+import { getLocale, translate } from "./i18n";
 import { useWallet } from "./useWallet";
 
 export interface UseCommitmentResult {
@@ -47,7 +48,7 @@ export function useCommitment(huntId: string, commitsOpen: boolean): UseCommitme
         // Le compteur se met à jour via onHuntsChange.
         await commitToHunt(huntId, address, personalThreshold);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "L'engagement a échoué. Réessaie.");
+        setError(e instanceof Error ? e.message : translate(getLocale(), "err.commit"));
         throw e;
       } finally {
         setIsSubmitting(false);

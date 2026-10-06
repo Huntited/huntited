@@ -26,6 +26,7 @@ import {
 } from "./hunt-state-store";
 import { getMockPersonalThreshold, hasMockCommitment } from "./mock-zk";
 import { getMyCommitment, rememberCommitment } from "./my-commitments";
+import { getLocale, translate, type MessageKey } from "./i18n";
 import { getPassConfig, hasPass, proveWithPass } from "./pass";
 import { isRetained } from "./retained-group";
 import type { Hunt, HuntFormData, HuntStatus, ProgressVisibility } from "./types";
@@ -147,15 +148,15 @@ function apiView(p: PublicHunt): HuntView {
   };
 }
 
-const actionError = (e: unknown, fallback: string) =>
+const actionError = (e: unknown, fallback: MessageKey) =>
   new HuntActionError(
     e instanceof ApiError && e.reason === "signature_refused"
-      ? "Signature refusée : signe le message dans ton wallet pour continuer."
+      ? translate(getLocale(), "err.signature")
       : e instanceof ApiError && e.reason === "unavailable"
-        ? "Le service est temporairement indisponible. Réessaie."
+        ? translate(getLocale(), "err.unavailable")
         : e instanceof ApiError && e.message !== e.reason
           ? e.message
-          : fallback,
+          : translate(getLocale(), fallback),
   );
 
 // --- Interface publique ---------------------------------------------------------
@@ -201,7 +202,7 @@ export async function createHunt(data: HuntFormData, address: string): Promise<s
     notify();
     return created.id;
   } catch (e) {
-    throw actionError(e, "La création de la chasse a échoué. Réessaie.");
+    throw actionError(e, "err.create");
   }
 }
 
@@ -248,9 +249,7 @@ export async function commit(
   // sur l'appareil, avec le seuil personnel scellé dedans.
   const { required } = await getPassConfig();
   if (required && !hasPass()) {
-    throw new Error(
-      "Il te faut un pass Huntited pour t'engager : demande une invitation à un membre.",
-    );
+    throw new Error(translate(getLocale(), "err.needPass"));
   }
   try {
     const token = await getSessionToken(address);
@@ -279,7 +278,7 @@ export async function commit(
       rememberCommitment(address, huntId, { committedAt: Date.now() });
       notify();
     }
-    throw actionError(e, "L'engagement a échoué. Réessaie.");
+    throw actionError(e, "err.commit");
   }
 }
 
@@ -331,7 +330,7 @@ export async function syncMyActivity(address: string): Promise<SyncResult> {
     notify();
     return { created: me.created.length, commitments: me.commitments.length };
   } catch (e) {
-    throw actionError(e, "La synchronisation a échoué. Réessaie.");
+    throw actionError(e, "err.sync");
   }
 }
 

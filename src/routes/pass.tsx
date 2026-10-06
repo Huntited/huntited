@@ -15,8 +15,10 @@ import {
   joinWithInvitation,
   onPassChange,
   remainingInvites,
+  PassError,
   type PassConfig,
 } from "@/lib/pass";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/pass")({
   head: () => ({
@@ -36,6 +38,7 @@ export const Route = createFileRoute("/pass")({
 const invitationFrom = (text: string) => text.trim().split("#").pop() ?? "";
 
 function PassPage() {
+  const { t } = useI18n();
   const [config, setConfig] = useState<PassConfig | null>(null);
   const [mine, setMine] = useState(false);
   const [code, setCode] = useState("");
@@ -61,7 +64,7 @@ function PassPage() {
     try {
       await action();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "L'opération a échoué. Réessaie.");
+      setError(e instanceof PassError ? t(e.key) : t("pass.err.generic"));
     } finally {
       setBusy(false);
     }
@@ -70,32 +73,25 @@ function PassPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-16">
       <Link to="/" className="text-sm text-muted-foreground hover:underline">
-        ← Retour
+        {t("common.back")}
       </Link>
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight">Mon pass</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Le pass prouve que tu es une vraie personne : une personne = un engagement par chasse. Il
-        reste sur cet appareil ; Huntited ne sait jamais qui tu es ni à quelles chasses tu
-        participes.
-      </p>
+      <h1 className="mt-4 text-2xl font-semibold tracking-tight">{t("nav.pass")}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">{t("pass.lead")}</p>
 
       {config === null ? (
-        <p className="mt-6 text-sm text-muted-foreground">Chargement…</p>
+        <p className="mt-6 text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : !config.available ? (
         <p className="mt-6 rounded-lg border p-4 text-sm text-muted-foreground">
-          Les pass fonctionnent avec le registre partagé : ils ne sont pas disponibles dans ce mode
-          de démonstration.
+          {t("pass.unavailable")}
         </p>
       ) : mine ? (
         <ActivePass config={config} busy={busy} run={run} />
       ) : (
         <section className="mt-6 space-y-3 rounded-lg border p-4">
-          <h2 className="font-semibold">Rejoindre avec une invitation</h2>
-          <p className="text-sm text-muted-foreground">
-            Un membre te l'envoie (par exemple sur Signal). Chaque invitation ne sert qu'une fois.
-          </p>
+          <h2 className="font-semibold">{t("pass.join.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("pass.join.text")}</p>
           <label htmlFor="invitation" className="text-sm font-medium">
-            Code ou lien d'invitation
+            {t("pass.join.label")}
           </label>
           <Input
             id="invitation"
@@ -110,11 +106,11 @@ function PassPage() {
               void run(async () => {
                 await joinWithInvitation(invitationFrom(code));
                 setCode("");
-                toast.success("Ton pass est créé.");
+                toast.success(t("pass.created"));
               })
             }
           >
-            {busy ? "Création…" : "Créer mon pass"}
+            {busy ? t("pass.creating") : t("pass.create")}
           </Button>
           <RestorePass busy={busy} run={run} />
         </section>
@@ -138,40 +134,37 @@ function ActivePass({
   busy: boolean;
   run: (action: () => Promise<void>) => Promise<void>;
 }) {
+  const { t } = useI18n();
   const [link, setLink] = useState<string | null>(null);
   const [left, setLeft] = useState(() => remainingInvites(config.invitesPerMonth));
 
   return (
     <div className="mt-6 space-y-4">
       <p className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700">
-        Ton pass est actif sur cet appareil.
+        {t("pass.active")}
       </p>
 
       <section className="space-y-3 rounded-lg border p-4">
-        <h2 className="font-semibold">Inviter quelqu'un</h2>
+        <h2 className="font-semibold">{t("pass.invite.title")}</h2>
         <p className="text-sm text-muted-foreground">
-          Invite seulement des personnes que tu connais : chaque invitation crée un pass. Il te
-          reste {left} invitation{left > 1 ? "s" : ""} ce mois-ci.
+          {t(left > 1 ? "pass.invite.textMany" : "pass.invite.textOne", { count: left })}
         </p>
         {link ? (
           <div className="space-y-2">
-            <Input readOnly value={link} aria-label="Lien d'invitation" />
+            <Input readOnly value={link} aria-label={t("pass.invite.link")} />
             <Button
               size="sm"
               variant="outline"
               onClick={() =>
                 void navigator.clipboard
                   .writeText(link)
-                  .then(() => toast.success("Lien copié."))
-                  .catch(() => toast.error("Copie impossible : sélectionne le lien."))
+                  .then(() => toast.success(t("share.copied")))
+                  .catch(() => toast.error(t("pass.invite.copyFailed")))
               }
             >
-              Copier le lien
+              {t("pass.invite.copy")}
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Envoie-le par une messagerie chiffrée (Signal). Valable 7 jours, pour une seule
-              personne.
-            </p>
+            <p className="text-xs text-muted-foreground">{t("pass.invite.help")}</p>
           </div>
         ) : (
           <Button
@@ -183,30 +176,29 @@ function ActivePass({
               })
             }
           >
-            {busy ? "Preuve en cours…" : "Créer une invitation"}
+            {busy ? t("pass.invite.proving") : t("pass.invite.create")}
           </Button>
         )}
       </section>
 
       <details className="rounded-lg border p-4 text-sm">
-        <summary className="cursor-pointer font-semibold">Sauvegarder ou retirer mon pass</summary>
+        <summary className="cursor-pointer font-semibold">{t("pass.backup.title")}</summary>
         <div className="mt-3 space-y-3">
-          <p className="text-muted-foreground">
-            Sans sauvegarde, ton pass est perdu si tu changes de téléphone ou effaces les données du
-            site. Garde ce code pour toi : qui l'a peut s'engager à ta place.
-          </p>
-          <Textarea readOnly value={exportPass() ?? ""} rows={2} aria-label="Code de sauvegarde" />
+          <p className="text-muted-foreground">{t("pass.backup.text")}</p>
+          <Textarea
+            readOnly
+            value={exportPass() ?? ""}
+            rows={2}
+            aria-label={t("pass.backup.code")}
+          />
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              if (
-                window.confirm("Retirer le pass de cet appareil ? Sans sauvegarde, il est perdu.")
-              )
-                forgetPass();
+              if (window.confirm(t("pass.remove.confirm"))) forgetPass();
             }}
           >
-            Retirer le pass de cet appareil
+            {t("pass.remove")}
           </Button>
         </div>
       </details>
@@ -221,18 +213,17 @@ function RestorePass({
   busy: boolean;
   run: (action: () => Promise<void>) => Promise<void>;
 }) {
+  const { t } = useI18n();
   const [secret, setSecret] = useState("");
   return (
     <details className="pt-2 text-sm">
-      <summary className="cursor-pointer text-muted-foreground">
-        J'ai déjà un pass (restaurer une sauvegarde)
-      </summary>
+      <summary className="cursor-pointer text-muted-foreground">{t("pass.restore.title")}</summary>
       <div className="mt-2 space-y-2">
         <Textarea
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
           rows={2}
-          aria-label="Code de sauvegarde à restaurer"
+          aria-label={t("pass.restore.code")}
         />
         <Button
           size="sm"
@@ -241,11 +232,11 @@ function RestorePass({
           onClick={() =>
             void run(async () => {
               await importPass(secret);
-              toast.success("Pass restauré.");
+              toast.success(t("pass.restored"));
             })
           }
         >
-          Restaurer
+          {t("pass.restore")}
         </Button>
       </div>
     </details>
