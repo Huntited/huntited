@@ -33,6 +33,7 @@ describe("xReplyIntentUrl", () => {
     expect(u.searchParams.get("in_reply_to")).toBe("42");
     expect(u.searchParams.get("url")).toBe("https://huntited.test/hunt/h1");
     expect(u.searchParams.get("text")).toContain("« Rassemblement & co »");
-    expect(u.searchParams.get("text")).toContain("au moins 7 personnes");
+    expect(u.searchParams.get("text")).toContain("Je n'y vais pas seul·e");
+    expect(u.searchParams.get("text")).toContain("au moins 7.");
   });
 });

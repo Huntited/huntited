@@ -27,8 +27,8 @@ export function huntReplyText(
   locale: "fr" | "en" = "fr",
 ): string {
   return locale === "fr"
-    ? `Rejoins « ${hunt.title} » sur Huntited : l'action n'a lieu que si au moins ${hunt.threshold} personnes s'engagent.`
-    : `Join "${hunt.title}" on Huntited: the action only happens if at least ${hunt.threshold} people commit.`;
+    ? `Je n'y vais pas seul·e : rejoins « ${hunt.title} » sur Huntited. L'action n'a lieu que si on est au moins ${hunt.threshold}.`
+    : `I'm not going alone: join "${hunt.title}" on Huntited. The action only happens if at least ${hunt.threshold} of us commit.`;
 }
 
 /**
