@@ -10,7 +10,12 @@ import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
 import { CityInput } from "@/components/hunt/CityInput";
 import { TemplatePicker } from "@/components/hunt/TemplatePicker";
-import { suggestedDeadline, templateText, type HuntTemplate } from "@/lib/hunt-templates";
+import {
+  HUNT_TEMPLATES,
+  suggestedDeadline,
+  templateText,
+  type HuntTemplate,
+} from "@/lib/hunt-templates";
 import { guessCountry, sortedCountries } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
@@ -195,30 +200,20 @@ export function CreateHuntForm() {
     ) : null;
   const describe = (id: keyof FormErrors) => (errors[id] ? `${id}-error` : undefined);
 
-  const appliedText = applied ? templateText(applied.template.id, locale) : null;
+  // Seuil conseillé par l'exemple choisi (expliqué tant qu'il n'est pas modifié).
+  const suggested = applied ? Math.max(applied.template.threshold, minHuntThreshold()) : null;
+  const thresholdHint =
+    applied && String(suggested) === values.threshold
+      ? t("tpl.why", { why: templateText(applied.template.id, locale).why })
+      : null;
 
   return (
     <div className="space-y-6">
-      <TemplatePicker selected={applied?.template.id ?? null} onPick={applyTemplate} />
-      {applied && appliedText && (
-        <div
-          role="status"
-          className="flex flex-wrap items-start justify-between gap-2 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
-        >
-          <div className="space-y-1">
-            <p className="font-medium">{t("tpl.applied", { name: appliedText.name })}</p>
-            <p>
-              {t("tpl.why", {
-                count: Math.max(applied.template.threshold, minHuntThreshold()),
-                why: appliedText.why,
-              })}
-            </p>
-          </div>
-          <Button type="button" variant="outline" size="sm" onClick={undoTemplate}>
-            {t("tpl.undo")}
-          </Button>
-        </div>
-      )}
+      <TemplatePicker
+        selected={applied?.template.id ?? null}
+        onPick={(id) => applyTemplate(HUNT_TEMPLATES.find((tpl) => tpl.id === id)!)}
+        onUndo={undoTemplate}
+      />
       {/* noValidate : nos messages (traduits, avec la raison) plutôt que ceux du navigateur. */}
       <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <fieldset className="space-y-5 rounded-lg border bg-card p-4 sm:p-5 [&>legend+*]:clear-both">
@@ -328,7 +323,7 @@ export function CreateHuntForm() {
             />
             <ErrorText id="threshold" msg={errors.threshold} />
             <p className="text-xs text-muted-foreground">
-              {t("form.threshold.help", { min: minHuntThreshold() })}
+              {thresholdHint ?? t("form.threshold.help", { min: minHuntThreshold() })}
             </p>
           </div>
 

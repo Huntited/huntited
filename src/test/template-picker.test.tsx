@@ -28,7 +28,11 @@ describe("modèles dans le formulaire de création", () => {
     );
     expect((screen.getByLabelText(/Seuil/) as HTMLInputElement).value).toBe("50");
     expect(screen.getByRole("checkbox")).toHaveAttribute("data-state", "checked");
-    expect(screen.getByRole("status")).toHaveTextContent("Seuil conseillé : 50");
+    expect(screen.getByRole("status")).toHaveTextContent("Exemple « Rassemblement » chargé");
+    expect(screen.getByText(/Conseillé pour cet exemple/)).toBeInTheDocument();
+    // Seuil modifié : l'explication de l'exemple disparaît.
+    fireEvent.change(screen.getByLabelText(/Seuil/), { target: { value: "60" } });
+    expect(screen.queryByText(/Conseillé pour cet exemple/)).toBeNull();
     expect(screen.getByRole("button", { name: /Rassemblement/ })).toHaveAttribute(
       "aria-pressed",
       "true",

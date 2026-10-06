@@ -3,7 +3,8 @@
 // navigateur incompatible, serveur sans clés de notification).
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Bell, BellRing } from "lucide-react";
+
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { followHunt, getPushKey, isFollowing, unfollowHunt } from "@/lib/push";
 
@@ -40,20 +41,26 @@ export function NotifyButton({ huntId }: { huntId: string }) {
   }
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-4">
-      <Button
-        variant="outline"
-        size="sm"
+    <div className="mt-4 space-y-1 text-sm">
+      <button
+        type="button"
         onClick={() => void toggle()}
         disabled={busy}
         aria-pressed={following}
+        className="inline-flex items-center gap-1.5 font-medium underline-offset-2 hover:underline disabled:opacity-50"
       >
-        <span aria-hidden="true">{following ? "🔔" : "🔕"}</span>
+        {following ? (
+          <BellRing className="size-4" aria-hidden="true" />
+        ) : (
+          <Bell className="size-4" aria-hidden="true" />
+        )}
         {following ? t("notify.on") : t("notify.follow")}
-      </Button>
-      <p className="text-xs text-muted-foreground" role={note ? "alert" : undefined}>
-        {note ? t(note) : following ? t("notify.onHint") : t("notify.hint")}
-      </p>
+      </button>
+      {(note || !following) && (
+        <p className="text-xs text-muted-foreground" role={note ? "alert" : undefined}>
+          {note ? t(note) : t("notify.hint")}
+        </p>
+      )}
     </div>
   );
 }
