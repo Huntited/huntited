@@ -16,6 +16,20 @@ import { DevResetButton } from "@/components/DevResetButton";
 import { LogoMark } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
+
+/** Lien d'évitement (clavier, lecteur d'écran) : visible seulement au focus. */
+function SkipLink() {
+  const { t } = useI18n();
+  return (
+    <a
+      href="#main"
+      className="sr-only z-50 rounded-md bg-foreground px-3 py-2 text-sm text-background focus:not-sr-only focus:fixed focus:left-3 focus:top-3"
+    >
+      {t("a11y.skip")}
+    </a>
+  );
+}
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -101,8 +115,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr">
+    // suppressHydrationWarning : le thème (classe `dark`) et la langue sont
+    // appliqués sur <html> avant l'hydratation.
+    <html lang="fr" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
@@ -119,8 +136,9 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
+        <SkipLink />
         <AppHeader />
-        <main className="flex-1">
+        <main id="main" tabIndex={-1} className="flex-1 outline-none">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </main>

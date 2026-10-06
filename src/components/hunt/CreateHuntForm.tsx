@@ -146,8 +146,14 @@ export function CreateHuntForm() {
     !values.deadline ||
     !Number(values.threshold);
 
-  const ErrorText = ({ msg }: { msg?: string | undefined }) =>
-    msg ? <p className="text-xs text-destructive">{msg}</p> : null;
+  // Message relié à son champ (aria-describedby) et annoncé par les lecteurs d'écran.
+  const ErrorText = ({ id, msg }: { id: string; msg?: string | undefined }) =>
+    msg ? (
+      <p id={`${id}-error`} className="text-xs text-destructive" aria-live="polite">
+        {msg}
+      </p>
+    ) : null;
+  const describe = (id: keyof FormErrors) => (errors[id] ? `${id}-error` : undefined);
 
   return (
     // noValidate : nos messages (traduits, avec la raison) plutôt que ceux du navigateur.
@@ -161,11 +167,12 @@ export function CreateHuntForm() {
           <Input
             id="title"
             aria-invalid={errors.title ? true : undefined}
+            aria-describedby={describe("title")}
             value={values.title}
             onChange={setField("title")}
             placeholder={t("form.title.placeholder")}
           />
-          <ErrorText msg={errors.title} />
+          <ErrorText id="title" msg={errors.title} />
         </div>
 
         {/* Description */}
@@ -174,12 +181,13 @@ export function CreateHuntForm() {
           <Textarea
             id="description"
             aria-invalid={errors.description ? true : undefined}
+            aria-describedby={describe("description")}
             value={values.description}
             onChange={setField("description")}
             placeholder={t("form.description.placeholder")}
             rows={4}
           />
-          <ErrorText msg={errors.description} />
+          <ErrorText id="description" msg={errors.description} />
         </div>
 
         {/* Lieu — texte libre, aucune donnée de géoloc */}
@@ -188,11 +196,12 @@ export function CreateHuntForm() {
           <Input
             id="location"
             aria-invalid={errors.location ? true : undefined}
+            aria-describedby={describe("location")}
             value={values.location}
             onChange={setField("location")}
             placeholder={t("form.location.placeholder")}
           />
-          <ErrorText msg={errors.location} />
+          <ErrorText id="location" msg={errors.location} />
           <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
         </div>
 
@@ -202,11 +211,12 @@ export function CreateHuntForm() {
           <Input
             id="deadline"
             aria-invalid={errors.deadline ? true : undefined}
+            aria-describedby={describe("deadline")}
             type="datetime-local"
             value={values.deadline}
             onChange={setField("deadline")}
           />
-          <ErrorText msg={errors.deadline} />
+          <ErrorText id="deadline" msg={errors.deadline} />
           <p className="text-xs text-muted-foreground">{t("form.deadline.help")}</p>
         </div>
       </fieldset>
@@ -220,13 +230,14 @@ export function CreateHuntForm() {
           <Input
             id="threshold"
             aria-invalid={errors.threshold ? true : undefined}
+            aria-describedby={describe("threshold")}
             type="number"
             min={minHuntThreshold()}
             value={values.threshold}
             onChange={setField("threshold")}
             placeholder={t("form.threshold.placeholder")}
           />
-          <ErrorText msg={errors.threshold} />
+          <ErrorText id="threshold" msg={errors.threshold} />
           <p className="text-xs text-muted-foreground">
             {t("form.threshold.help", { min: minHuntThreshold() })}
           </p>
@@ -246,7 +257,9 @@ export function CreateHuntForm() {
             <span>{t("form.hide")}</span>
           </label>
           <p className="text-xs text-muted-foreground">{t("form.hide.help")}</p>
-          <p className="text-xs font-medium text-green-700">{t("form.hide.recommended")}</p>
+          <p className="text-xs font-medium text-green-700 dark:text-green-400">
+            {t("form.hide.recommended")}
+          </p>
         </div>
       </fieldset>
 
@@ -259,13 +272,14 @@ export function CreateHuntForm() {
           <Input
             id="deposit"
             aria-invalid={errors.deposit ? true : undefined}
+            aria-describedby={describe("deposit")}
             type="number"
             min={MIN_CAUTION_KAS}
             step={1}
             value={values.deposit}
             onChange={setField("deposit")}
           />
-          <ErrorText msg={errors.deposit} />
+          <ErrorText id="deposit" msg={errors.deposit} />
           <CautionBreakdown deposit={Number(values.deposit)} />
         </div>
 

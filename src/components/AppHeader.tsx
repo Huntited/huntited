@@ -1,8 +1,11 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Menu, Moon, Sun, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useI18n, type Locale, type MessageKey } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
 import { useWallet } from "@/lib/useWallet";
 
 const NAV: { to: "/" | "/create" | "/my-hunts" | "/pass"; label: MessageKey }[] = [
@@ -15,22 +18,46 @@ const NAV: { to: "/" | "/create" | "/my-hunts" | "/pass"; label: MessageKey }[] 
 /** Forme courte d'une adresse (jamais l'adresse complète à l'écran). */
 const shortAddress = (a: string) => `${a.slice(0, 10)}…${a.slice(-4)}`;
 
-/** En-tête commun : logo, navigation, wallet et langue. */
+const linkClass =
+  "block whitespace-nowrap rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const activeLink = {
+  className: "bg-accent font-medium !text-foreground",
+  "aria-current": "page" as const,
+};
+
+/**
+ * En-tête commun : logo, navigation, wallet, langue et thème.
+ * Sur mobile, la navigation (et la langue) passent dans un menu repliable.
+ */
 export function AppHeader() {
   const { t, locale, setLocale } = useI18n();
   const { isConnected, address, isLoading, connectWallet, disconnectWallet } = useWallet();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Le menu se referme à chaque changement de page, et avec Échap.
+  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3">
-        <Link to="/" aria-label={t("nav.home")} className="shrink-0">
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-3">
+        <Link to="/" aria-label={t("nav.home")} className="shrink-0 rounded-md">
           <Logo />
         </Link>
         <div className="flex items-center gap-2">
-          <LanguageSwitch locale={locale} onChange={setLocale} label={t("lang.switch")} />
+          <div className="hidden sm:block">
+            <LanguageSwitch locale={locale} onChange={setLocale} label={t("lang.switch")} />
+          </div>
+          <ThemeToggle />
           {isConnected && address ? (
             <>
-              <code className="hidden text-xs text-muted-foreground sm:inline">
+              <code className="hidden text-xs text-muted-foreground md:inline">
                 {shortAddress(address)}
               </code>
               <Button variant="outline" size="sm" onClick={disconnectWallet}>
@@ -42,17 +69,30 @@ export function AppHeader() {
               {isLoading ? t("wallet.connecting") : t("wallet.connect")}
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="sm:hidden"
+            aria-label={t(menuOpen ? "nav.close" : "nav.open")}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            {menuOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+          </Button>
         </div>
       </div>
-      <nav aria-label={t("nav.menu")} className="mx-auto max-w-3xl overflow-x-auto px-4">
+
+      {/* Navigation : onglets sur grand écran… */}
+      <nav aria-label={t("nav.menu")} className="mx-auto hidden max-w-3xl px-4 sm:block">
         <ul className="flex gap-1 pb-2 text-sm">
           {NAV.map((item) => (
             <li key={item.to}>
               <Link
                 to={item.to}
                 activeOptions={{ exact: item.to === "/" }}
-                className="block whitespace-nowrap rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                activeProps={{ className: "bg-accent font-medium !text-foreground" }}
+                className={linkClass}
+                activeProps={activeLink}
               >
                 {t(item.label)}
               </Link>
@@ -60,7 +100,52 @@ export function AppHeader() {
           ))}
         </ul>
       </nav>
+
+      {/* …menu repliable sur mobile. */}
+      {menuOpen && (
+        <nav
+          id="mobile-menu"
+          aria-label={t("nav.menu")}
+          className="border-t px-4 pb-4 pt-2 sm:hidden"
+        >
+          <ul className="space-y-1 text-base">
+            {NAV.map((item) => (
+              <li key={item.to}>
+                <Link
+                  to={item.to}
+                  activeOptions={{ exact: item.to === "/" }}
+                  className={`${linkClass} py-2`}
+                  activeProps={activeLink}
+                >
+                  {t(item.label)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-3 flex items-center justify-between border-t pt-3 text-sm">
+            <span className="text-muted-foreground">{t("lang.switch")}</span>
+            <LanguageSwitch locale={locale} onChange={setLocale} label={t("lang.switch")} />
+          </div>
+        </nav>
+      )}
     </header>
+  );
+}
+
+function ThemeToggle() {
+  const { t } = useI18n();
+  const { theme, toggle } = useTheme();
+  const dark = theme === "dark";
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggle}
+      aria-label={t(dark ? "theme.light" : "theme.dark")}
+      title={t(dark ? "theme.light" : "theme.dark")}
+    >
+      {dark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+    </Button>
   );
 }
 
@@ -84,7 +169,7 @@ function LanguageSwitch({
           aria-label={l === "fr" ? "Français" : "English"}
           title={l === "fr" ? "Français" : "English"}
           lang={l}
-          className={`rounded px-2 py-1 font-medium uppercase transition-colors ${
+          className={`rounded px-2 py-1 font-medium uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
             locale === l
               ? "bg-foreground text-background"
               : "text-muted-foreground hover:text-foreground"
@@ -101,7 +186,7 @@ function LanguageSwitch({
 export function AppFooter() {
   const { t } = useI18n();
   return (
-    <footer className="mx-auto mt-16 max-w-3xl border-t px-4 py-6 text-xs text-muted-foreground">
+    <footer className="mx-auto mt-16 w-full max-w-3xl border-t px-4 py-6 text-xs text-muted-foreground">
       <p>{t("footer.tagline")}</p>
       <p className="mt-1">{t("footer.testnet")}</p>
     </footer>

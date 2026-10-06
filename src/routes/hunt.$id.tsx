@@ -21,6 +21,7 @@ import { useI18n } from "@/lib/i18n";
 import { commitRefundShort } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
 import { useHunt } from "@/lib/useHunt";
+import { getUserHunts } from "@/lib/user-hunts";
 import { useWallet } from "@/lib/useWallet";
 
 export const Route = createFileRoute("/hunt/$id")({
@@ -88,6 +89,9 @@ function HuntDetailPage() {
 
   const isExpired = status === "expired";
   const isActivated = status === "activated";
+  // Créateur : chasse créée avec ce wallet (mémoire de l'appareil, ou synchronisée).
+  const isCreator =
+    wallet.address !== null && getUserHunts(wallet.address).some((h) => h.huntId === hunt.id);
 
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
@@ -99,10 +103,13 @@ function HuntDetailPage() {
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <HuntStatusBadge status={status} />
-        <div className="flex flex-wrap justify-end gap-2">
-          <ReplyOnXButton hunt={hunt} />
-          <ShareHuntButton hunt={hunt} />
-        </div>
+        {/* Pour le créateur, ces boutons sont dans son encadré (plus bas). */}
+        {!(isCreator && commitsOpen) && (
+          <div className="flex flex-wrap justify-end gap-2">
+            <ReplyOnXButton hunt={hunt} />
+            <ShareHuntButton hunt={hunt} />
+          </div>
+        )}
       </div>
 
       {/* Infos de la chasse */}
@@ -171,7 +178,7 @@ function HuntDetailPage() {
           )}
         </div>
         {commitsOpen && !commitment.isCommitted && (
-          <p className="mt-3 text-sm font-medium text-green-700">
+          <p className="mt-3 text-sm font-medium text-green-700 dark:text-green-400">
             {commitRefundShort(hunt.deposit, locale)}
           </p>
         )}
@@ -187,7 +194,9 @@ function HuntDetailPage() {
               <p className="mt-3 text-sm" role="status">
                 {t("hunt.condition", { count: mine })}{" "}
                 {met ? (
-                  <span className="font-medium text-green-700">{t("hunt.condition.met")}</span>
+                  <span className="font-medium text-green-700 dark:text-green-400">
+                    {t("hunt.condition.met")}
+                  </span>
                 ) : (
                   <span className="text-muted-foreground">
                     {t("hunt.condition.pending", { amount: hunt.commitDeposit })}
@@ -198,9 +207,31 @@ function HuntDetailPage() {
           })()}
       </section>
 
+      {/* Encadré du créateur : mobiliser pendant que la chasse est ouverte */}
+      {isCreator && commitsOpen && (
+        <section
+          aria-labelledby="creator-box"
+          className="mt-4 rounded-lg border border-l-4 border-l-green-500 bg-card p-5"
+        >
+          <h2 id="creator-box" className="font-semibold">
+            {t("creator.title")}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t("creator.text")}</p>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>{t("creator.tip1")}</li>
+            <li>{t("creator.tip2")}</li>
+            <li>{t("creator.tip3")}</li>
+          </ul>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <ShareHuntButton hunt={hunt} />
+            <ReplyOnXButton hunt={hunt} />
+          </div>
+        </section>
+      )}
+
       {/* Bannières d'état */}
       {isActivated && (
-        <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+        <div className="mt-4 rounded-md border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950 p-3 text-sm text-green-700 dark:text-green-400">
           {t("hunt.banner.activated", {
             count: retainedCount ?? commitCount,
             threshold: hunt.threshold,
@@ -284,7 +315,7 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
       aria-hidden="true"
     >
       <div
-        className="h-full rounded-full bg-green-500 transition-[width] duration-500"
+        className="h-full rounded-full bg-green-500 transition-[width] duration-500 motion-reduce:transition-none"
         style={{ width: `${percent}%` }}
       />
     </div>

@@ -10,6 +10,11 @@ export const en: Messages = {
   "nav.menu": "Menu",
   "nav.home": "Huntited home",
   "lang.switch": "Language",
+  "nav.open": "Open the menu",
+  "nav.close": "Close the menu",
+  "theme.dark": "Switch to dark theme",
+  "theme.light": "Switch to light theme",
+  "a11y.skip": "Skip to content",
   "wallet.connect": "Connect wallet",
   "wallet.connecting": "Connecting…",
   "wallet.disconnect": "Disconnect",
@@ -318,6 +323,15 @@ export const en: Messages = {
   "my.threshold": "threshold {threshold}",
   "my.commitments": "My commitments",
   "my.noCommitments": "No commitments yet.",
+
+  // Creator box
+  "creator.title": "This is your hunt: spread the word",
+  "creator.text":
+    "A hunt only triggers if enough people know about it. Share the link where your action matters.",
+  "creator.tip1": "Send it to your groups (Signal, WhatsApp, Telegram…).",
+  "creator.tip2": 'Reply to tweets about the topic with "Reply to a tweet".',
+  "creator.tip3":
+    "Remind people that committing costs nothing: the deposit is returned, and a reward is paid if the action happens.",
 
   // Cards, sections, steps
   "card.endsIn": "Ends {when}",

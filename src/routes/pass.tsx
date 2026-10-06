@@ -148,7 +148,7 @@ function ActivePass({
 
   return (
     <div className="mt-6 space-y-4">
-      <p className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm font-medium text-green-700">
+      <p className="rounded-lg border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950 p-4 text-sm font-medium text-green-700 dark:text-green-400">
         {t("pass.active")}
       </p>
 

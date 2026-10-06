@@ -108,7 +108,7 @@ export function CommitModal({
           </p>
         ) : (
           <>
-            <p className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-700">
+            <p className="rounded-lg border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950 p-3 text-sm font-medium text-green-700 dark:text-green-400">
               {commitRefundHighlight(hunt.deposit, locale)}
             </p>
             <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
@@ -189,7 +189,7 @@ export function CommitModal({
         </label>
 
         {needsPass && !isCommitted && (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+          <p className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950 p-3 text-sm text-amber-800 dark:text-amber-300">
             {t("commit.needPass")}{" "}
             <Link to="/pass" className="font-medium underline">
               {t("commit.getPass")}

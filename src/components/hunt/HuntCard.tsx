@@ -11,7 +11,7 @@ export function ThresholdBar({ value, max }: { value: number; max: number }) {
   return (
     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
       <div
-        className="h-full rounded-full bg-green-500 transition-[width] duration-500"
+        className="h-full rounded-full bg-green-500 transition-[width] duration-500 motion-reduce:transition-none"
         style={{ width: `${percent}%` }}
       />
     </div>
@@ -41,7 +41,7 @@ export function HuntCard({
     <Link
       to="/hunt/$id"
       params={{ id: hunt.id }}
-      className="block rounded-lg border bg-card p-4 transition-colors hover:border-foreground/30 hover:bg-accent"
+      className="block rounded-lg border bg-card p-4 transition-colors hover:border-foreground/30 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-3">
         <span className="font-medium leading-snug">{hunt.title}</span>

@@ -9,6 +9,11 @@ export const fr = {
   "nav.menu": "Menu",
   "nav.home": "Accueil Huntited",
   "lang.switch": "Langue",
+  "nav.open": "Ouvrir le menu",
+  "nav.close": "Fermer le menu",
+  "theme.dark": "Passer en thème sombre",
+  "theme.light": "Passer en thème clair",
+  "a11y.skip": "Aller au contenu",
   "wallet.connect": "Connecter le wallet",
   "wallet.connecting": "Connexion…",
   "wallet.disconnect": "Déconnecter",
@@ -324,6 +329,15 @@ export const fr = {
   "my.threshold": "seuil {threshold}",
   "my.commitments": "Mes engagements",
   "my.noCommitments": "Aucun engagement pour l'instant.",
+
+  // Encadré du créateur
+  "creator.title": "C'est ta chasse : fais-la connaître",
+  "creator.text":
+    "Une chasse ne se déclenche que si assez de monde est au courant. Partage le lien là où ton action compte.",
+  "creator.tip1": "Envoie-le dans tes groupes (Signal, WhatsApp, Telegram…).",
+  "creator.tip2": "Réponds aux tweets qui parlent du sujet avec « Répondre à un tweet ».",
+  "creator.tip3":
+    "Rappelle que s'engager ne coûte rien : le dépôt est rendu, et une récompense est versée si l'action a lieu.",
 
   // Cartes, sections, étapes
   "card.endsIn": "Se termine {when}",
