@@ -13,8 +13,8 @@ function fakeKastle(opts: { network?: string; connect?: boolean } = {}) {
     getNetwork: vi.fn(async () => network),
     switchNetwork: vi.fn(async (id: string) => (network = id)),
     signMessage: vi.fn(async (m: string) => `sig:${m}`),
-    // Fonctions d'envoi de l'API Kastle : ne doivent jamais être appelées.
-    sendKaspa: vi.fn(),
+    // Fonctions d'envoi : jamais appelées, sauf sendKaspa par sendToRegistry (mode chaîne).
+    sendKaspa: vi.fn(async (..._args: unknown[]) => "txid"),
     signAndBroadcastTx: vi.fn(),
     signTx: vi.fn(),
     on: vi.fn((event: string, h: (v: unknown) => void) => {
@@ -155,5 +155,27 @@ describe("wallet en mode Kastle", () => {
     w.subscribeWallet((s) => seen.push(s.isConnected));
     await vi.waitFor(() => expect(w.getWalletState().isConnected).toBe(false));
     expect(seen[0]).toBe(true);
+  });
+
+  it("publie au registre : réseau de test uniquement, message en hexadécimal", async () => {
+    const k = fakeKastle();
+    const w = await loadWallet();
+    await w.connectWallet();
+    expect(await w.sendToRegistry("kaspatest:registre", 20_000_000, "48")).toBe("txid");
+    expect(k.sendKaspa).toHaveBeenCalledWith("kaspatest:registre", 20_000_000, { payload: "48" });
+    await expect(w.sendToRegistry("kaspa:principal", 20_000_000, "48")).rejects.toThrow();
+    expect(k.sendKaspa).toHaveBeenCalledTimes(1);
+  });
+
+  it("explique les échecs d'envoi de Kastle", async () => {
+    const w = await loadWallet();
+    expect(w.sendErrorMessage(new Error("No UTXOs found for the address"))).toContain("faucet");
+    expect(w.sendErrorMessage(new Error("Host not connected"))).toContain("reconnecte");
+    expect(w.sendErrorMessage({ code: 4001, message: "User rejected the request" })).toContain(
+      "refusée",
+    );
+    expect(w.sendErrorMessage(new Error("storage mass exceeds limit"))).toBe(
+      "Kastle n'a pas pu envoyer la transaction : storage mass exceeds limit",
+    );
   });
 });

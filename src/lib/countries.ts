@@ -43,10 +43,3 @@ export function sortedCountries(locale: Locale, codes: readonly string[] = COUNT
     .map((code) => ({ code, name: countryName(code, locale) }))
     .sort((a, b) => collator.compare(a.name, b.name));
 }
-
-/** Pays suggéré d'après la langue du navigateur (« fr-FR » → « FR »), sinon vide. */
-export function guessCountry(): string {
-  if (typeof navigator === "undefined") return "";
-  const region = (navigator.language as string | undefined)?.split("-")[1]?.toUpperCase();
-  return isCountryCode(region) ? region : "";
-}

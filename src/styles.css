@@ -133,6 +133,22 @@
 }
 
 /*
+ * Listes natives (select) : le navigateur dessine la liste ouverte lui-même.
+ * On lui indique le thème, et les options ont un fond opaque (sinon elles
+ * héritent du fond translucide du champ : texte clair sur fond blanc).
+ */
+:root {
+  color-scheme: light;
+}
+:root.dark {
+  color-scheme: dark;
+}
+select option {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/*
  * États des champs de saisie (Input, Textarea : classe .hf-field).
  * Hors couche : prime sur les utilitaires de bordure des composants.
  * - vide : bordure en pointillés, fond grisé (« à remplir ») ;

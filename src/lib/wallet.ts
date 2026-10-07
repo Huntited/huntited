@@ -243,9 +243,36 @@ export async function sendToRegistry(
   }
   try {
     return await kastle.sendKaspa(registryAddress, sompi, { payload: payloadHex });
-  } catch {
-    throw new WalletError(msg("wallet.err.sendRefused"));
+  } catch (e) {
+    throw new WalletError(sendErrorMessage(e));
   }
+}
+
+/**
+ * Raison lisible d'un échec d'envoi Kastle (messages lus dans son code :
+ * api/background/handlers/kaspa/sendSompi.ts). Inconnue : le texte de Kastle,
+ * raccourci, pour pouvoir comprendre ce qui s'est passé.
+ */
+export function sendErrorMessage(e: unknown): string {
+  // Kastle rejette avec une Error (texte) ou un objet d'erreur { code, message }.
+  const raw =
+    e instanceof Error
+      ? e.message
+      : typeof e === "string"
+        ? e
+        : typeof e === "object" &&
+            e !== null &&
+            typeof (e as { message?: unknown }).message === "string"
+          ? (e as { message: string }).message
+          : "";
+  if (/no utxos/i.test(raw)) return msg("wallet.err.noFunds");
+  if (/host not connected|not initialized/i.test(raw)) return msg("wallet.err.reconnect");
+  if (/batch/i.test(raw)) return msg("wallet.err.compound");
+  if (/insufficient|not enough|balance/i.test(raw)) return msg("wallet.err.noFunds");
+  if (/reject|denied|cancel|refus|closed|user/i.test(raw) || raw === "") {
+    return msg("wallet.err.sendRefused");
+  }
+  return `${msg("wallet.err.sendFailed")} ${raw.slice(0, 160)}`;
 }
 
 /** Signe un message (Kastle : signature réelle ; mock : aléatoire, non vérifiable). */

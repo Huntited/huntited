@@ -347,6 +347,13 @@ export const en: Messages = {
     "Being recorded on the blockchain: the hunt will be visible to everyone in about a minute.",
   "err.alreadyCommitted": "You've already committed to this hunt.",
   "wallet.err.needKastle": "You need the Kastle wallet to publish on the blockchain.",
+  "wallet.err.noFunds":
+    "Your Kastle account doesn't have enough test KAS. Fund it with the test network (testnet-10) faucet, then try again.",
+  "wallet.err.reconnect":
+    "Kastle is no longer connected to Huntited: disconnect and reconnect your wallet.",
+  "wallet.err.compound":
+    "Your account holds too many small amounts for one transaction: consolidate them in Kastle, then try again.",
+  "wallet.err.sendFailed": "Kastle couldn't send the transaction:",
   "wallet.err.sendRefused": "Transaction cancelled or refused by Kastle.",
   "tpl.title": "Need a starting point?",
   "tpl.applied": 'Loaded the "{name}" example. Replace what\'s [in brackets].',

@@ -1,12 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import {
-  COUNTRY_CODES,
-  countryName,
-  guessCountry,
-  isCountryCode,
-  sortedCountries,
-} from "./countries";
+import { COUNTRY_CODES, countryName, isCountryCode, sortedCountries } from "./countries";
 import type { HuntView } from "./hunt-repository";
 import { filterHuntViews } from "./registry";
 
@@ -28,12 +22,6 @@ describe("pays", () => {
   it("trie par nom dans la langue choisie", () => {
     const names = sortedCountries("fr", ["ES", "DE", "BE"]).map((c) => c.name);
     expect(names).toEqual(["Allemagne", "Belgique", "Espagne"]);
-  });
-
-  it("suggère le pays d'après la langue du navigateur", () => {
-    expect(guessCountry()).toBe("FR");
-    vi.spyOn(navigator, "language", "get").mockReturnValueOnce("en");
-    expect(guessCountry()).toBe("");
   });
 
   it("le filtre par pays ne garde que les chasses de ce pays", () => {

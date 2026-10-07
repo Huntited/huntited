@@ -16,7 +16,7 @@ import {
   templateText,
   type HuntTemplate,
 } from "@/lib/hunt-templates";
-import { guessCountry, sortedCountries } from "@/lib/countries";
+import { sortedCountries } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
 import {
@@ -137,18 +137,15 @@ export function CreateHuntForm() {
   };
 
   // Retour depuis le récapitulatif : on préremplit avec le brouillon.
+  // Le pays n'est jamais deviné : il vient de la ville choisie, ou de la liste.
   useEffect(() => {
     const draft = getCreateHuntDraft();
-    if (!draft) {
-      // Pays suggéré d'après la langue du navigateur (modifiable).
-      setValues((prev) => (prev.country ? prev : { ...prev, country: guessCountry() }));
-      return;
-    }
+    if (!draft) return;
     setValues({
       title: draft.title,
       description: draft.description,
       location: draft.location,
-      country: draft.country ?? guessCountry(),
+      country: draft.country ?? "",
       deadline: draft.deadline,
       threshold: String(draft.threshold),
       deposit: String(draft.deposit),

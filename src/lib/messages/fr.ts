@@ -353,6 +353,13 @@ export const fr = {
     "Inscription sur la blockchain en cours : la chasse sera visible par tous dans environ une minute.",
   "err.alreadyCommitted": "Tu es déjà engagé·e dans cette chasse.",
   "wallet.err.needKastle": "Il faut le wallet Kastle pour publier sur la blockchain.",
+  "wallet.err.noFunds":
+    "Ton compte Kastle n'a pas assez de KAS de test. Alimente-le avec le faucet du réseau de test (testnet-10), puis réessaie.",
+  "wallet.err.reconnect":
+    "Kastle n'est plus connecté à Huntited : déconnecte puis reconnecte ton wallet.",
+  "wallet.err.compound":
+    "Ton compte contient trop de petites sommes pour une seule transaction : regroupe-les dans Kastle, puis réessaie.",
+  "wallet.err.sendFailed": "Kastle n'a pas pu envoyer la transaction :",
   "wallet.err.sendRefused": "Transaction annulée ou refusée par Kastle.",
   "tpl.title": "Besoin d'un point de départ ?",
   "tpl.applied": "Exemple « {name} » chargé. Remplace ce qui est [entre crochets].",

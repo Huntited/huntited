@@ -137,8 +137,8 @@ export async function fillCreateFields(
   await page.getByPlaceholder("Ex. 50").fill(String(opts.threshold));
   if (opts.hideProgress)
     await page.getByRole("checkbox", { name: "Masquer la progression" }).click();
-  // Pays : pré-rempli d'après la langue du navigateur (fr-FR → France).
-  if (opts.country) await page.getByLabel("Pays").selectOption(opts.country);
+  // Pays : jamais deviné, à choisir (France par défaut dans les tests).
+  await page.getByLabel("Pays").selectOption(opts.country ?? "FR");
 }
 
 /** Remplit le formulaire de création et arrive sur le récapitulatif. */
