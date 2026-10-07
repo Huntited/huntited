@@ -115,8 +115,14 @@ sa fenêtre de signature. Contraintes lues dans
    `npm run dev:shared:chain` (Kastle, seuil abaissé à 2).
    Pas encore : notifications « me prévenir » et récupération de « Mes
    chasses » sur un autre appareil, pour les chasses sur la chaîne.
-4. **Front** : lit l'état via n'importe quel index (adresse configurable) ;
-   écran de connexion qui explique le compte « Huntited ».
+4. ✅ **Index dans le navigateur** (`src/lib/onchain/`, par défaut en mode
+   `chain`) : chaque navigateur lit lui-même l'adresse du registre sur l'API
+   publique du réseau de test (`VITE_KASPA_API_URL`) et recalcule l'état ;
+   **aucun serveur Huntited pour lire**. Les règles sont une copie conforme de
+   celles du serveur, vérifiée par `src/lib/onchain/conformance.test.ts`
+   (mêmes transactions → même état). L'API ne reçoit que l'adresse publique
+   du registre. `VITE_CHAIN_INDEX=server` pour utiliser l'index du backend
+   (aperçus riches des liens). Vérifié sur le vrai réseau de test.
 5. **Textes** : l'accueil, la FAQ et la page légale disent aujourd'hui que
    personne ne voit qui s'est engagé ; à corriger **au moment où le registre
    sur la chaîne remplace le serveur** (pas avant : c'est encore vrai).

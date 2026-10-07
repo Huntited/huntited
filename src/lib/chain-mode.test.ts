@@ -10,13 +10,18 @@ vi.mock("./wallet", async (orig) => ({
     return "txid";
   }),
 }));
+// Index dans le navigateur : la chasse n'y est pas encore (≈ 1 min de délai).
+const index = vi.hoisted(() => ({
+  getChainHunt: vi.fn(async (_id: string) => null),
+  listChainHunts: vi.fn(async () => []),
+}));
+vi.mock("./onchain/browser-index", () => index);
 const api = vi.hoisted(() => ({ apiFetch: vi.fn() }));
 vi.mock("./api-client", async (orig) => ({
   ...(await orig<typeof import("./api-client")>()),
   apiFetch: api.apiFetch,
 }));
 
-import { ApiError } from "./api-client";
 import { REGISTRY_ADDRESS, REGISTRY_FEE_SOMPI } from "./chain";
 import { commit, createHunt, getHuntView, isCommitted } from "./hunt-repository";
 
@@ -62,12 +67,12 @@ describe("mode chaîne", () => {
       progressVisibility: "hidden",
       deadline: new Date("2030-01-01T20:00").getTime(),
     });
-    // Pas encore indexée : affichage provisoire.
-    api.apiFetch.mockRejectedValue(new ApiError("not_found"));
+    // Pas encore indexée : affichage provisoire, sans aucun appel à un serveur Huntited.
     const view = await getHuntView(id);
     expect(view).toMatchObject({ pending: true, commitsOpen: false });
     expect(view?.hunt.title).toBe("Conseil");
-    expect(api.apiFetch).toHaveBeenCalledWith("GET", `/api/chain/hunts/${id}`);
+    expect(index.getChainHunt).toHaveBeenCalledWith(id);
+    expect(api.apiFetch).not.toHaveBeenCalled();
   });
 
   it("engagement : seuil personnel dans le message, un seul par wallet", async () => {

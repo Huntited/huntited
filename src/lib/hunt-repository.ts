@@ -42,6 +42,7 @@ import {
   type ChainMessage,
 } from "./chain";
 import { WalletError } from "./wallet";
+import { getChainHunt, listChainHunts } from "./onchain/browser-index";
 
 export type DataMode = "local" | "api" | "chain";
 
@@ -52,6 +53,13 @@ export function getDataMode(): DataMode {
 
 /** Chemin de lecture des chasses : registre du serveur, ou index de la chaîne. */
 const huntsPath = () => (getDataMode() === "chain" ? "/api/chain/hunts" : "/api/hunts");
+
+/**
+ * Mode chaîne : l'index tourne dans le navigateur (aucun serveur), sauf si
+ * VITE_CHAIN_INDEX=server (index du backend, /api/chain).
+ */
+const browserIndex = () =>
+  getDataMode() === "chain" && import.meta.env["VITE_CHAIN_INDEX"] !== "server";
 
 /** Une chasse et son état courant. */
 export interface HuntView {
@@ -188,6 +196,7 @@ const actionError = (e: unknown, fallback: MessageKey) =>
 
 export async function listHuntViews(): Promise<HuntView[]> {
   if (getDataMode() === "local") return listHunts().map((h) => localView(h));
+  if (browserIndex()) return (await listChainHunts()).map(apiView);
   const list = await apiFetch<PublicHunt[]>("GET", huntsPath());
   return (Array.isArray(list) ? list : []).map(apiView);
 }
@@ -210,6 +219,15 @@ export async function getHuntView(id: string): Promise<HuntView | undefined> {
   if (getDataMode() === "local") {
     const h = getHunt(id);
     return h ? localView(h) : undefined;
+  }
+  if (browserIndex()) {
+    const found = await getChainHunt(id);
+    if (found) {
+      forgetPendingHunt(id);
+      return apiView(found);
+    }
+    const pending = getPendingHunt(id);
+    return pending ? pendingView(pending) : undefined;
   }
   try {
     const view = apiView(

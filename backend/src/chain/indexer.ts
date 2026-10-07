@@ -60,8 +60,9 @@ const PAGE = 500;
 const MAX_PAGES = 200;
 
 type ScoredEvent = ChainEvent & { score: number };
+// Comparaison stricte (pas localeCompare, qui dépend de la langue de la machine).
 const byChainOrder = (a: ScoredEvent, b: ScoredEvent) =>
-  a.score - b.score || a.txId.localeCompare(b.txId);
+  a.score - b.score || (a.txId < b.txId ? -1 : a.txId > b.txId ? 1 : 0);
 
 export class ChainIndexer {
   private current: Ledger;

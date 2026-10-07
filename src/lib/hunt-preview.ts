@@ -25,6 +25,8 @@ export function siteUrl(): string | null {
 export async function fetchHuntPreview(id: string): Promise<HuntPreview | null> {
   const mode = getDataMode();
   if (mode === "local") return null;
+  // Index dans le navigateur (aucun serveur) : pas d'aperçu riche, aperçu générique.
+  if (mode === "chain" && import.meta.env["VITE_CHAIN_INDEX"] !== "server") return null;
   const path = mode === "chain" ? "/api/chain/hunts" : "/api/hunts";
   try {
     const res = await fetch(`${apiBaseUrl()}${path}/${encodeURIComponent(id)}`, {
