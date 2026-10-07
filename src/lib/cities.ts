@@ -74,6 +74,22 @@ export function searchCities(
   return out;
 }
 
+/**
+ * Villes dont un nom correspond exactement à la saisie (accents et casse
+ * ignorés, noms alternatifs compris : « Londres » → London), les plus
+ * peuplées d'abord, une par pays. Sert à vérifier le lieu et à trouver le pays.
+ */
+export function findCities(index: readonly Indexed[], text: string): CitySuggestion[] {
+  const q = normalizeCity(text);
+  if (q.length < 2) return [];
+  const byCountry = new Map<string, CitySuggestion>();
+  for (const { row, keys } of index) {
+    if (!keys.includes(q) || byCountry.has(row[1])) continue;
+    byCountry.set(row[1], { name: row[0], country: row[1], population: row[2] });
+  }
+  return [...byCountry.values()];
+}
+
 /** Variante pour les tests : index construit à partir de lignes déjà chargées. */
 export function indexCities(rows: Row[]): Indexed[] {
   return rows.map((row) => ({

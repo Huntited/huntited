@@ -250,9 +250,9 @@ export const en: Messages = {
   "form.title.placeholder": "E.g. Gathering at Republic Square",
   "form.description": "Description",
   "form.description.placeholder": "Describe the collective action in a few lines.",
-  "form.location.placeholder": "E.g. Paris, Republic Square",
+  "form.location.placeholder": "E.g. Marseille",
   "form.location.help":
-    "Type a city to pick it from the list (the country fills in by itself), then add details if needed. The search runs on your device.",
+    "Pick your city from the list: the country fills in by itself. Put the exact meeting point in the description. Small town missing? Use the nearest city.",
   "form.deadline": "Deadline (date and time)",
   "form.deadline.help": "Threshold not reached by this date: action cancelled.",
   "form.threshold": "Participant threshold",
@@ -456,6 +456,15 @@ export const en: Messages = {
 
   // Country
   "form.country": "Country",
+  "form.city": "City",
+  "form.where": "Where does the action happen?",
+  "form.where.place": "In person",
+  "form.where.online": "Online",
+  "form.where.onlineHelp":
+    "An action on the internet (post, emails, signing…): no city or country. Name the network or website in the description.",
+  "hunt.online": "Online",
+  "val.city.unknown": "City not found. Pick it from the list (small town: use the nearest city).",
+  "val.city.country": "This city isn't in the chosen country.",
   "form.country.placeholder": "Choose a country",
   "val.country.required": "A country is required.",
   "home.country": "Filter by country",

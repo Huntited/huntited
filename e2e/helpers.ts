@@ -122,30 +122,39 @@ export function localDeadline(msFromNow: number): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+export interface CreateOpts {
+  title: string;
+  threshold: number;
+  hideProgress?: boolean;
+  country?: string;
+  /** Action en ligne (ni ville ni pays). */
+  online?: boolean;
+}
+
 /** Remplit le formulaire de création (sans l'envoyer). */
-export async function fillCreateFields(
-  page: Page,
-  opts: { title: string; threshold: number; hideProgress?: boolean; country?: string },
-) {
+export async function fillCreateFields(page: Page, opts: CreateOpts) {
   await open(page, "/create");
   await page.getByPlaceholder("Ex. Rassemblement place de la République").fill(opts.title);
   await page
     .getByPlaceholder("Décrivez l'action collective en quelques lignes.")
     .fill("Parcours de test automatique.");
-  await page.getByPlaceholder("Ex. Paris, place de la République").fill("Lieu de test");
+  if (opts.online) {
+    await page.getByRole("radio", { name: "En ligne" }).click();
+  } else {
+    // Ville vérifiée dans la base : une vraie ville du pays choisi.
+    const city = { FR: "Marseille", BE: "Liège" }[opts.country ?? "FR"] ?? "Marseille";
+    await page.getByPlaceholder("Ex. Marseille").fill(city);
+  }
   await page.getByLabel("Date et heure limite").fill(localDeadline(2 * 86_400_000));
   await page.getByPlaceholder("Ex. 50").fill(String(opts.threshold));
   if (opts.hideProgress)
     await page.getByRole("checkbox", { name: "Masquer la progression" }).click();
   // Pays : jamais deviné, à choisir (France par défaut dans les tests).
-  await page.getByLabel("Pays").selectOption(opts.country ?? "FR");
+  if (!opts.online) await page.getByLabel("Pays").selectOption(opts.country ?? "FR");
 }
 
 /** Remplit le formulaire de création et arrive sur le récapitulatif. */
-export async function fillCreateForm(
-  page: Page,
-  opts: { title: string; threshold: number; hideProgress?: boolean; country?: string },
-) {
+export async function fillCreateForm(page: Page, opts: CreateOpts) {
   await fillCreateFields(page, opts);
   await page.getByRole("button", { name: "Vérifier ma chasse" }).click();
   await expect(page).toHaveURL(/\/create-review$/);
@@ -153,10 +162,7 @@ export async function fillCreateForm(
 }
 
 /** Crée une chasse (wallet déjà connecté) ; renvoie son URL. */
-export async function createHunt(
-  page: Page,
-  opts: { title: string; threshold: number; hideProgress?: boolean; country?: string },
-): Promise<string> {
+export async function createHunt(page: Page, opts: CreateOpts): Promise<string> {
   await fillCreateForm(page, opts);
   await page.getByRole("button", { name: "Confirmer et créer la chasse" }).click();
   await expect(page).toHaveURL(/\/hunt\/[0-9a-f]+$/);

@@ -1,6 +1,7 @@
 import { MAX_CAUTION_KAS, MIN_CAUTION_KAS, MIN_THRESHOLD } from "@/lib/hunt-economics";
 import { isCountryCode } from "@/lib/countries";
 import { hasPlaceholder } from "@/lib/hunt-templates";
+import { isOnlineHunt } from "@/lib/online";
 import { translate, type Locale } from "@/lib/i18n";
 import type { HuntFormData } from "@/lib/types";
 
@@ -53,7 +54,8 @@ export function validateHuntForm(data: HuntFormData, locale: Locale = "fr"): For
     errors.location = m("val.location.required");
   }
 
-  if (!isCountryCode(data.country)) {
+  // Action en ligne : ni ville ni pays.
+  if (!isOnlineHunt(data) && !isCountryCode(data.country)) {
     errors.country = m("val.country.required");
   }
 

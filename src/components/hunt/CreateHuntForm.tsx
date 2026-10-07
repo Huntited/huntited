@@ -10,6 +10,8 @@ import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
 import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
 import { CityInput } from "@/components/hunt/CityInput";
 import { TemplatePicker } from "@/components/hunt/TemplatePicker";
+import type { CitySuggestion } from "@/lib/cities";
+import { isOnlineHunt, ONLINE_LOCATION } from "@/lib/online";
 import {
   HUNT_TEMPLATES,
   suggestedDeadline,
@@ -69,6 +71,8 @@ interface CreateHuntFormValues {
   threshold: string;
   deposit: string;
   hideProgress: boolean;
+  /** Action en ligne : ni ville ni pays. */
+  online: boolean;
 }
 
 /**
@@ -88,6 +92,7 @@ export function CreateHuntForm() {
     threshold: "",
     deposit: String(CREATE_DEPOSIT_KAS),
     hideProgress: false,
+    online: false,
   });
   // Noms des pays : calculés dans le navigateur seulement (ceux du serveur,
   // fournis par Node, peuvent différer légèrement → erreur d'hydratation).
@@ -107,8 +112,8 @@ export function CreateHuntForm() {
   const toFormData = (): HuntFormData => ({
     title: values.title,
     description: values.description,
-    location: values.location,
-    country: values.country,
+    location: values.online ? ONLINE_LOCATION : values.location,
+    country: values.online ? "" : values.country,
     deadline: values.deadline,
     threshold: Number(values.threshold),
     deposit: Number(values.deposit),
@@ -116,19 +121,48 @@ export function CreateHuntForm() {
     progressVisibility: values.hideProgress ? "hidden" : "visible",
   });
 
+  // Villes de la base qui correspondent exactement au lieu saisi (une par pays) ;
+  // undefined : pas encore vérifié ; null : base indisponible (pas de blocage).
+  const [cityMatches, setCityMatches] = useState<CitySuggestion[] | null | undefined>();
+  const resolveCity = (matches: CitySuggestion[] | null) => {
+    setCityMatches(matches);
+    // Ville reconnue mais pas dans le pays choisi (ou pays vide) : on prend
+    // le pays de la plus peuplée ; il reste modifiable.
+    if (matches?.length) {
+      setValues((prev) =>
+        matches.some((m) => m.country === prev.country)
+          ? prev
+          : { ...prev, country: matches[0]!.country },
+      );
+    }
+  };
+  const cityInCountry = cityMatches?.find((m) => m.country === values.country);
+  const cityError: string | undefined =
+    values.online || !values.location.trim() || !cityMatches
+      ? undefined
+      : cityMatches.length === 0
+        ? t("val.city.unknown")
+        : !cityInCountry
+          ? t("val.city.country")
+          : undefined;
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setSubmitted(true);
 
-    // Validation centralisée (src/lib/validation.ts)
+    // Validation centralisée (src/lib/validation.ts), plus la ville (base de villes).
     const errs = validateHuntForm(toFormData(), locale);
-    if (hasErrors(errs)) return;
+    if (hasErrors(errs) || cityError) return;
 
     setIsSubmitting(true);
     setGlobalError(null);
     try {
-      // On garde le brouillon sur l'appareil puis on passe au récapitulatif.
-      setCreateHuntDraft(toFormData());
+      // On garde le brouillon sur l'appareil puis on passe au récapitulatif,
+      // avec le nom officiel de la ville (« marseille » → « Marseille »).
+      setCreateHuntDraft({
+        ...toFormData(),
+        ...(cityInCountry && !values.online ? { location: cityInCountry.name } : {}),
+      });
       navigate({ to: "/create-review" });
     } catch {
       setGlobalError(t("form.draftError"));
@@ -141,15 +175,17 @@ export function CreateHuntForm() {
   useEffect(() => {
     const draft = getCreateHuntDraft();
     if (!draft) return;
+    const online = isOnlineHunt(draft);
     setValues({
       title: draft.title,
       description: draft.description,
-      location: draft.location,
+      location: online ? "" : draft.location,
       country: draft.country ?? "",
       deadline: draft.deadline,
       threshold: String(draft.threshold),
       deposit: String(draft.deposit),
       hideProgress: draft.progressVisibility === "hidden",
+      online,
     });
   }, []);
 
@@ -169,6 +205,7 @@ export function CreateHuntForm() {
       deadline: suggestedDeadline(template.days),
       threshold: String(Math.max(template.threshold, minHuntThreshold())),
       hideProgress: template.hideProgress,
+      online: template.online ?? false,
     }));
   };
 
@@ -185,7 +222,7 @@ export function CreateHuntForm() {
     isSubmitting ||
     !values.title.trim() ||
     !values.description.trim() ||
-    !values.location.trim() ||
+    (!values.online && !values.location.trim()) ||
     !values.deadline ||
     !Number(values.threshold);
 
@@ -246,46 +283,76 @@ export function CreateHuntForm() {
             <ErrorText id="description" msg={errors.description} />
           </div>
 
-          {/* Lieu — texte libre, aucune donnée de géoloc */}
-          <div className="space-y-2">
-            <Label htmlFor="location">{t("hunt.location")}</Label>
-            <CityInput
-              id="location"
-              invalid={!!errors.location}
-              describedBy={describe("location")}
-              value={values.location}
-              onChange={(text) => setValues((prev) => ({ ...prev, location: text }))}
-              // Ville choisie : elle remplit le lieu et le pays.
-              onPick={(city) =>
-                setValues((prev) => ({ ...prev, location: city.name, country: city.country }))
-              }
-              placeholder={t("form.location.placeholder")}
-            />
-            <ErrorText id="location" msg={errors.location} />
-            <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
-          </div>
+          {/* Où : sur place (ville vérifiée + pays) ou en ligne */}
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">{t("form.where")}</legend>
+            <div role="radiogroup" className="flex flex-wrap gap-1.5">
+              {([false, true] as const).map((online) => (
+                <button
+                  key={String(online)}
+                  type="button"
+                  role="radio"
+                  aria-checked={values.online === online}
+                  onClick={() => setValues((prev) => ({ ...prev, online }))}
+                  className="rounded-full border px-3 py-1 text-sm transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-checked:border-foreground aria-checked:bg-foreground aria-checked:text-background"
+                >
+                  {t(online ? "form.where.online" : "form.where.place")}
+                </button>
+              ))}
+            </div>
+            {values.online && (
+              <p className="text-xs text-muted-foreground">{t("form.where.onlineHelp")}</p>
+            )}
+          </fieldset>
+
+          {/* Ville : vérifiée dans la base de villes (sur l'appareil) */}
+          {!values.online && (
+            <div className="space-y-2">
+              <Label htmlFor="location">{t("form.city")}</Label>
+              <CityInput
+                id="location"
+                invalid={!!errors.location || (submitted && !!cityError)}
+                describedBy={
+                  describe("location") ?? (submitted && cityError ? "city-error" : undefined)
+                }
+                value={values.location}
+                onChange={(text) => setValues((prev) => ({ ...prev, location: text }))}
+                // Ville choisie : elle remplit le lieu et le pays.
+                onPick={(city) =>
+                  setValues((prev) => ({ ...prev, location: city.name, country: city.country }))
+                }
+                onResolve={resolveCity}
+                placeholder={t("form.location.placeholder")}
+              />
+              <ErrorText id="location" msg={errors.location} />
+              {!errors.location && submitted && <ErrorText id="city" msg={cityError} />}
+              <p className="text-xs text-muted-foreground">{t("form.location.help")}</p>
+            </div>
+          )}
 
           {/* Pays : liste native (recherche au clavier, confortable sur mobile) */}
-          <div className="space-y-2">
-            <Label htmlFor="country">{t("form.country")}</Label>
-            <select
-              id="country"
-              value={values.country}
-              onChange={(e) => setValues((prev) => ({ ...prev, country: e.target.value }))}
-              aria-invalid={errors.country ? true : undefined}
-              aria-describedby={describe("country")}
-              data-filled={values.country ? "true" : "false"}
-              className="hf-field flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
-            >
-              <option value="">{t("form.country.placeholder")}</option>
-              {countryOptions.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <ErrorText id="country" msg={errors.country} />
-          </div>
+          {!values.online && (
+            <div className="space-y-2">
+              <Label htmlFor="country">{t("form.country")}</Label>
+              <select
+                id="country"
+                value={values.country}
+                onChange={(e) => setValues((prev) => ({ ...prev, country: e.target.value }))}
+                aria-invalid={errors.country ? true : undefined}
+                aria-describedby={describe("country")}
+                data-filled={values.country ? "true" : "false"}
+                className="hf-field flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+              >
+                <option value="">{t("form.country.placeholder")}</option>
+                {countryOptions.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              <ErrorText id="country" msg={errors.country} />
+            </div>
+          )}
 
           {/* Date/heure limite */}
           <div className="space-y-2">

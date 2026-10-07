@@ -11,6 +11,8 @@ export interface HuntTemplate {
   days: number;
   /** Progression masquée conseillée (protège les premiers engagés). */
   hideProgress: boolean;
+  /** Action en ligne (ni ville ni pays). */
+  online?: boolean;
 }
 
 export interface TemplateText {
@@ -29,6 +31,8 @@ export const HUNT_TEMPLATES: HuntTemplate[] = [
   { id: "shop", threshold: 25, days: 21, hideProgress: false },
   { id: "work", threshold: 7, days: 14, hideProgress: true },
   { id: "repair", threshold: 8, days: 10, hideProgress: false },
+  { id: "post", threshold: 100, days: 14, hideProgress: false, online: true },
+  { id: "email", threshold: 30, days: 10, hideProgress: false, online: true },
 ];
 
 const TEXTS: Record<Locale, Record<string, TemplateText>> = {
@@ -82,6 +86,20 @@ const TEXTS: Record<Locale, Record<string, TemplateText>> = {
         "On se retrouve le [date et heure] à [lieu] pour réparer ensemble vélos, petits appareils et vêtements. Apporte tes outils ou un objet à réparer.",
       why: "assez pour un atelier vivant.",
     },
+    post: {
+      name: "Publication collective",
+      title: "Publions tous le même message sur [réseau] pour [cause]",
+      description:
+        "Le [date et heure], chaque personne engagée publie le même message sur [réseau] pour [objectif]. Le texte sera partagé dans le chat dès que la chasse se déclenche. Un message respectueux, une seule fois : jamais de harcèlement.",
+      why: "une centaine de messages au même moment, ça se remarque.",
+    },
+    email: {
+      name: "Courriels collectifs",
+      title: "Écrivons tous à [destinataire] sur [sujet]",
+      description:
+        "Le [date], chaque personne engagée envoie un courriel à [destinataire] pour demander [demande précise]. Le modèle de texte sera partagé dans le chat. Un message poli, une seule fois par personne.",
+      why: "une trentaine de courriels le même jour obligent à répondre.",
+    },
   },
   en: {
     cleanup: {
@@ -132,6 +150,20 @@ const TEXTS: Record<Locale, Record<string, TemplateText>> = {
       description:
         "Let's meet on [date and time] at [place] to fix bikes, small appliances and clothes together. Bring your tools or something to repair.",
       why: "enough for a lively workshop.",
+    },
+    post: {
+      name: "Collective post",
+      title: "Let's all post the same message on [network] for [cause]",
+      description:
+        "On [date and time], everyone who committed posts the same message on [network] for [goal]. The text will be shared in the chat as soon as the hunt triggers. A respectful message, once: never harassment.",
+      why: "a hundred messages at the same moment get noticed.",
+    },
+    email: {
+      name: "Collective emails",
+      title: "Let's all write to [recipient] about [topic]",
+      description:
+        "On [date], everyone who committed sends an email to [recipient] asking for [specific request]. The template will be shared in the chat. A polite message, once per person.",
+      why: "thirty emails on the same day call for an answer.",
     },
   },
 };

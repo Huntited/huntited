@@ -17,6 +17,7 @@ import {
   isProgressVisible,
 } from "@/lib/hunt-lifecycle";
 import { countryName } from "@/lib/countries";
+import { placeLabel } from "@/lib/online";
 import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
 import { getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
 import { useI18n } from "@/lib/i18n";
@@ -138,7 +139,7 @@ function HuntDetailPage() {
 
       {/* Infos de la chasse */}
       <dl className="mt-6 space-y-3 rounded-lg border p-5 text-sm">
-        <Info label={t("hunt.location")}>{hunt.location}</Info>
+        <Info label={t("hunt.location")}>{placeLabel(hunt, t)}</Info>
         {hunt.country && <Info label={t("hunt.country")}>{countryName(hunt.country, locale)}</Info>}
         <Info label={t("hunt.deadline")}>
           {date(hunt.deadline, { dateStyle: "long", timeStyle: "short" })}{" "}

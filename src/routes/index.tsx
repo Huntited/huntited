@@ -19,6 +19,7 @@ import type { CovenantStatus } from "@/lib/covenants";
 import { listHuntViews, onHuntsChange, type HuntView } from "@/lib/hunt-repository";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { isCountryCode, sortedCountries } from "@/lib/countries";
+import { isOnlineHunt, ONLINE_FILTER } from "@/lib/online";
 import { filterHuntViews, type HuntFilters } from "@/lib/registry";
 
 export const Route = createFileRoute("/")({
@@ -107,6 +108,7 @@ function Index() {
       perCountry.set(v.hunt.country, (perCountry.get(v.hunt.country) ?? 0) + 1);
     }
   }
+  const onlineCount = (all ?? []).filter((v) => isOnlineHunt(v.hunt)).length;
   const withHunts = allCountries.filter((c) => perCountry.has(c.code));
   const others = allCountries.filter((c) => !perCountry.has(c.code));
   const filtering = search.trim() !== "" || statusFilter !== "all" || countryFilter !== "all";
@@ -174,6 +176,10 @@ function Index() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("home.country.all")}</SelectItem>
+              {/* Catégorie à part : les actions en ligne n'ont pas de pays. */}
+              <SelectItem value={ONLINE_FILTER}>
+                {onlineCount > 0 ? `${t("hunt.online")} (${onlineCount})` : t("hunt.online")}
+              </SelectItem>
               {withHunts.length > 0 && (
                 <SelectGroup>
                   <SelectSeparator />

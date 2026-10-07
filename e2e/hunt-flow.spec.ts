@@ -57,7 +57,7 @@ test("pays : choix à la création, affichage et filtre sur l'accueil", async ({
 
 test("choisir une ville remplit le pays (recherche sur l'appareil)", async ({ page }) => {
   await open(page, "/create");
-  const place = page.getByRole("combobox", { name: "Lieu" });
+  const place = page.getByRole("combobox", { name: "Ville" });
   await place.click();
   await place.fill("Bruxe");
   const option = page.getByRole("option", { name: /Brussels, Belgique/ });
@@ -67,9 +67,23 @@ test("choisir une ville remplit le pays (recherche sur l'appareil)", async ({ pa
   await place.press("Enter");
   await expect(place).toHaveValue("Brussels");
   await expect(page.getByLabel("Pays")).toHaveValue("BE");
-  // Le lieu reste modifiable librement.
-  await place.fill("Brussels, Mont des Arts");
-  await expect(page.getByLabel("Pays")).toHaveValue("BE");
+  // Une ville tapée en entier, sans choisir dans la liste, trouve aussi son pays.
+  await place.fill("Genève");
+  await expect(page.getByLabel("Pays")).toHaveValue("CH");
+});
+
+test("action en ligne : ni ville ni pays, catégorie à part sur l'accueil", async ({ browser }) => {
+  const alice = await newPerson(browser);
+  await open(alice, "/");
+  await connectWallet(alice);
+  await createHunt(alice, { title: "Courriels au ministère", threshold: 7, online: true });
+  await expect(alice.getByText("En ligne").first()).toBeVisible();
+
+  await open(alice, "/");
+  await alice.getByRole("combobox", { name: "Filtrer par pays" }).click();
+  await alice.getByRole("option", { name: /En ligne/ }).click();
+  await expect(alice.getByRole("link", { name: /Courriels au ministère/ })).toBeVisible();
+  await expect(alice.getByText(/, France/)).toHaveCount(0);
 });
 
 test("seuil minimum de 7 personnes à la création", async ({ page }) => {

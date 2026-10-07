@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { MIN_THRESHOLD } from "./hunt-economics";
 import { HUNT_TEMPLATES, hasPlaceholder, suggestedDeadline, templateText } from "./hunt-templates";
+import { ONLINE_LOCATION } from "./online";
 import { validateHuntForm } from "./validation";
 
 describe("modèles de chasse", () => {
@@ -22,8 +23,8 @@ describe("modèles de chasse", () => {
           {
             title: fill(text.title),
             description: fill(text.description),
-            location: "Paris",
-            country: "FR",
+            location: tpl.online ? ONLINE_LOCATION : "Paris",
+            country: tpl.online ? "" : "FR",
             deadline: suggestedDeadline(tpl.days),
             threshold: tpl.threshold,
             deposit: 30,

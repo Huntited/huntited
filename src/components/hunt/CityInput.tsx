@@ -1,14 +1,16 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
-import { loadCities, searchCities, type CitySuggestion } from "@/lib/cities";
+import { findCities, loadCities, searchCities, type CitySuggestion } from "@/lib/cities";
 import { countryName } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 
 /**
- * Champ « Lieu » avec suggestions de villes (liste déroulante accessible :
- * flèches, Entrée, Échap). Choisir une ville remplit aussi le pays. Le texte
- * reste libre : on peut préciser le lieu ou taper une ville absente de la liste.
+ * Champ « Ville » avec suggestions (liste déroulante accessible : flèches,
+ * Entrée, Échap). Choisir une ville remplit aussi le pays. À chaque saisie,
+ * `onResolve` reçoit les villes qui correspondent exactement au texte (une
+ * par pays, les plus peuplées d'abord), ou null si la liste n'a pas pu être
+ * chargée : le formulaire s'en sert pour vérifier la ville et trouver le pays.
  * La recherche se fait sur l'appareil (voir lib/cities.ts).
  */
 export function CityInput({
@@ -16,6 +18,7 @@ export function CityInput({
   value,
   onChange,
   onPick,
+  onResolve,
   placeholder,
   invalid,
   describedBy,
@@ -24,6 +27,7 @@ export function CityInput({
   value: string;
   onChange: (text: string) => void;
   onPick: (city: CitySuggestion) => void;
+  onResolve?: (matches: CitySuggestion[] | null) => void;
   placeholder: string;
   invalid?: boolean;
   describedBy?: string | undefined;
@@ -54,11 +58,25 @@ export function CityInput({
       .then((idx) => {
         index.current = idx;
         if (document.activeElement?.id === id) refresh(latest.current);
+        resolve.current?.(findCities(idx, latest.current));
       })
       .catch(() => {
-        /* sans liste : le champ reste un texte libre */
+        // Sans liste : pas de vérification possible, le champ reste libre.
+        resolve.current?.(null);
       });
   };
+
+  // Chargée dès l'affichage : la ville d'un brouillon est vérifiée aussi.
+  const resolve = useRef(onResolve);
+  resolve.current = onResolve;
+  useEffect(ensureLoaded, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Vérification à chaque changement du texte (saisie ou choix dans la liste).
+  useEffect(() => {
+    if (index.current) onResolve?.(findCities(index.current, value));
+    // onResolve change à chaque rendu du formulaire : seul le texte compte.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
 
   // Ferme la liste quand le focus quitte le champ et la liste.
   useEffect(() => {

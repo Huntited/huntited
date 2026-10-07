@@ -4,6 +4,7 @@ import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
 import { countryName } from "@/lib/countries";
 import { isProgressVisible } from "@/lib/hunt-lifecycle";
 import { useI18n } from "@/lib/i18n";
+import { placeLabel } from "@/lib/online";
 import type { Hunt, HuntStatus } from "@/lib/types";
 
 /** Barre de progression vers le seuil (décorative : le nombre est écrit à côté). */
@@ -49,7 +50,7 @@ export function HuntCard({
         <HuntStatusBadge status={status} />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        {hunt.location}
+        {placeLabel(hunt, t)}
         {hunt.country ? `, ${countryName(hunt.country, locale)}` : ""} ·{" "}
         {t(ended ? "card.ended" : "card.endsIn", { when: relative(hunt.deadline) })}
       </p>

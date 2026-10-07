@@ -5,6 +5,7 @@ import { COMMIT_DEPOSIT_KAS } from "@/lib/covenants";
 import { clearCreateHuntDraft, getCreateHuntDraft } from "@/lib/create-hunt-store";
 import { createHunt, getDataMode, HuntActionError } from "@/lib/hunt-repository";
 import { countryName } from "@/lib/countries";
+import { isOnlineHunt, placeLabel } from "@/lib/online";
 import { useI18n } from "@/lib/i18n";
 import { addUserHunt } from "@/lib/user-hunts";
 import { useWallet } from "@/lib/useWallet";
@@ -92,8 +93,12 @@ function CreateReviewPage() {
   };
 
   const rows: Array<[string, string]> = [
-    [t("hunt.location"), draft.location],
-    [t("hunt.country"), draft.country ? countryName(draft.country, locale) : "—"],
+    [t("hunt.location"), placeLabel(draft, t)],
+    ...(isOnlineHunt(draft)
+      ? []
+      : ([[t("hunt.country"), draft.country ? countryName(draft.country, locale) : "—"]] as Array<
+          [string, string]
+        >)),
     [t("hunt.deadline"), date(draft.deadline, { dateStyle: "long", timeStyle: "short" })],
     [t("hunt.threshold"), t("hunt.thresholdValue", { count: draft.threshold })],
     [

@@ -10,6 +10,7 @@ import {
   type CovenantStatus,
 } from "./covenants";
 import type { HuntView } from "./hunt-repository";
+import { isOnlineHunt, ONLINE_FILTER } from "./online";
 import type { Hunt } from "./types";
 
 export interface HuntFilters {
@@ -56,7 +57,13 @@ export function filterHuntViews(views: HuntView[], filters: HuntFilters = {}): H
   const q = filters.search?.trim().toLowerCase();
   return views
     .filter((v) => !filters.status || filterStatus(v) === filters.status)
-    .filter((v) => !filters.country || v.hunt.country === filters.country)
+    .filter(
+      (v) =>
+        !filters.country ||
+        (filters.country === ONLINE_FILTER
+          ? isOnlineHunt(v.hunt)
+          : v.hunt.country === filters.country),
+    )
     .filter(
       (v) =>
         !q ||

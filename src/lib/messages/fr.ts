@@ -255,9 +255,9 @@ export const fr = {
   "form.title.placeholder": "Ex. Rassemblement place de la République",
   "form.description": "Description",
   "form.description.placeholder": "Décrivez l'action collective en quelques lignes.",
-  "form.location.placeholder": "Ex. Paris, place de la République",
+  "form.location.placeholder": "Ex. Marseille",
   "form.location.help":
-    "Tape une ville pour la choisir dans la liste (le pays se remplit tout seul), puis précise si besoin. La recherche se fait sur ton appareil.",
+    "Choisis ta ville dans la liste : le pays se remplit tout seul. Le point de rendez-vous précis va dans la description. Petite commune absente ? Indique la ville la plus proche.",
   "form.deadline": "Date et heure limite",
   "form.deadline.help": "Seuil pas atteint à cette date : action annulée.",
   "form.threshold": "Seuil de participants",
@@ -464,6 +464,16 @@ export const fr = {
 
   // Pays
   "form.country": "Pays",
+  "form.city": "Ville",
+  "form.where": "Où se passe l'action ?",
+  "form.where.place": "Sur place",
+  "form.where.online": "En ligne",
+  "form.where.onlineHelp":
+    "Une action sur internet (publication, courriels, signature…) : pas de ville ni de pays. Précise le réseau ou le site dans la description.",
+  "hunt.online": "En ligne",
+  "val.city.unknown":
+    "Ville introuvable. Choisis-la dans la liste (petite commune : indique la ville la plus proche).",
+  "val.city.country": "Cette ville n'est pas dans le pays choisi.",
   "form.country.placeholder": "Choisis un pays",
   "val.country.required": "Le pays est requis.",
   "home.country": "Filtrer par pays",
