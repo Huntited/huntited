@@ -1,15 +1,21 @@
 // Format des messages du registre Huntited sur Kaspa (voir docs/registre-kaspa.md).
 //
 // Chaque message est le « payload » d'une transaction envoyée vers l'adresse
-// du registre : le préfixe « HNT1 » puis un JSON. Aucun message ne contient
-// d'adresse de wallet : les personnes sont représentées par des preuves
-// Semaphore (pass) et des clés d'invitation à usage unique.
+// du registre : le préfixe « HNT1 » puis un JSON.
+//
+// Par défaut, une chasse et un engagement sont des transactions envoyées
+// depuis le wallet de la personne (qui paiera le dépôt) : l'identité est
+// l'adresse qui envoie. Conseil : une adresse dédiée à Huntited, alimentée
+// directement depuis l'extérieur (voir docs/registre-kaspa.md).
+//
+// En réserve (Genesis.passRequired) : le pass, pour un anonymat complet —
+// preuves Semaphore publiées par un relais, sans adresse personnelle.
 //
 // Quatre messages :
-//   invite : un membre crée une invitation (preuve de pass, quota mensuel)
+//   invite : un membre crée une invitation (pass, quota mensuel)
 //   pass   : une invitation est utilisée pour ajouter un pass au groupe
-//   hunt   : une chasse est créée (preuve de pass : anti-spam, rôle créateur)
-//   commit : un engagement (preuve de pass, seuil personnel scellé)
+//   hunt   : une chasse est créée
+//   commit : un engagement, avec son seuil personnel
 import { createHash } from "node:crypto";
 
 import { schnorr } from "@noble/curves/secp256k1.js";
@@ -27,12 +33,18 @@ export interface Genesis {
   minThreshold: number;
   minCautionKas: number;
   invitesPerMonth: number;
+  /**
+   * Pass exigé pour créer et s'engager (anonymat complet, via un relais).
+   * Désactivé : n'importe quel wallet peut créer et rejoindre une chasse.
+   */
+  passRequired: boolean;
 }
 
 export const DEFAULT_GENESIS: Omit<Genesis, "invitationKeys"> = {
   minThreshold: 7,
   minCautionKas: 30,
   invitesPerMonth: 3,
+  passRequired: false,
 };
 
 export const INVITATION_TTL_MS = 7 * 24 * 3600 * 1000;
@@ -81,15 +93,17 @@ export const huntMessage = z.object({
   /** Caution du créateur, en KAS entiers (simulée pour l'instant). */
   deposit: z.number().int().max(100_000),
   progressVisibility: z.enum(["visible", "hidden"]),
-  /** Preuve de pass : scope createScope(id), message huntDigest(contenu). */
-  proof: proofSchema,
+  /** Pass (en réserve) : scope createScope(id), message huntDigest(contenu). */
+  proof: proofSchema.optional(),
 });
 
 export const commitMessage = z.object({
   t: z.literal("commit"),
   hunt: huntIdSchema,
-  /** Preuve de pass : scope huntScope(hunt), message = seuil personnel. */
-  proof: proofSchema,
+  /** Seuil personnel (≥ seuil de la chasse) ; absent = seuil de la chasse. */
+  threshold: z.number().int().positive().optional(),
+  /** Pass (en réserve) : scope huntScope(hunt), message = seuil personnel. */
+  proof: proofSchema.optional(),
 });
 
 export const messageSchema = z.discriminatedUnion("t", [

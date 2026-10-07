@@ -50,8 +50,8 @@ const schema = z
     // Seuil minimum d'une chasse. Abaissable en développement uniquement
     // (tests à 2 navigateurs) ; toujours 7 en production.
     MIN_HUNT_THRESHOLD: z.coerce.number().int().min(1).max(7).default(7),
-    // Pass Huntited (anti-bots, voir docs/anti-bots.md). Exigé pour s'engager :
-    // « true »/« false » ; par défaut, exigé en production seulement.
+    // Pass Huntited (anti-bots, voir docs/anti-bots.md), en réserve. Exigé pour
+    // s'engager : « true »/« false » ; par défaut non (tout le monde peut rejoindre).
     PASS_REQUIRED: z.enum(["true", "false"]).optional(),
     // Fichier JSON des pass (empreintes anonymes) ; vide = mémoire seulement.
     PASS_FILE: z.string().default(""),

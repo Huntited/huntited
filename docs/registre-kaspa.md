@@ -1,105 +1,99 @@
-# Registre des chasses sur Kaspa — conception (à valider)
+# Registre des chasses sur Kaspa — conception
 
 But : qu'aucun serveur Huntited ne soit l'autorité. N'importe qui peut
 reconstruire l'état de toutes les chasses en lisant la blockchain, et
-n'importe qui peut faire tourner un serveur (index, relais, site).
+n'importe qui peut faire tourner un index ou héberger le site.
 
-## Le problème à résoudre : la blockchain est publique
+Décisions (2026-10-07) :
 
-Si chaque personne s'engage depuis son propre wallet, **son adresse est
-visible par tout le monde, liée à la chasse**. C'est l'inverse de la promesse
-de Huntited (« personne ne voit qui s'est engagé »). Kaspa n'a pas de
-mécanisme de confidentialité intégré.
+- **N'importe qui peut créer et rejoindre une chasse** avec son wallet. Le
+  pass reste en réserve (désactivé par défaut).
+- **Le wallet est au centre** : chaque chasse et chaque engagement est une
+  transaction envoyée depuis le wallet Kastle de la personne, qui portera le
+  dépôt (5 KAS) ou la caution.
+- **Réseau de test uniquement** (testnet-10, KAS de test sans valeur).
 
-## La solution proposée : preuves anonymes + relais
+## Comment ça marche
 
-1. **Chaque chasse et chaque engagement est une transaction Kaspa** qui
-   porte un petit message (« payload », quelques centaines d'octets) envoyé
-   vers une adresse publique connue, « l'adresse du registre ».
-2. **Un engagement ne contient aucune adresse personnelle** : il contient
-   la preuve Semaphore qu'on utilise déjà (un pass valide, une seule fois par
-   chasse) et le seuil personnel scellé dans la preuve.
-3. **Un relais paie les frais et publie la transaction.** La personne
-   envoie sa preuve au relais ; le relais ne peut pas tricher (la preuve est
-   vérifiée par tout le monde) ni savoir qui elle est. **N'importe qui peut
-   faire tourner un relais**, et chacun peut publier lui-même s'il accepte
-   d'être visible.
-4. **L'état d'une chasse se calcule en lisant la chaîne** (index) : liste
-   des transactions vers l'adresse du registre, vérification des preuves,
-   mêmes règles qu'aujourd'hui (seuil, seuil personnel, date limite).
-   Plusieurs index indépendants donnent forcément le même résultat.
+1. Une chasse, un engagement = une transaction **envoyée depuis le wallet**
+   vers « l'adresse du registre », avec un petit message (payload) : préfixe
+   `HNT1` + JSON. Tout message invalide est ignoré.
+2. **L'identité est l'adresse qui envoie** : un wallet = un engagement par
+   chasse ; le créateur est l'adresse qui a créé la chasse (il se fait
+   reconnaître en signant avec, comme aujourd'hui).
+3. L'état se calcule en relisant la chaîne dans l'ordre où elle accepte les
+   transactions, avec l'heure des blocs (jamais une horloge locale). Deux
+   index indépendants obtiennent exactement le même état.
+4. Issue calculée, sans transaction de clôture : déclenchée avant la date
+   limite = succès, sinon échec.
 
-Le groupe des pass (les empreintes anonymes) et les invitations passent
-aussi sur la chaîne, de la même façon.
+Code : `backend/src/chain/protocol.ts` (format), `backend/src/chain/ledger.ts`
+(règles), testés dans `ledger.test.ts`.
 
-## Choix précis (étape 1, faite)
+## Vie privée : ce qui est public
 
-Code : `backend/src/chain/protocol.ts` (format) et `backend/src/chain/ledger.ts`
-(règles), testés avec de vraies preuves (`ledger.test.ts`).
+Une transaction depuis un wallet montre, **publiquement et pour toujours**,
+que cette adresse s'est engagée dans cette chasse. Huntited n'affiche jamais
+d'adresse, mais quiconque lit la blockchain peut faire le lien. Le créateur
+de la chasse n'a pas plus d'informations que n'importe qui.
 
-- **Message** : `HNT1` + JSON. Quatre types : `invite`, `pass`, `hunt`,
-  `commit`. Tout message invalide est ignoré.
-- **Invitations** : le code d'invitation est une clé secrète (secp256k1).
-  `invite` publie la clé publique, avec une preuve de pass (quota mensuel,
-  emplacement anonyme). `pass` ajoute un pass en **signant** son empreinte
-  avec la clé : quelqu'un qui voit passer la transaction ne peut pas voler
-  l'invitation pour son propre pass. Invitations de départ : listées dans la
-  configuration du registre (« genesis »).
-- **Chasse** : il faut un pass pour en créer une (anti-spam, le relais paie).
-  Le contenu est scellé dans la preuve : le relais ne peut rien modifier. La
-  preuve de création permet ensuite au créateur de se faire reconnaître (même
-  code), sans wallet.
-- **Engagement** : preuve de pass pour `hunt:<id>`, seuil personnel scellé.
-  Une personne = un engagement par chasse. Accepté jusqu'à la date limite
-  (heure du bloc).
-- **Issue** : calculée, sans transaction de clôture : déclenchée avant la date
-  limite = succès, sinon échec.
-- **Ordre** : celui dans lequel la chaîne accepte les transactions ; l'heure
-  utilisée est celle des blocs, jamais une horloge locale. Deux index qui
-  lisent les mêmes transactions obtiennent exactement le même état (testé).
+### Adresse de financement / adresse d'exécution
 
-### Conséquences à connaître
+Recommandation à l'utilisateur, inspirée des bonnes pratiques des wallets HD :
 
-- **Le wallet n'est plus nécessaire pour s'engager** dans cette phase : le
-  pass suffit (le wallet reviendra avec les vrais dépôts).
-- **« Masquer la progression » ne cache plus rien** : n'importe qui peut
-  compter les engagements sur la chaîne. L'option devient purement
-  visuelle ; à dire dans l'interface, ou à retirer.
-- **Le seuil personnel est public** (il est dans la preuve), mais jamais relié
-  à une personne.
-- Créer une chasse demande un pass (aujourd'hui, seul l'engagement en
-  demandait un).
+- **adresse de financement** : reçoit les KAS (faucet, plateforme d'échange,
+  amis) ; jamais utilisée sur Huntited ;
+- **adresse d'exécution** : un **compte « Huntited » créé dans Kastle**,
+  connecté au site ; sert à créer, s'engager, et reçoit remboursements et
+  récompenses.
 
-## Ce qui ne change pas tout de suite
+Huntited ne peut pas dériver d'adresses dans le wallet (Kastle ne donne
+jamais la graine à un site, et c'est voulu) : c'est à la personne de créer le
+compte ; l'application l'explique à la connexion.
 
-- **Dépôts (5 KAS) et caution : toujours simulés.** Bloquer de vrais KAS de
-  façon anonyme demande une « réserve de confidentialité » (privacy pool) que
-  Kaspa ne propose pas encore simplement. Ce sera la phase suivante, avec les
-  covenants (KIP-10) limités aux états actif / déclenché / expiré.
-- Le chat (Matrix) et les notifications restent des services à part,
-  facultatifs.
+**Limite** : si l'adresse d'exécution est alimentée par un transfert depuis
+l'adresse de financement, ce transfert est public et relie les deux. La
+séparation protège alors contre un observateur occasionnel, pas contre
+quelqu'un qui cherche. Elle est efficace si l'adresse d'exécution est
+alimentée **directement** depuis l'extérieur (faucet, retrait d'une
+plateforme, un ami).
+
+### En réserve : le pass (anonymat complet)
+
+Activable (`Genesis.passRequired`) : chasses et engagements portent une
+preuve Semaphore et sont publiés par un relais qui paie les frais ; aucune
+adresse personnelle n'apparaît. Invitations sur la chaîne : le code est une
+clé secrète à usage unique, et l'utiliser revient à signer son pass (une
+invitation vue en route ne peut pas être volée). Limite : un dépôt payé
+depuis un wallet ne peut pas être anonyme tant qu'il n'existe pas de
+« réserve de confidentialité » sur Kaspa.
+
+## Ce qui reste à part
+
+- **Dépôts et caution : simulés** pour l'instant. Les vrais montants viendront
+  avec les covenants (KIP-10), limités aux états actif / déclenché / expiré.
+- « Masquer la progression » reste une option d'affichage : sur la chaîne,
+  le nombre d'engagements est lisible par qui le cherche.
+- Le chat (Matrix) et les notifications restent des services facultatifs.
 
 ## Étapes
 
-1. **Format des messages** (chasse, engagement, pass, invitation) et
-   règles de l'index, testés hors ligne.
-2. **Index** : lecture de l'adresse du registre sur testnet-10, vérification
-   des preuves, reconstruction de l'état ; le backend actuel devient un index
-   parmi d'autres.
-3. **Relais** : un portefeuille de relais (KAS de test, faucet) qui publie
-   les messages ; limites anti-abus.
-4. **Front** : lit l'état via n'importe quel index (adresse configurable),
-   publie via n'importe quel relais.
-5. **Migration** : les chasses de test actuelles ne sont pas reprises.
+1. ✅ **Format et règles**, testés hors ligne.
+2. **Index** : lecture des transactions vers l'adresse du registre sur
+   testnet-10 (nœuds publics), avec l'adresse qui envoie et l'heure du bloc ;
+   le backend actuel devient un index parmi d'autres.
+3. **Publication depuis Kastle** : le site construit la transaction (payload)
+   et Kastle la signe et l'envoie (à vérifier : ce que l'API de Kastle permet).
+4. **Front** : lit l'état via n'importe quel index (adresse configurable) ;
+   écran de connexion qui explique le compte « Huntited ».
+5. **Textes** : l'accueil, la FAQ et la page légale disent aujourd'hui que
+   personne ne voit qui s'est engagé ; à corriger **au moment où le registre
+   sur la chaîne remplace le serveur** (pas avant : c'est encore vrai).
+6. **Covenants** : vrais dépôts et remboursements.
 
 ## Ce qu'il faut accepter
 
-- **Des vraies transactions sur le réseau de test** (testnet-10), payées en
-  KAS de test sans valeur, obtenus gratuitement (faucet).
-- **Se connecter au réseau Kaspa de test** (nœuds publics) pour lire et
-  publier.
-- **La clé du portefeuille de relais** est un secret du serveur relais
-  (comme le jeton Matrix aujourd'hui), jamais dans le navigateur.
-- Les titres, lieux et dates des chasses deviennent **inscrits pour
-  toujours** dans la chaîne (ils sont déjà publics, mais aujourd'hui on peut
-  les effacer). À dire clairement dans les conditions.
+- Des vraies transactions sur le réseau de test, payées en KAS de test.
+- Se connecter aux nœuds publics du réseau de test.
+- Les titres, lieux et dates des chasses sont **inscrits pour toujours** dans
+  la chaîne (à dire dans les conditions).

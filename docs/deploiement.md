@@ -35,7 +35,7 @@ Navigateur ──HTTPS──► Front (site statique / worker)
 | `REGISTRY_FILE`            | `/app/data/registry.json`                | déjà fixé dans l'image                                               |
 | `TRUST_PROXY`              | `1`                                      | derrière le proxy de l'hébergeur (limites de fréquence par visiteur) |
 | `RATE_LIMIT_MULTIPLIER`    | `1`                                      | à augmenter si beaucoup de monde partage une IP (box, 4G)            |
-| `PASS_REQUIRED`            | `true` (défaut en production)            | pass exigé pour s'engager (anti-bots, `docs/anti-bots.md`)           |
+| `PASS_REQUIRED`            | `false` (défaut)                         | en réserve : pass exigé pour s'engager (`docs/anti-bots.md`)         |
 | `PASS_FILE`                | `/app/data/passes.json`                  | empreintes anonymes des pass                                         |
 | `PASS_GENESIS_INVITES`     | quelques codes aléatoires (24+ car.)     | **secret** : invitations de départ, à donner aux premiers membres    |
 | `PASS_INVITES_PER_MONTH`   | `3`                                      | invitations par pass et par mois                                     |

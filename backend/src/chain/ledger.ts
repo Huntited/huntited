@@ -5,6 +5,9 @@
 //
 // Un message invalide est simplement ignoré (avec sa raison) : n'importe qui
 // peut écrire n'importe quoi vers l'adresse du registre.
+//
+// Identité : l'adresse qui envoie la transaction (wallet), ou, en réserve, le
+// code d'une preuve de pass. Dépôts et caution : simulés pour l'instant.
 import { Group } from "@semaphore-protocol/group";
 import { verifyProof } from "@semaphore-protocol/proof";
 
@@ -39,8 +42,17 @@ import {
 export interface ChainEvent {
   txId: string;
   time: number;
+  /** Adresse qui envoie la transaction (celle de sa première entrée). */
+  sender: string;
   payload: Uint8Array;
 }
+
+/**
+ * Qui agit : l'adresse qui envoie (« a:… »), ou le code de la preuve de pass
+ * (« p:… », en réserve). Public sur la chaîne, jamais affiché par Huntited.
+ */
+export const byAddress = (address: string) => `a:${address}`;
+export const byPass = (nullifier: string) => `p:${nullifier}`;
 
 export type ApplyResult =
   { ok: true; type: "invite" | "pass" | "hunt" | "commit" } | { ok: false; reason: string };
@@ -56,8 +68,8 @@ const realVerifier: ProofVerifier = async (proof) => {
 };
 
 export interface LedgerCommit {
-  /** Code de la preuve pour cette chasse : une personne = un engagement. */
-  nullifier: string;
+  /** byAddress / byPass : un wallet (ou un pass) = un engagement par chasse. */
+  who: string;
   personalThreshold: number;
   at: number;
   txId: string;
@@ -66,8 +78,8 @@ export interface LedgerCommit {
 export interface LedgerHunt extends Omit<HuntMessage, "t" | "proof"> {
   createdAt: number;
   txId: string;
-  /** Code de la preuve de création : permet au créateur de se faire reconnaître. */
-  creatorNullifier: string;
+  /** Créateur·rice : byAddress, ou byPass (code de la preuve de création). */
+  creator: string;
   commits: LedgerCommit[];
   activatedAt?: number;
   activationRank?: number;
@@ -126,12 +138,12 @@ export class Ledger {
     return over ? { status: "expired", outcome: "failure" } : { status: "active" };
   }
 
-  /** Rôle d'une personne dans une chasse, d'après le code de sa preuve. */
-  roleOf(huntId: string, nullifier: string): "creator" | "participant" | undefined {
+  /** Rôle d'une personne (byAddress / byPass) dans une chasse. */
+  roleOf(huntId: string, who: string): "creator" | "participant" | undefined {
     const h = this.hunts.get(huntId);
     if (!h) return undefined;
-    if (h.creatorNullifier === nullifier) return "creator";
-    const mine = h.commits.find((c) => c.nullifier === nullifier);
+    if (h.creator === who) return "creator";
+    const mine = h.commits.find((c) => c.who === who);
     return mine && isRetained(mine.personalThreshold, this.retainedGroup(h))
       ? "participant"
       : undefined;
@@ -209,14 +221,21 @@ export class Ledger {
       return { ok: false, reason: "invalid_deadline" };
     }
     const { t: _t, proof, ...content } = m;
-    if (!(await this.proofOk(proof, createScope(m.id), huntDigest(content)))) {
-      return { ok: false, reason: "invalid_proof" };
+    let creator = byAddress(e.sender);
+    if (proof) {
+      // Pass (en réserve) : contenu scellé, créateur reconnu par le code de sa preuve.
+      if (!(await this.proofOk(proof, createScope(m.id), huntDigest(content)))) {
+        return { ok: false, reason: "invalid_proof" };
+      }
+      creator = byPass(proof.nullifier);
+    } else if (this.genesis.passRequired) {
+      return { ok: false, reason: "pass_required" };
     }
     this.hunts.set(m.id, {
       ...content,
       createdAt: e.time,
       txId: e.txId,
-      creatorNullifier: proof.nullifier,
+      creator,
       commits: [],
     });
     return { ok: true, type: "hunt" };
@@ -227,18 +246,21 @@ export class Ledger {
     if (!h) return { ok: false, reason: "unknown_hunt" };
     // Engagements ouverts jusqu'à la date limite, même après l'activation.
     if (e.time > h.deadline) return { ok: false, reason: "closed" };
-    const t = Number(m.proof.message);
+    if (!m.proof && this.genesis.passRequired) return { ok: false, reason: "pass_required" };
+    // Seuil personnel : scellé dans la preuve (pass), sinon dans le message.
+    const t = m.proof ? Number(m.proof.message) : (m.threshold ?? h.threshold);
     if (!Number.isSafeInteger(t) || t < h.threshold || t > MAX_PERSONAL_THRESHOLD) {
       return { ok: false, reason: "invalid_threshold" };
     }
-    if (h.commits.some((c) => c.nullifier === m.proof.nullifier)) {
+    const who = m.proof ? byPass(m.proof.nullifier) : byAddress(e.sender);
+    if (h.commits.some((c) => c.who === who)) {
       return { ok: false, reason: "already_committed" };
     }
-    if (!(await this.proofOk(m.proof, huntScope(h.id), t))) {
+    if (m.proof && !(await this.proofOk(m.proof, huntScope(h.id), t))) {
       return { ok: false, reason: "invalid_proof" };
     }
     h.commits.push({
-      nullifier: m.proof.nullifier,
+      who,
       personalThreshold: t,
       at: e.time,
       txId: e.txId,

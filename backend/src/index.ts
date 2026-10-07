@@ -58,7 +58,8 @@ const app = createApp({
       ...(env.PASS_FILE ? { file: env.PASS_FILE } : {}),
       genesisInvites: env.PASS_GENESIS_INVITES,
     }),
-    required: (env.PASS_REQUIRED ?? (env.NODE_ENV === "production" ? "true" : "false")) === "true",
+    // En réserve : n'importe qui peut rejoindre une chasse, sauf si on l'exige.
+    required: env.PASS_REQUIRED === "true",
     invitesPerMonth: env.PASS_INVITES_PER_MONTH,
   },
 });
