@@ -53,6 +53,7 @@ function fakeChain() {
       minCautionKas: 30,
       invitesPerMonth: 3,
       passRequired: false,
+      releaseAddresses: [],
     });
   const indexer = new ChainIndexer(source, REGISTRY, newLedger, 100);
   return {

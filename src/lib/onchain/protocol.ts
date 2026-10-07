@@ -17,6 +17,8 @@ export interface Genesis {
   minCautionKas: number;
   invitesPerMonth: number;
   passRequired: boolean;
+  /** Adresses autorisées à ancrer une version du site (message « release »). */
+  releaseAddresses: string[];
 }
 
 export const DEFAULT_GENESIS: Omit<Genesis, "invitationKeys"> = {
@@ -24,6 +26,7 @@ export const DEFAULT_GENESIS: Omit<Genesis, "invitationKeys"> = {
   minCautionKas: 30,
   invitesPerMonth: 3,
   passRequired: false,
+  releaseAddresses: [],
 };
 
 export const INVITATION_TTL_MS = 7 * 24 * 3600 * 1000;
@@ -86,17 +89,29 @@ export const commitMessage = z.object({
   proof: proofSchema.optional(),
 });
 
+export const releaseMessage = z.object({
+  t: z.literal("release"),
+  version: z.string().regex(/^[\w.+-]{1,40}$/),
+  manifest: hex(64),
+  cid: z
+    .string()
+    .regex(/^b[a-z2-7]{20,120}$/)
+    .optional(),
+});
+
 export const messageSchema = z.discriminatedUnion("t", [
   inviteMessage,
   passMessage,
   huntMessage,
   commitMessage,
+  releaseMessage,
 ]);
 
 export type InviteMessage = z.infer<typeof inviteMessage>;
 export type PassMessage = z.infer<typeof passMessage>;
 export type HuntMessage = z.infer<typeof huntMessage>;
 export type CommitMessage = z.infer<typeof commitMessage>;
+export type ReleaseMessage = z.infer<typeof releaseMessage>;
 export type Message = z.infer<typeof messageSchema>;
 
 export function encodeMessage(m: Message): Uint8Array {

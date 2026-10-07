@@ -4,6 +4,8 @@
 // src/lib/onchain/conformance.test.ts.
 // Différence technique seulement : le groupe et la vérification des preuves de
 // pass (en réserve, rares) sont chargés à la demande, pour ne pas alourdir le site.
+import { createClientOnlyFn } from "@tanstack/react-start";
+
 import { computeRetainedGroup, isRetained, type RetainedGroup } from "../retained-group";
 import {
   INVITATION_TTL_MS,
@@ -25,6 +27,7 @@ import {
   type InviteMessage,
   type PassMessage,
   type ProofInput,
+  type ReleaseMessage,
 } from "./protocol";
 
 export interface ChainEvent {
@@ -38,13 +41,18 @@ export const byAddress = (address: string) => `a:${address}`;
 export const byPass = (nullifier: string) => `p:${nullifier}`;
 
 export type ApplyResult =
-  { ok: true; type: "invite" | "pass" | "hunt" | "commit" } | { ok: false; reason: string };
+  | { ok: true; type: "invite" | "pass" | "hunt" | "commit" | "release" }
+  | { ok: false; reason: string };
 
 export type ProofVerifier = (proof: ProofInput) => Promise<boolean>;
 
+// Bibliothèque des preuves de pass : chargée dans le navigateur seulement (le
+// rendu serveur ne sait pas l'empaqueter, et n'en a pas besoin).
+const semaphore = createClientOnlyFn(() => import("@semaphore-protocol/core"));
+
 const realVerifier: ProofVerifier = async (proof) => {
   try {
-    const { verifyProof } = await import("@semaphore-protocol/core");
+    const { verifyProof } = await semaphore();
     return await verifyProof(proof as Parameters<typeof verifyProof>[0]);
   } catch {
     return false;
@@ -69,6 +77,14 @@ export interface LedgerHunt extends Omit<HuntMessage, "t" | "proof"> {
 
 export type LedgerStatus = "active" | "activated" | "expired";
 
+export interface LedgerRelease {
+  version: string;
+  manifest: string;
+  cid?: string;
+  at: number;
+  txId: string;
+}
+
 type SemaphoreGroup = InstanceType<typeof import("@semaphore-protocol/core").Group>;
 
 export class Ledger {
@@ -79,6 +95,7 @@ export class Ledger {
   private readonly invitations = new Map<string, number>();
   private readonly usedSlots = new Set<string>();
   private readonly hunts = new Map<string, LedgerHunt>();
+  private readonly releaseList: LedgerRelease[] = [];
   private readonly seen = new Set<string>();
 
   constructor(
@@ -98,6 +115,10 @@ export class Ledger {
 
   allHunts(): LedgerHunt[] {
     return [...this.hunts.values()];
+  }
+
+  releases(): LedgerRelease[] {
+    return [...this.releaseList];
   }
 
   retainedGroup(h: LedgerHunt): RetainedGroup {
@@ -139,7 +160,26 @@ export class Ledger {
         return this.applyHunt(m, e);
       case "commit":
         return this.applyCommit(m, e);
+      case "release":
+        return this.applyRelease(m, e);
     }
+  }
+
+  private applyRelease(m: ReleaseMessage, e: ChainEvent): ApplyResult {
+    if (!this.genesis.releaseAddresses.includes(e.sender)) {
+      return { ok: false, reason: "not_publisher" };
+    }
+    if (this.releaseList.some((r) => r.version === m.version)) {
+      return { ok: false, reason: "version_exists" };
+    }
+    this.releaseList.push({
+      version: m.version,
+      manifest: m.manifest,
+      ...(m.cid ? { cid: m.cid } : {}),
+      at: e.time,
+      txId: e.txId,
+    });
+    return { ok: true, type: "release" };
   }
 
   private async proofOk(
@@ -180,7 +220,7 @@ export class Ledger {
     if (this.memberSet.has(m.commitment)) return { ok: false, reason: "already_member" };
     this.invitations.delete(m.key);
     if (!this.group) {
-      const { Group } = await import("@semaphore-protocol/core");
+      const { Group } = await semaphore();
       this.group = new Group();
     }
     this.group.addMember(BigInt(m.commitment));

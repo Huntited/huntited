@@ -1,5 +1,6 @@
 {
   "name": "tanstack_start_ts",
+  "version": "0.3.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -13,6 +14,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "build:static": "node scripts/build-static.mjs",
+    "verify:release": "node scripts/verify-release.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",

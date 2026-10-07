@@ -5,7 +5,7 @@
 import { REGISTRY_ADDRESS } from "../chain";
 import { minHuntThreshold } from "../validation";
 import { ChainIndexer, restSource } from "./indexer";
-import { Ledger, type LedgerHunt } from "./ledger";
+import { Ledger, type LedgerHunt, type LedgerRelease } from "./ledger";
 import { DEFAULT_GENESIS } from "./protocol";
 
 /** Délai avant d'annoncer un échec (retard possible de l'API publique). */
@@ -13,10 +13,25 @@ export const OUTCOME_GRACE_MS = 15 * 60_000;
 /** Une lecture au plus toutes les 10 s, quel que soit le nombre d'écrans. */
 const MIN_SYNC_INTERVAL_MS = 10_000;
 
-export function kaspaApiUrl(): string {
-  return (
-    (import.meta.env["VITE_KASPA_API_URL"] as string | undefined) ?? "https://api-tn10.kaspa.org"
-  );
+/**
+ * Points d'accès à l'API publique du réseau de test (VITE_KASPA_API_URL,
+ * plusieurs séparés par des virgules) : un au hasard, les autres en secours.
+ */
+export function kaspaApiUrls(): string[] {
+  const raw =
+    (import.meta.env["VITE_KASPA_API_URL"] as string | undefined) ?? "https://api-tn10.kaspa.org";
+  return raw
+    .split(",")
+    .map((u) => u.trim())
+    .filter(Boolean);
+}
+
+/** Adresses autorisées à ancrer une version du site (identiques pour tous les index). */
+export function releasePublishers(): string[] {
+  return ((import.meta.env["VITE_RELEASE_PUBLISHERS"] as string | undefined) ?? "")
+    .split(",")
+    .map((a) => a.trim())
+    .filter(Boolean);
 }
 
 /** Vue publique d'une chasse (même forme que l'API du serveur). */
@@ -77,7 +92,7 @@ let lastSync = 0;
 
 function getIndexer(): ChainIndexer {
   indexer ??= new ChainIndexer(
-    restSource(kaspaApiUrl()),
+    restSource(kaspaApiUrls()),
     REGISTRY_ADDRESS,
     () =>
       new Ledger({
@@ -85,6 +100,7 @@ function getIndexer(): ChainIndexer {
         invitationKeys: [],
         // Identique pour tous les index : 7 (abaissable en développement seulement).
         minThreshold: minHuntThreshold(),
+        releaseAddresses: releasePublishers(),
       }),
   );
   return indexer;
@@ -115,6 +131,11 @@ export async function getChainHunt(id: string, now = Date.now()): Promise<ChainH
   const ledger = await synced();
   const h = ledger.hunt(id);
   return h ? viewOf(ledger, h, now) : null;
+}
+
+/** Versions officielles du site ancrées sur la chaîne. */
+export async function getChainReleases(): Promise<LedgerRelease[]> {
+  return (await synced()).releases();
 }
 
 /** Tests : repartir d'un index vide. */

@@ -36,6 +36,7 @@ import {
   type HuntMessage,
   type InviteMessage,
   type PassMessage,
+  type ReleaseMessage,
 } from "./protocol.js";
 
 /** Transaction lue sur la chaîne (heure du bloc qui l'a acceptée, en ms). */
@@ -55,7 +56,8 @@ export const byAddress = (address: string) => `a:${address}`;
 export const byPass = (nullifier: string) => `p:${nullifier}`;
 
 export type ApplyResult =
-  { ok: true; type: "invite" | "pass" | "hunt" | "commit" } | { ok: false; reason: string };
+  | { ok: true; type: "invite" | "pass" | "hunt" | "commit" | "release" }
+  | { ok: false; reason: string };
 
 export type ProofVerifier = (proof: ProofInput) => Promise<boolean>;
 
@@ -87,6 +89,15 @@ export interface LedgerHunt extends Omit<HuntMessage, "t" | "proof"> {
 
 export type LedgerStatus = "active" | "activated" | "expired";
 
+/** Version officielle du site, ancrée par une adresse de publication. */
+export interface LedgerRelease {
+  version: string;
+  manifest: string;
+  cid?: string;
+  at: number;
+  txId: string;
+}
+
 export class Ledger {
   private readonly group = new Group();
   private readonly members = new Set<string>();
@@ -95,6 +106,7 @@ export class Ledger {
   private readonly invitations = new Map<string, number>();
   private readonly usedSlots = new Set<string>();
   private readonly hunts = new Map<string, LedgerHunt>();
+  private readonly releaseList: LedgerRelease[] = [];
   private readonly seen = new Set<string>();
 
   constructor(
@@ -120,6 +132,11 @@ export class Ledger {
 
   allHunts(): LedgerHunt[] {
     return [...this.hunts.values()];
+  }
+
+  /** Versions officielles du site, dans l'ordre de la chaîne. */
+  releases(): LedgerRelease[] {
+    return [...this.releaseList];
   }
 
   retainedGroup(h: LedgerHunt): RetainedGroup {
@@ -165,7 +182,26 @@ export class Ledger {
         return this.applyHunt(m, e);
       case "commit":
         return this.applyCommit(m, e);
+      case "release":
+        return this.applyRelease(m, e);
     }
+  }
+
+  private applyRelease(m: ReleaseMessage, e: ChainEvent): ApplyResult {
+    if (!this.genesis.releaseAddresses.includes(e.sender)) {
+      return { ok: false, reason: "not_publisher" };
+    }
+    if (this.releaseList.some((r) => r.version === m.version)) {
+      return { ok: false, reason: "version_exists" };
+    }
+    this.releaseList.push({
+      version: m.version,
+      manifest: m.manifest,
+      ...(m.cid ? { cid: m.cid } : {}),
+      at: e.time,
+      txId: e.txId,
+    });
+    return { ok: true, type: "release" };
   }
 
   private async proofOk(

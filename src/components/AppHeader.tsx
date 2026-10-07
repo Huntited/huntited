@@ -3,6 +3,7 @@ import { Menu, Moon, Sun, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/Logo";
+import { VersionBadge } from "@/components/VersionBadge";
 import { Button } from "@/components/ui/button";
 import { useI18n, type Locale, type MessageKey } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
@@ -189,6 +190,7 @@ export function AppFooter() {
     <footer className="mx-auto mt-16 w-full max-w-3xl border-t px-4 py-6 text-xs text-muted-foreground">
       <p>{t("footer.tagline")}</p>
       <p className="mt-1">{t("footer.testnet")}</p>
+      <VersionBadge />
       <p className="mt-1">
         <Link to="/legal" className="underline-offset-2 hover:underline">
           {t("footer.legal")}

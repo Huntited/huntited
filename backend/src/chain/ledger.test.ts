@@ -42,6 +42,7 @@ function setup(over: Partial<Genesis> = {}) {
     minCautionKas: 30,
     invitesPerMonth: 3,
     passRequired: false,
+    releaseAddresses: ["kaspatest:publication"],
     ...over,
   };
   const ledger = new Ledger(genesis);
@@ -173,6 +174,29 @@ describe("grand livre : wallets (par défaut)", () => {
       status: "expired",
       outcome: "failure",
     });
+  });
+});
+
+describe("grand livre : versions du site", () => {
+  it("seule l'adresse de publication ancre une version, une fois par numéro", async () => {
+    const { ledger, publish } = setup();
+    const release = (version: string) =>
+      ({ t: "release", version, manifest: "a".repeat(64) }) as const;
+    expect(await publish(release("1.0.0"), T0, "kaspatest:imposteur")).toEqual({
+      ok: false,
+      reason: "not_publisher",
+    });
+    expect(await publish(release("1.0.0"), T0, "kaspatest:publication")).toEqual({
+      ok: true,
+      type: "release",
+    });
+    expect(await publish(release("1.0.0"), T0 + 1, "kaspatest:publication")).toEqual({
+      ok: false,
+      reason: "version_exists",
+    });
+    expect(ledger.releases()).toEqual([
+      { version: "1.0.0", manifest: "a".repeat(64), at: T0, txId: "tx2" },
+    ]);
   });
 });
 

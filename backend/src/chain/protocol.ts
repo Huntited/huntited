@@ -11,11 +11,12 @@
 // En réserve (Genesis.passRequired) : le pass, pour un anonymat complet —
 // preuves Semaphore publiées par un relais, sans adresse personnelle.
 //
-// Quatre messages :
-//   invite : un membre crée une invitation (pass, quota mensuel)
-//   pass   : une invitation est utilisée pour ajouter un pass au groupe
-//   hunt   : une chasse est créée
-//   commit : un engagement, avec son seuil personnel
+// Cinq messages :
+//   invite  : un membre crée une invitation (pass, quota mensuel)
+//   pass    : une invitation est utilisée pour ajouter un pass au groupe
+//   hunt    : une chasse est créée
+//   commit  : un engagement, avec son seuil personnel
+//   release : une version officielle du site (adresse de publication seulement)
 import { createHash } from "node:crypto";
 
 import { schnorr } from "@noble/curves/secp256k1.js";
@@ -38,6 +39,11 @@ export interface Genesis {
    * Désactivé : n'importe quel wallet peut créer et rejoindre une chasse.
    */
   passRequired: boolean;
+  /**
+   * Adresses autorisées à ancrer une version du site (message « release »).
+   * Vide : aucune version officielle.
+   */
+  releaseAddresses: string[];
 }
 
 export const DEFAULT_GENESIS: Omit<Genesis, "invitationKeys"> = {
@@ -45,6 +51,7 @@ export const DEFAULT_GENESIS: Omit<Genesis, "invitationKeys"> = {
   minCautionKas: 30,
   invitesPerMonth: 3,
   passRequired: false,
+  releaseAddresses: [],
 };
 
 export const INVITATION_TTL_MS = 7 * 24 * 3600 * 1000;
@@ -106,17 +113,33 @@ export const commitMessage = z.object({
   proof: proofSchema.optional(),
 });
 
+/**
+ * Version officielle du site : son numéro, l'empreinte (sha256) de la liste
+ * de ses fichiers (release.json) et, si connu, son identifiant IPFS.
+ */
+export const releaseMessage = z.object({
+  t: z.literal("release"),
+  version: z.string().regex(/^[\w.+-]{1,40}$/),
+  manifest: hex(64),
+  cid: z
+    .string()
+    .regex(/^b[a-z2-7]{20,120}$/)
+    .optional(),
+});
+
 export const messageSchema = z.discriminatedUnion("t", [
   inviteMessage,
   passMessage,
   huntMessage,
   commitMessage,
+  releaseMessage,
 ]);
 
 export type InviteMessage = z.infer<typeof inviteMessage>;
 export type PassMessage = z.infer<typeof passMessage>;
 export type HuntMessage = z.infer<typeof huntMessage>;
 export type CommitMessage = z.infer<typeof commitMessage>;
+export type ReleaseMessage = z.infer<typeof releaseMessage>;
 export type Message = z.infer<typeof messageSchema>;
 
 // --- Encodage ------------------------------------------------------------------

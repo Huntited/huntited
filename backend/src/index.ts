@@ -43,7 +43,7 @@ const chain =
   env.CHAIN_INDEX === "true" && env.KASPA_API_URL
     ? {
         indexer: new ChainIndexer(
-          restSource(env.KASPA_API_URL),
+          restSource([env.KASPA_API_URL, ...env.CHAIN_API_URLS]),
           registryAddress(),
           () =>
             new Ledger({
@@ -51,6 +51,7 @@ const chain =
               invitationKeys: [],
               // Doit être identique pour tous les index (7 hors développement).
               minThreshold: env.MIN_HUNT_THRESHOLD,
+              releaseAddresses: env.RELEASE_PUBLISHERS,
             }),
         ),
         registryAddress: registryAddress(),

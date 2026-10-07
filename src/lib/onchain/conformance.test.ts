@@ -13,6 +13,7 @@ const GENESIS: Genesis = {
   minCautionKas: 30,
   invitesPerMonth: 3,
   passRequired: false,
+  releaseAddresses: ["kaspatest:p0"],
 };
 
 /** Générateur pseudo-aléatoire reproductible. */
@@ -55,6 +56,13 @@ function scenario(seed: number): ChainEvent[] {
         ...(r() < 0.5 ? { threshold: 1 + Math.floor(r() * 6) } : {}),
       };
       payload = encodeMessage(m);
+    } else if (kind < 0.92) {
+      // Versions du site : acceptées seulement depuis l'adresse de publication (p0).
+      payload = encodeMessage({
+        t: "release",
+        version: `1.${Math.floor(r() * 3)}.0`,
+        manifest: "c".repeat(64),
+      });
     } else if (kind < 0.95) {
       payload = new TextEncoder().encode(pick(["hello", 'HNT1{"t":"x"}', "HNT1{broken"]));
     } else {
@@ -84,6 +92,7 @@ describe("conformité navigateur / serveur", () => {
     }
     for (const [a, b] of reasons) expect(b).toBe(a);
     expect(browser.allHunts()).toEqual(server.allHunts());
+    expect(browser.releases()).toEqual(server.releases());
     const now = Date.UTC(2026, 9, 12);
     for (const h of server.allHunts()) {
       expect(browser.status(browser.hunt(h.id)!, now)).toEqual(server.status(h, now));

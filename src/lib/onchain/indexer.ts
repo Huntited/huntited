@@ -23,12 +23,25 @@ export interface ChainSource {
   addressTransactions(address: string, offset: number, limit: number): Promise<RestTransaction[]>;
 }
 
-/** Source : API REST publique (réseau de test). Ne reçoit que l'adresse du registre. */
-export function restSource(apiUrl: string, fetchFn: typeof fetch = fetch): ChainSource {
+/**
+ * Source : API REST publique (réseau de test). Ne reçoit que l'adresse du
+ * registre. Plusieurs points d'accès : ordre tiré au hasard (personne ne voit
+ * tout le trafic), les suivants servent de secours si l'un ne répond pas.
+ */
+export function restSource(apiUrls: string | string[], fetchFn: typeof fetch = fetch): ChainSource {
+  const urls = [...(Array.isArray(apiUrls) ? apiUrls : [apiUrls])].sort(() => Math.random() - 0.5);
   const get = async <T>(path: string): Promise<T> => {
-    const res = await fetchFn(apiUrl + path, { signal: AbortSignal.timeout(15_000) });
-    if (!res.ok) throw new Error(`chain_api_${res.status}`);
-    return (await res.json()) as T;
+    let last: unknown;
+    for (const base of urls) {
+      try {
+        const res = await fetchFn(base + path, { signal: AbortSignal.timeout(15_000) });
+        if (!res.ok) throw new Error(`chain_api_${res.status}`);
+        return (await res.json()) as T;
+      } catch (e) {
+        last = e;
+      }
+    }
+    throw last ?? new Error("chain_api_none");
   };
   return {
     virtualBlueScore: async () =>

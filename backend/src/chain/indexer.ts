@@ -35,11 +35,21 @@ export interface ChainSource {
 }
 
 /** Source : API REST publique (https://api-tn10.kaspa.org pour le réseau de test). */
-export function restSource(apiUrl: string, fetchFn: typeof fetch = fetch): ChainSource {
+export function restSource(apiUrls: string | string[], fetchFn: typeof fetch = fetch): ChainSource {
+  // Plusieurs points d'accès : ordre au hasard, les suivants en secours.
+  const urls = [...(Array.isArray(apiUrls) ? apiUrls : [apiUrls])].sort(() => Math.random() - 0.5);
   const get = async <T>(path: string): Promise<T> => {
-    const res = await fetchFn(apiUrl + path, { signal: AbortSignal.timeout(15_000) });
-    if (!res.ok) throw new Error(`chain_api_${res.status}`);
-    return (await res.json()) as T;
+    let last: unknown;
+    for (const base of urls) {
+      try {
+        const res = await fetchFn(base + path, { signal: AbortSignal.timeout(15_000) });
+        if (!res.ok) throw new Error(`chain_api_${res.status}`);
+        return (await res.json()) as T;
+      } catch (e) {
+        last = e;
+      }
+    }
+    throw last ?? new Error("chain_api_none");
   };
   return {
     virtualBlueScore: async () =>

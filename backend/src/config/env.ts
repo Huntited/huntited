@@ -68,7 +68,8 @@ const schema = z
       .pipe(z.array(z.string().regex(/^[\w-]{24,128}$/))),
     PASS_INVITES_PER_MONTH: z.coerce.number().int().min(1).max(20).default(3),
     // API REST Kaspa du RÉSEAU DE TEST, pour conseiller un compte dédié
-    // (historique public d'une adresse). Vide = conseil désactivé.
+    // (historique public d'une adresse) et pour l'index (CHAIN_INDEX). Vide =
+    // désactivé. L'index accepte aussi CHAIN_API_URLS (plusieurs, en secours).
     KASPA_API_URL: z
       .string()
       .default("https://api-tn10.kaspa.org")
@@ -76,6 +77,29 @@ const schema = z
     // Index du registre sur la chaîne (réseau de test, lecture seule, via
     // KASPA_API_URL) : « true » pour l'activer.
     CHAIN_INDEX: z.enum(["true", "false"]).default("false"),
+    // Points d'accès supplémentaires pour l'index (réseau de test), en secours.
+    CHAIN_API_URLS: z
+      .string()
+      .default("")
+      .transform((s) =>
+        s
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.string().regex(/^https:\/\/[^/]*tn10[^/]*$/))),
+    // Adresses autorisées à ancrer une version officielle du site (séparées par
+    // des virgules). Doit être identique pour tous les index et dans le site.
+    RELEASE_PUBLISHERS: z
+      .string()
+      .default("")
+      .transform((s) =>
+        s
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean),
+      )
+      .pipe(z.array(z.string().regex(/^kaspatest:[a-z0-9]{61,63}$/))),
     // Notifications « me prévenir » (Web Push). Vides = désactivées.
     // Générer la paire : npx web-push generate-vapid-keys. Clé privée backend-only.
     PUSH_VAPID_PUBLIC_KEY: z.string().default(""),

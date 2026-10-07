@@ -35,7 +35,15 @@ export interface ChainCommitMessage {
   threshold?: number;
 }
 
-export type ChainMessage = ChainHuntMessage | ChainCommitMessage;
+/** Version officielle du site (seule l'adresse de publication est prise en compte). */
+export interface ChainReleaseMessage {
+  t: "release";
+  version: string;
+  manifest: string;
+  cid?: string;
+}
+
+export type ChainMessage = ChainHuntMessage | ChainCommitMessage | ChainReleaseMessage;
 
 /** « HNT1 » + JSON, en hexadécimal (format attendu par Kastle). */
 export function encodePayload(m: ChainMessage): string {
