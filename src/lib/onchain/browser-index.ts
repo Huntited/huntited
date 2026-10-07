@@ -7,6 +7,7 @@ import { minHuntThreshold } from "../validation";
 import { ChainIndexer, restSource } from "./indexer";
 import { Ledger, type LedgerHunt, type LedgerRelease } from "./ledger";
 import { DEFAULT_GENESIS } from "./protocol";
+import { OFFICIAL_PUBLISHER } from "./publisher";
 
 /** Délai avant d'annoncer un échec (retard possible de l'API publique). */
 export const OUTCOME_GRACE_MS = 15 * 60_000;
@@ -26,9 +27,13 @@ export function kaspaApiUrls(): string[] {
     .filter(Boolean);
 }
 
-/** Adresses autorisées à ancrer une version du site (identiques pour tous les index). */
+/**
+ * Adresses autorisées à ancrer une version du site (identiques pour tous les
+ * index) : par défaut, la clé qui possède huntited.kas (voir publisher.ts).
+ */
 export function releasePublishers(): string[] {
-  return ((import.meta.env["VITE_RELEASE_PUBLISHERS"] as string | undefined) ?? "")
+  const env = import.meta.env["VITE_RELEASE_PUBLISHERS"] as string | undefined;
+  return (env || OFFICIAL_PUBLISHER)
     .split(",")
     .map((a) => a.trim())
     .filter(Boolean);

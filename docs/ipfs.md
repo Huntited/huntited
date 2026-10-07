@@ -31,10 +31,15 @@ Chaque construction produit `release.json` : la liste des fichiers avec leur
 empreinte (sha256) et l'empreinte de cette liste (« manifest »). Le script
 affiche la version et le manifest.
 
-1. **Adresse de publication** : une adresse Kaspa réservée à ça (compte Kastle
-   « Huntited publication »). Elle doit être connue de tous les index :
-   `RELEASE_PUBLISHERS=kaspatest:…` pour la construction du site
-   (`RELEASE_PUBLISHERS=… npm run build:static`) et pour l'index du serveur.
+1. **Adresse de publication** : la clé qui possède **huntited.kas** (service
+   de noms de Kaspa, réseau principal) :
+   `kaspa:qz0nnwepcezwrnx4fdptsg996590s78s8gay8nt9yuhdj6fwwjhfz32d3wzf9`.
+   Le registre étant sur le réseau de test, on utilise l'adresse de test de
+   la **même clé** :
+   `kaspatest:qz0nnwepcezwrnx4fdptsg996590s78s8gay8nt9yuhdj6fwwjhfzsvt2pucp`
+   (`src/lib/onchain/publisher.ts`, vérifié par
+   `backend/src/chain/publisher.test.ts`). C'est la valeur par défaut partout ;
+   `RELEASE_PUBLISHERS` permet de la remplacer.
 2. **Ancrer** : ouvrir la page `#/publish` du site publié, connecter le compte
    de publication, indiquer l'identifiant IPFS (facultatif), puis « Ancrer ».
    Kastle envoie le message (0,2 KAS de test).
@@ -44,7 +49,7 @@ affiche la version et le manifest.
 mentir dans son propre affichage) :
 
 ```bash
-npm run verify:release -- https://<passerelle>/ipfs/<CID>/ --publisher kaspatest:…
+npm run verify:release -- https://<passerelle>/ipfs/<CID>/
 ```
 
 Le script télécharge chaque fichier, recalcule les empreintes et les compare

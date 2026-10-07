@@ -31,8 +31,8 @@ Object.assign(process.env, {
   // Vide : aucun serveur Huntited (chat, notifications : bientôt).
   VITE_API_BASE_URL: "",
   VITE_HASH_ROUTING: "true",
-  // Adresse(s) de publication officielle (ex. RELEASE_PUBLISHERS=kaspatest:…) :
-  // le site affiche si sa version est ancrée par elle.
+  // Adresse(s) de publication : par défaut celle de huntited.kas
+  // (src/lib/onchain/publisher.ts) ; RELEASE_PUBLISHERS pour la remplacer.
   VITE_RELEASE_PUBLISHERS: process.env.RELEASE_PUBLISHERS ?? "",
   VITE_APP_VERSION: version,
 });

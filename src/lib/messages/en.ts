@@ -368,6 +368,8 @@ export const en: Messages = {
   "release.verified": "verified on Kaspa",
   "release.mismatch": "doesn't match the official version",
   "release.unanchored": "not anchored on Kaspa yet",
+  "release.official":
+    "Official versions are published by the key that owns {domain} (Kaspa Name Service), whose address is:",
   "release.this": "This site",
   "release.noManifest": "Development version: no file list to check.",
   "release.list": "Official versions (on the blockchain)",

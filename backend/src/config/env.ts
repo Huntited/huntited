@@ -90,9 +90,10 @@ const schema = z
       .pipe(z.array(z.string().regex(/^https:\/\/[^/]*tn10[^/]*$/))),
     // Adresses autorisées à ancrer une version officielle du site (séparées par
     // des virgules). Doit être identique pour tous les index et dans le site.
+    // Par défaut : la clé qui possède huntited.kas (adresse du réseau de test).
     RELEASE_PUBLISHERS: z
       .string()
-      .default("")
+      .default("kaspatest:qz0nnwepcezwrnx4fdptsg996590s78s8gay8nt9yuhdj6fwwjhfzsvt2pucp")
       .transform((s) =>
         s
           .split(",")

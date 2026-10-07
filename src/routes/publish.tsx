@@ -7,6 +7,11 @@ import { Label } from "@/components/ui/label";
 import { publish } from "@/lib/chain";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { getChainReleases, releasePublishers } from "@/lib/onchain/browser-index";
+import {
+  OFFICIAL_DOMAIN,
+  OFFICIAL_MAINNET_ADDRESS,
+  OFFICIAL_PUBLISHER,
+} from "@/lib/onchain/publisher";
 import type { LedgerRelease } from "@/lib/onchain/ledger";
 import { checkRelease, loadReleaseInfo, type ReleaseInfo, type ReleaseStatus } from "@/lib/release";
 import { useWallet } from "@/lib/useWallet";
@@ -75,6 +80,12 @@ function PublishPage() {
     <div className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">{t("release.title")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{t("release.lead")}</p>
+      {publishers.includes(OFFICIAL_PUBLISHER) && (
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t("release.official", { domain: OFFICIAL_DOMAIN })}{" "}
+          <span className="break-all font-mono text-xs">{OFFICIAL_MAINNET_ADDRESS}</span>
+        </p>
+      )}
 
       <section aria-labelledby="this-title" className="mt-8 space-y-1 text-sm">
         <h2 id="this-title" className="font-semibold">

@@ -374,6 +374,8 @@ export const fr = {
   "release.verified": "vérifiée sur Kaspa",
   "release.mismatch": "ne correspond pas à la version officielle",
   "release.unanchored": "pas encore ancrée sur Kaspa",
+  "release.official":
+    "Les versions officielles sont publiées par la clé qui possède {domain} (service de noms de Kaspa), dont l'adresse est :",
   "release.this": "Ce site",
   "release.noManifest": "Version de développement : pas de liste de fichiers à vérifier.",
   "release.list": "Versions officielles (sur la blockchain)",

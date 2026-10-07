@@ -4,9 +4,10 @@
 //  3. compare avec la version ancrée sur Kaspa par l'adresse de publication.
 //
 // Usage :
-//   node scripts/verify-release.mjs <adresse-du-site> --publisher kaspatest:… [--api https://…]
+//   node scripts/verify-release.mjs <adresse-du-site> [--publisher kaspatest:…] [--api https://…]
+// Par défaut, l'adresse de publication est celle de huntited.kas (même clé).
 // Exemple :
-//   node scripts/verify-release.mjs https://dweb.link/ipfs/bafy…/ --publisher kaspatest:qq…
+//   node scripts/verify-release.mjs https://dweb.link/ipfs/bafy…/
 import { createHash } from "node:crypto";
 
 const REGISTRY = "kaspatest:qr2ck8qnt0rtj7spzd7am9tsmtd5j4l3tgtah3tzz89l9jvcfg5uvc33cl3yj";
@@ -16,7 +17,9 @@ const opt = (name) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const site = args.find((a) => /^https?:\/\//.test(a) && a !== opt("--api"));
-const publishers = (opt("--publisher") ?? process.env.RELEASE_PUBLISHERS ?? "")
+// Par défaut : l'adresse de test de la clé qui possède huntited.kas.
+const OFFICIAL = "kaspatest:qz0nnwepcezwrnx4fdptsg996590s78s8gay8nt9yuhdj6fwwjhfzsvt2pucp";
+const publishers = (opt("--publisher") ?? process.env.RELEASE_PUBLISHERS ?? OFFICIAL)
   .split(",")
   .filter(Boolean);
 const api = opt("--api") ?? "https://api-tn10.kaspa.org";
