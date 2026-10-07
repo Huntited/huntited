@@ -187,6 +187,8 @@ export const en: Messages = {
   "notify.unavailable": "Notifications aren't available right now.",
   "chat.opening": "The hunt is triggered: opening the chat…",
   "common.retry": "Try again",
+  "chat.demoRoom":
+    "Demo: the room is open, but no chat server is online yet. At launch, an “Open the Matrix chat” button will appear here with your credentials.",
   "chat.demo": "(Demo: simulated chat, no real room)",
   "chatLogin.title": "Your login for this chat",
   "chatLogin.step1": "Open the chat with the button above (Element app).",

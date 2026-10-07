@@ -165,15 +165,17 @@ test("parcours : progression masquée, seuils personnels, activation, chat", asy
 
   // Le chat s'est ouvert tout seul au déclenchement : Bruno (retenu) et Alice
   // (créatrice) y ont accès sans rien activer ; David (non retenu) non.
+  // (Salon de démonstration : pas de serveur Matrix, donc pas de lien.)
+  const roomOpen = /le salon est ouvert/;
   await reload(bruno);
-  await expect(bruno.getByRole("link", { name: "Ouvrir le chat Matrix" })).toBeVisible();
+  await expect(bruno.getByText(roomOpen)).toBeVisible();
 
   await open(alice, url);
-  await expect(alice.getByRole("link", { name: "Ouvrir le chat Matrix" })).toBeVisible();
+  await expect(alice.getByText(roomOpen)).toBeVisible();
 
   await reload(david);
   await expect(david.getByText(/engagé·es retenu·es/)).toBeVisible();
-  await expect(david.getByRole("link", { name: "Ouvrir le chat Matrix" })).toHaveCount(0);
+  await expect(david.getByText(roomOpen)).toHaveCount(0);
 
   // Aucune réponse publique ne contient de seuil personnel ni d'empreinte.
   const pub = await (await request.get(`${API}/api/hunts/${huntId}`)).text();

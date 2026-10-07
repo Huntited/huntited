@@ -95,12 +95,22 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
       {(status === "activated" || status === "settled") && access.isAuthorized && chatAlive && (
         <>
           <p className="text-sm">{t("chat.open")}</p>
-          <Button asChild>
-            <a href={chat!.inviteLink} target="_blank" rel="noopener noreferrer">
-              {t("chat.openLink")}
-            </a>
-          </Button>
-          {chat!.login && <ChatLoginBox login={chat!.login} />}
+          {chat!.login ? (
+            <>
+              <Button asChild>
+                <a href={chat!.inviteLink} target="_blank" rel="noopener noreferrer">
+                  {t("chat.openLink")}
+                </a>
+              </Button>
+              <ChatLoginBox login={chat!.login} />
+            </>
+          ) : (
+            // Démonstration (pas de serveur Matrix) : pas de lien vers une
+            // adresse qui n'existe pas encore.
+            <p role="status" className="rounded-md border bg-muted p-3 text-sm">
+              {t("chat.demoRoom")}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             {t("chat.expiresOn", { date: when(chat!.expiresAt) })}
           </p>
@@ -125,7 +135,9 @@ export function ChatPanel({ hunt, status, outcome }: ChatPanelProps) {
       )}
 
       {/* Sans identifiants, le salon est simulé (front ou serveur en mode mock). */}
-      {!chat?.login && <p className="text-xs text-muted-foreground">{t("chat.demo")}</p>}
+      {!chat?.login && !chatAlive && (
+        <p className="text-xs text-muted-foreground">{t("chat.demo")}</p>
+      )}
     </section>
   );
 }

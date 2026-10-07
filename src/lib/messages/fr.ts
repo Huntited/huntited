@@ -192,6 +192,8 @@ export const fr = {
   "notify.unavailable": "Les notifications ne sont pas disponibles pour le moment.",
   "chat.opening": "La chasse est déclenchée : ouverture du chat…",
   "common.retry": "Réessayer",
+  "chat.demoRoom":
+    "Démonstration : le salon est ouvert, mais aucun serveur de chat n'est encore en ligne. À la mise en ligne, un bouton « Ouvrir le chat Matrix » apparaîtra ici avec tes identifiants.",
   "chat.demo": "(Démonstration : chat simulé, aucun salon réel)",
   "chatLogin.title": "Tes identifiants pour ce chat",
   "chatLogin.step1": "Ouvre le chat avec le bouton ci-dessus (application Element).",
