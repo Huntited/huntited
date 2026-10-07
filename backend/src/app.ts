@@ -20,6 +20,7 @@ import { pushRouter } from "./routes/push.js";
 import { walletRouter } from "./routes/wallet.js";
 import { chainRouter } from "./routes/chain.js";
 import type { ChainIndexer } from "./chain/indexer.js";
+import { chainAccess, combineAccess } from "./chain/chain-access.js";
 
 export interface AppDeps {
   chat: ChatService;
@@ -52,16 +53,26 @@ const DEFAULT_CHAT_TTL_MS = 86_400_000;
 
 export function createApp(d: AppDeps) {
   // Salon d'une chasse : son titre, ouvert jusqu'à 24 h après la date limite.
+  // La chasse peut être dans le registre du serveur ou sur la chaîne.
+  const ttl = d.chatTtlMs ?? DEFAULT_CHAT_TTL_MS;
   const chatTerms = (huntId: string): CreateChatInput | undefined => {
     const hunt = d.registry.get(huntId);
-    return hunt
-      ? {
-          huntId,
-          huntName: hunt.title.slice(0, 80),
-          expiresAt: Date.parse(hunt.deadline) + (d.chatTtlMs ?? DEFAULT_CHAT_TTL_MS),
-        }
+    if (hunt) {
+      return {
+        huntId,
+        huntName: hunt.title.slice(0, 80),
+        expiresAt: Date.parse(hunt.deadline) + ttl,
+      };
+    }
+    const onChain = d.chain?.indexer.ledger.hunt(huntId);
+    return onChain
+      ? { huntId, huntName: onChain.title.slice(0, 80), expiresAt: onChain.deadline + ttl }
       : undefined;
   };
+  // Rôles pour le chat : registre du serveur, puis chasses sur la chaîne.
+  const access = d.chain
+    ? combineAccess(d.registry, chainAccess(d.chain.indexer.ledger, d.now))
+    : d.registry;
 
   const app = express();
   app.disable("x-powered-by");
@@ -81,7 +92,7 @@ export function createApp(d: AppDeps) {
     "/api/auth",
     authRouter({
       auth: d.auth,
-      access: d.registry,
+      access,
       challenges: d.challenges,
       verifySignature: d.verifySignature,
       ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
@@ -158,10 +169,7 @@ export function createApp(d: AppDeps) {
       ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
     }),
   );
-  app.use(
-    "/api/chats",
-    chatRouter(d.chat, d.auth, d.registry, d.nodeEnv !== "production", chatTerms),
-  );
+  app.use("/api/chats", chatRouter(d.chat, d.auth, access, d.nodeEnv !== "production", chatTerms));
 
   // Erreurs : réponse générique, aucun détail interne ni secret.
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

@@ -23,9 +23,11 @@ export function siteUrl(): string | null {
  * l'aperçu reste générique. Ne bloque jamais la page (délai court, erreurs ignorées).
  */
 export async function fetchHuntPreview(id: string): Promise<HuntPreview | null> {
-  if (getDataMode() !== "api") return null;
+  const mode = getDataMode();
+  if (mode === "local") return null;
+  const path = mode === "chain" ? "/api/chain/hunts" : "/api/hunts";
   try {
-    const res = await fetch(`${apiBaseUrl()}/api/hunts/${encodeURIComponent(id)}`, {
+    const res = await fetch(`${apiBaseUrl()}${path}/${encodeURIComponent(id)}`, {
       signal: AbortSignal.timeout(2_000),
     });
     if (!res.ok) return null;

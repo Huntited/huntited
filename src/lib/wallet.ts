@@ -2,8 +2,9 @@
 //   "mock"   → adresse factice générée localement (par défaut, tests)
 //   "kastle" → extension Kastle (window.kastle), testnet uniquement
 // L'interface exportée est identique dans les deux modes.
-// Aucun envoi de KAS : seules la connexion et la signature de message sont
-// utilisées. Confidentialité : aucun log ; l'adresse ne quitte jamais l'appareil.
+// Connexion et signature de message ; en mode « chain », envoi de messages au
+// registre (0,2 KAS de test, réseau de test uniquement, avec accord dans
+// Kastle). Confidentialité : aucun log ; Huntited n'affiche jamais l'adresse.
 
 import { getLocale, translate, type MessageKey } from "./i18n";
 
@@ -41,6 +42,12 @@ interface KastleProvider {
   getNetwork(): Promise<string>;
   switchNetwork(networkId: "mainnet" | "testnet-10"): Promise<string>;
   signMessage(message: string): Promise<string>;
+  /** Envoie des KAS (0,2 minimum) avec un message hexadécimal ; renvoie la transaction. */
+  sendKaspa(
+    toAddress: string,
+    sompi: number,
+    options?: { priorityFee?: number; payload?: string },
+  ): Promise<string>;
   on(event: "kas:account_changed", handler: (address: string | null) => void): unknown;
   on(event: "kas:network_changed", handler: (network: string) => void): unknown;
 }
@@ -214,6 +221,31 @@ export function subscribeWallet(cb: (s: WalletState) => void): () => void {
     listeners.delete(cb);
     if (isBrowser()) window.removeEventListener("storage", onStorage);
   };
+}
+
+/**
+ * Publie un message du registre (docs/registre-kaspa.md) : Kastle envoie
+ * `sompi` à l'adresse du registre, depuis le compte connecté, avec le message
+ * en hexadécimal, après accord dans sa fenêtre. Réseau de test uniquement.
+ * Le wallet factice ne peut rien publier.
+ */
+export async function sendToRegistry(
+  registryAddress: string,
+  sompi: number,
+  payloadHex: string,
+): Promise<string> {
+  if (!load().isConnected) throw new WalletError(msg("wallet.err.notConnected"));
+  if (getWalletMode() !== "kastle") throw new WalletError(msg("wallet.err.needKastle"));
+  if (!registryAddress.startsWith("kaspatest:")) throw new WalletError(msg("wallet.err.network"));
+  const kastle = requireKastle();
+  if ((await kastle.getNetwork()) !== KASTLE_NETWORK) {
+    throw new WalletError(msg("wallet.err.network"));
+  }
+  try {
+    return await kastle.sendKaspa(registryAddress, sompi, { payload: payloadHex });
+  } catch {
+    throw new WalletError(msg("wallet.err.sendRefused"));
+  }
 }
 
 /** Signe un message (Kastle : signature réelle ; mock : aléatoire, non vérifiable). */

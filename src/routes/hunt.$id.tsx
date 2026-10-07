@@ -52,6 +52,7 @@ function HuntDetailPage() {
     commitsOpen,
     isLoading,
     error,
+    pending,
     refresh,
   } = useHunt(id);
   // Wallet + engagement (un seul engagement par wallet et par chasse).
@@ -113,6 +114,13 @@ function HuntDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Mode chaîne : transaction envoyée, pas encore vue par l'index */}
+      {pending && (
+        <p role="status" className="mt-4 rounded-md border bg-muted p-3 text-sm">
+          {t("hunt.pending")}
+        </p>
+      )}
 
       {/* Pour qui découvre Huntited (souvent via un lien partagé) */}
       {commitsOpen && !commitment.isCommitted && !isCreator && (
@@ -176,7 +184,11 @@ function HuntDetailPage() {
             </div>
           )}
           {/* Engagements ouverts jusqu'à la date limite, même après l'activation */}
-          {!commitsOpen ? (
+          {pending ? (
+            <Button size="lg" disabled>
+              {t("hunt.cta.pending")}
+            </Button>
+          ) : !commitsOpen ? (
             <Button size="lg" disabled>
               {t("hunt.cta.closed")}
             </Button>

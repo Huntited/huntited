@@ -9,6 +9,8 @@
   ./scripts/dev-shared.ps1 -MinThreshold 2 # seuil minimum abaissé (tester à 2 navigateurs)
   ./scripts/dev-shared.ps1 -Pass           # pass exigés pour s'engager (anti-bots) :
                                            # affiche 3 invitations de départ
+  ./scripts/dev-shared.ps1 -Chain -MinThreshold 2
+                                           # registre sur la blockchain (réseau de test)
 
 .NOTES
   Les réglages sont passés aux deux serveurs le temps de la session : tes
@@ -24,8 +26,13 @@ param(
   [ValidateRange(1, 7)]
   [int]$MinThreshold = 7,
   # Pass Huntited exigés pour s'engager (une personne = un engagement).
-  [switch]$Pass
+  [switch]$Pass,
+  # Registre sur la blockchain (réseau de test) : créer et s'engager envoient
+  # 0,2 KAS de test au registre par Kastle (docs/registre-kaspa.md).
+  [switch]$Chain
 )
+if ($Chain -and $Wallet -ne "kastle") { throw "-Chain exige le wallet Kastle." }
+$dataMode = if ($Chain) { "chain" } else { "api" }
 
 $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
@@ -85,7 +92,7 @@ bun run dev
 
 $front = @"
 `$env:Path=[Environment]::GetEnvironmentVariable('Path','Machine')+';'+[Environment]::GetEnvironmentVariable('Path','User')
-`$env:VITE_DATA_MODE='api'
+`$env:VITE_DATA_MODE='$dataMode'
 `$env:VITE_MATRIX_MODE='api'
 `$env:VITE_WALLET_MODE='$Wallet'
 `$env:VITE_API_BASE_URL='http://${ip}:$ApiPort'

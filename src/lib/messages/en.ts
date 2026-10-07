@@ -338,6 +338,16 @@ export const en: Messages = {
   "guide.used.text":
     "Your commitments could be linked to your other activity. An account reserved for Huntited avoids that.",
   "guide.used.action": "Advice",
+  "chain.commitNote":
+    "Test network. Kastle will ask you to send 0.2 test KAS to the Huntited registry: that's what records your commitment on the blockchain, publicly (your address is visible there). The 5 KAS deposit is still simulated for now.",
+  "chain.createNote":
+    "Test network. Kastle will ask you to send 0.2 test KAS to the Huntited registry: that's what records the hunt on the blockchain, permanently and publicly (your address is visible there). The deposit is still simulated for now.",
+  "hunt.cta.pending": "Being recorded…",
+  "hunt.pending":
+    "Being recorded on the blockchain: the hunt will be visible to everyone in about a minute.",
+  "err.alreadyCommitted": "You've already committed to this hunt.",
+  "wallet.err.needKastle": "You need the Kastle wallet to publish on the blockchain.",
+  "wallet.err.sendRefused": "Transaction cancelled or refused by Kastle.",
   "tpl.title": "Need a starting point?",
   "tpl.applied": 'Loaded the "{name}" example. Replace what\'s [in brackets].',
   "tpl.why": "Suggested for this example: {why}",

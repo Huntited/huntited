@@ -9,6 +9,7 @@
     "dev:shared:mock": "powershell -ExecutionPolicy Bypass -File scripts/dev-shared.ps1 -Wallet mock",
     "dev:shared:duo": "powershell -ExecutionPolicy Bypass -File scripts/dev-shared.ps1 -MinThreshold 2",
     "dev:shared:pass": "powershell -ExecutionPolicy Bypass -File scripts/dev-shared.ps1 -Wallet mock -MinThreshold 2 -Pass",
+    "dev:shared:chain": "powershell -ExecutionPolicy Bypass -File scripts/dev-shared.ps1 -Chain -MinThreshold 2",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",

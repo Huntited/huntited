@@ -22,6 +22,8 @@ export interface UseHuntResult {
   isLoading: boolean;
   /** Erreur de chargement (service indisponible en mode registre). */
   error: string | null;
+  /** Mode chaîne : chasse envoyée, pas encore vue par l'index. */
+  pending: boolean;
   refresh: () => void;
 }
 
@@ -48,6 +50,7 @@ export function useHunt(huntId: string): UseHuntResult {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   const [version, setVersion] = useState(0); // incrémenté pour forcer un refresh
 
   useEffect(() => {
@@ -56,6 +59,7 @@ export function useHunt(huntId: string): UseHuntResult {
       .then((view) => {
         if (cancelled) return;
         setError(null);
+        setPending(view?.pending ?? false);
         setHunt(view?.hunt);
         setCommitCount(view?.commitCount ?? 0);
         setStatus(view?.status ?? "active");
@@ -80,8 +84,26 @@ export function useHunt(huntId: string): UseHuntResult {
 
   useEffect(() => onHuntsChange(() => setVersion((v) => v + 1)), []);
 
+  // En attente de l'index (≈ 1 min) : on relit toutes les 15 s.
+  useEffect(() => {
+    if (!pending) return;
+    const timer = setInterval(() => setVersion((v) => v + 1), 15_000);
+    return () => clearInterval(timer);
+  }, [pending]);
+
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
   const covenant = hunt ? getHuntCovenant(hunt) : undefined;
 
-  return { hunt, covenant, commitCount, status, outcome, ...group, isLoading, error, refresh };
+  return {
+    hunt,
+    covenant,
+    commitCount,
+    status,
+    outcome,
+    ...group,
+    isLoading,
+    error,
+    pending,
+    refresh,
+  };
 }

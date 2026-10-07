@@ -1,9 +1,10 @@
 // Accès unique aux chasses, selon VITE_DATA_MODE :
 //   "local" → démos + chasses de ce navigateur (localStorage) — par défaut ;
 //   "api"   → registre partagé du backend (plusieurs appareils, plusieurs
-//             personnes) ; créer et s'engager exigent la session signée.
-// Les écrans ne dépendent que de cette interface : remplacer le backend par
-// un indexeur on-chain Kaspa ne changera que ce fichier.
+//             personnes) ; créer et s'engager exigent la session signée ;
+//   "chain" → registre sur la blockchain (réseau de test) : lecture par un
+//             index, écriture par une transaction Kastle (docs/registre-kaspa.md).
+// Les écrans ne dépendent que de cette interface.
 import { ApiError, apiFetch, getSessionToken } from "./api-client";
 import {
   COMMIT_DEPOSIT_KAS,
@@ -31,12 +32,26 @@ import { getPassConfig, hasPass, proveWithPass } from "./pass";
 import { isRetained } from "./retained-group";
 import type { Hunt, HuntFormData, HuntStatus, ProgressVisibility } from "./types";
 import { addUserHunt } from "./user-hunts";
+import {
+  addPendingHunt,
+  forgetPendingHunt,
+  getPendingHunt,
+  newHuntId,
+  publish,
+  type ChainHuntMessage,
+  type ChainMessage,
+} from "./chain";
+import { WalletError } from "./wallet";
 
-export type DataMode = "local" | "api";
+export type DataMode = "local" | "api" | "chain";
 
 export function getDataMode(): DataMode {
-  return import.meta.env["VITE_DATA_MODE"] === "api" ? "api" : "local";
+  const mode = import.meta.env["VITE_DATA_MODE"];
+  return mode === "api" || mode === "chain" ? mode : "local";
 }
+
+/** Chemin de lecture des chasses : registre du serveur, ou index de la chaîne. */
+const huntsPath = () => (getDataMode() === "chain" ? "/api/chain/hunts" : "/api/hunts");
 
 /** Une chasse et son état courant. */
 export interface HuntView {
@@ -53,6 +68,8 @@ export interface HuntView {
   /** Engagements encore acceptés (active, ou activée avant la date limite). */
   commitsOpen: boolean;
   outcome?: SettlementOutcome;
+  /** Mode chaîne : chasse envoyée, pas encore vue par l'index (≈ 1 min). */
+  pending?: boolean;
 }
 
 export class HuntActionError extends Error {}
@@ -166,8 +183,22 @@ const actionError = (e: unknown, fallback: MessageKey) =>
 
 export async function listHuntViews(): Promise<HuntView[]> {
   if (getDataMode() === "local") return listHunts().map((h) => localView(h));
-  const list = await apiFetch<PublicHunt[]>("GET", "/api/hunts");
+  const list = await apiFetch<PublicHunt[]>("GET", huntsPath());
   return (Array.isArray(list) ? list : []).map(apiView);
+}
+
+/** Chasse envoyée sur la chaîne mais pas encore indexée : affichage provisoire. */
+function pendingView(m: ChainHuntMessage): HuntView {
+  const view = apiView({
+    ...m,
+    deadline: new Date(m.deadline).toISOString(),
+    status: "active",
+    commitCount: 0,
+    retainedCount: 0,
+    retainedThreshold: null,
+    commitsOpen: false,
+  });
+  return { ...view, pending: true };
 }
 
 export async function getHuntView(id: string): Promise<HuntView | undefined> {
@@ -176,16 +207,59 @@ export async function getHuntView(id: string): Promise<HuntView | undefined> {
     return h ? localView(h) : undefined;
   }
   try {
-    return apiView(await apiFetch<PublicHunt>("GET", `/api/hunts/${encodeURIComponent(id)}`));
+    const view = apiView(
+      await apiFetch<PublicHunt>("GET", `${huntsPath()}/${encodeURIComponent(id)}`),
+    );
+    forgetPendingHunt(id);
+    return view;
   } catch (e) {
-    if (e instanceof ApiError && e.reason === "not_found") return undefined;
+    if (e instanceof ApiError && e.reason === "not_found") {
+      const pending = getDataMode() === "chain" ? getPendingHunt(id) : undefined;
+      return pending ? pendingView(pending) : undefined;
+    }
     throw e;
+  }
+}
+
+/** Mode chaîne : envoie le message par Kastle (erreurs du wallet affichées telles quelles). */
+async function publishOrThrow(m: ChainMessage, fallback: MessageKey): Promise<void> {
+  try {
+    await publish(m);
+  } catch (e) {
+    throw new HuntActionError(
+      e instanceof WalletError ? e.message : translate(getLocale(), fallback),
+    );
   }
 }
 
 /** Crée une chasse ; renvoie son identifiant. */
 export async function createHunt(data: HuntFormData, address: string): Promise<string> {
   if (getDataMode() === "local") return (await createHuntCovenant(data)).huntId;
+  if (getDataMode() === "chain") {
+    const hunt: ChainHuntMessage = {
+      t: "hunt",
+      id: newHuntId(),
+      title: data.title.trim(),
+      description: data.description.trim(),
+      location: data.location.trim(),
+      ...(data.country ? { country: data.country } : {}),
+      deadline: new Date(data.deadline).getTime(),
+      threshold: data.threshold,
+      deposit: data.deposit,
+      progressVisibility: data.progressVisibility ?? "visible",
+    };
+    await publishOrThrow(hunt, "err.create");
+    addPendingHunt(hunt);
+    addUserHunt(address, {
+      huntId: hunt.id,
+      title: hunt.title,
+      location: hunt.location,
+      deadline: new Date(hunt.deadline).toISOString(),
+      threshold: hunt.threshold,
+    });
+    notify();
+    return hunt.id;
+  }
   try {
     const token = await getSessionToken(address);
     const created = await apiFetch<PublicHunt>(
@@ -249,6 +323,26 @@ export async function commit(
     await localCommit(huntId, address, personalThreshold);
     return;
   }
+  if (getDataMode() === "chain") {
+    // Un wallet = un engagement : l'index refuserait le second (et 0,2 KAS perdus).
+    if (getMyCommitment(address, huntId)) {
+      throw new HuntActionError(translate(getLocale(), "err.alreadyCommitted"));
+    }
+    await publishOrThrow(
+      {
+        t: "commit",
+        hunt: huntId,
+        ...(personalThreshold === undefined ? {} : { threshold: personalThreshold }),
+      },
+      "err.commit",
+    );
+    rememberCommitment(address, huntId, {
+      committedAt: Date.now(),
+      ...(personalThreshold === undefined ? {} : { personalThreshold }),
+    });
+    notify();
+    return;
+  }
   // Pass exigé : preuve anonyme « une personne = un engagement », calculée
   // sur l'appareil, avec le seuil personnel scellé dedans.
   const { required } = await getPassConfig();
@@ -303,7 +397,8 @@ export interface SyncResult {
  * badges sur cet appareil. Demande une signature si aucune session n'est ouverte.
  */
 export async function syncMyActivity(address: string): Promise<SyncResult> {
-  if (getDataMode() === "local") return { created: 0, commitments: 0 };
+  // Mode chaîne : pas encore de synchronisation (l'index ne renvoie aucune adresse).
+  if (getDataMode() !== "api") return { created: 0, commitments: 0 };
   try {
     const token = await getSessionToken(address);
     const me = await apiFetch<{
@@ -344,6 +439,8 @@ export async function settleHunt(huntId: string, outcome: SettlementOutcome): Pr
     markHuntSettled(huntId, outcome);
     return;
   }
+  // Mode chaîne : l'issue se calcule seule à la date limite.
+  if (getDataMode() === "chain") return;
   await apiFetch("POST", `/api/hunts/${encodeURIComponent(huntId)}/settle`, {});
   notify();
 }

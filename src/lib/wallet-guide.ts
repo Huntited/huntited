@@ -79,7 +79,7 @@ export type AddressCheck = { usedElsewhere: boolean; reasons: string[] } | null;
  * null : pas de vérification (mode local, wallet factice, service indisponible).
  */
 export async function checkAddressOnce(address: string): Promise<AddressCheck> {
-  if (getDataMode() !== "api" || getWalletMode() !== "kastle") return null;
+  if (getDataMode() === "local" || getWalletMode() !== "kastle") return null;
   if (!address.startsWith("kaspatest:")) return null;
   const checked = new Set((read(CHECKED_KEY) ?? "").split(",").filter(Boolean));
   if (checked.has(address)) return null;

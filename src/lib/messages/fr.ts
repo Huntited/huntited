@@ -344,6 +344,16 @@ export const fr = {
   "guide.used.text":
     "Tes engagements pourront être reliés à ton autre activité. Un compte réservé à Huntited l'évite.",
   "guide.used.action": "Conseils",
+  "chain.commitNote":
+    "Réseau de test. Kastle va te demander d'envoyer 0,2 KAS de test au registre Huntited : c'est ce qui inscrit ton engagement sur la blockchain, de façon publique (ton adresse y est visible). Le dépôt de 5 KAS reste simulé pour l'instant.",
+  "chain.createNote":
+    "Réseau de test. Kastle va te demander d'envoyer 0,2 KAS de test au registre Huntited : c'est ce qui inscrit la chasse sur la blockchain, pour toujours et de façon publique (ton adresse y est visible). La caution reste simulée pour l'instant.",
+  "hunt.cta.pending": "Inscription en cours…",
+  "hunt.pending":
+    "Inscription sur la blockchain en cours : la chasse sera visible par tous dans environ une minute.",
+  "err.alreadyCommitted": "Tu es déjà engagé·e dans cette chasse.",
+  "wallet.err.needKastle": "Il faut le wallet Kastle pour publier sur la blockchain.",
+  "wallet.err.sendRefused": "Transaction annulée ou refusée par Kastle.",
   "tpl.title": "Besoin d'un point de départ ?",
   "tpl.applied": "Exemple « {name} » chargé. Remplace ce qui est [entre crochets].",
   "tpl.why": "Conseillé pour cet exemple : {why}",

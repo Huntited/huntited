@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { getDataMode } from "@/lib/hunt-repository";
 import { useI18n } from "@/lib/i18n";
 import { getPassConfig, hasPass, onPassChange } from "@/lib/pass";
 import {
@@ -113,7 +114,9 @@ export function CommitModal({
             </p>
             <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
               <p>{commitDepositTerms(hunt.deposit, locale)}</p>
-              <p className="text-xs text-muted-foreground">{t("commit.testNote")}</p>
+              <p className="text-xs text-muted-foreground">
+                {getDataMode() === "chain" ? t("chain.commitNote") : t("commit.testNote")}
+              </p>
               <div className="flex justify-between gap-4">
                 <span className="text-muted-foreground">{t("hunt.deadline")}</span>
                 <span className="font-medium">

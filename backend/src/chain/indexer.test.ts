@@ -7,7 +7,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { decodeKaspaAddress } from "../services/kaspa-signature.js";
-import { startApp } from "../test-helpers.js";
+import { makeWallet, startApp } from "../test-helpers.js";
 import { ChainIndexer, type ChainSource, type RestTransaction } from "./indexer.js";
 import { Ledger } from "./ledger.js";
 import { encodeMessage, type Message } from "./protocol.js";
@@ -65,6 +65,10 @@ const hunt = (id: string): Message => ({
 describe("adresse du registre", () => {
   it("est stable, du réseau de test, et dérivée d'une phrase publique", () => {
     expect(registryAddress()).toBe(REGISTRY);
+    // Même valeur que dans le site (src/lib/chain.ts).
+    expect(REGISTRY).toBe(
+      "kaspatest:qr2ck8qnt0rtj7spzd7am9tsmtd5j4l3tgtah3tzz89l9jvcfg5uvc33cl3yj",
+    );
     expect(REGISTRY.startsWith("kaspatest:")).toBe(true);
     expect(decodeKaspaAddress(REGISTRY).prefix).toBe("kaspatest");
     expect(registryAddress("kaspatest", `${REGISTRY_LABEL}-autre`)).not.toBe(REGISTRY);
@@ -132,5 +136,34 @@ describe("GET /api/chain", () => {
     expect((await app.get(`/api/chain/hunts/${id}`)).body).toMatchObject({ id });
     expect((await app.get("/api/chain/hunts/inconnue")).status).toBe(404);
     expect(list.text + status.text).not.toContain("secret");
+  });
+
+  it("chat : créateur et engagé·es d'une chasse sur la chaîne, reconnus par leur wallet", async () => {
+    const { send, indexer } = fakeChain();
+    const [alice, bob, carol, eve] = [makeWallet(), makeWallet(), makeWallet(), makeWallet()];
+    const id = randomBytes(12).toString("hex");
+    send(hunt(id), alice.address, 10);
+    send({ t: "commit", hunt: id }, bob.address, 20);
+    send({ t: "commit", hunt: id }, carol.address, 30); // seuil 2 atteint : déclenchée
+    await indexer.sync();
+    const app = await startApp({
+      now: () => T0 + DAY,
+      chain: { indexer, registryAddress: REGISTRY },
+    });
+    server = app.server;
+    const access = async (w: ReturnType<typeof makeWallet>) =>
+      app.post("/api/auth/chat-access", { huntId: id }, await app.login(w));
+    expect((await access(alice)).status).toBe(200);
+    const bobToken = (await access(bob)).body["accessToken"] as string;
+    expect(typeof bobToken).toBe("string");
+    expect((await access(eve)).status).toBe(401);
+    // Le salon s'ouvre, avec le nom et l'expiration tirés de la chaîne.
+    const chat = await app.post(
+      "/api/chats",
+      { huntId: id, huntName: "x", expiresAt: Date.now() + 10 * 365 * DAY },
+      bobToken,
+    );
+    expect(chat.status).toBe(201);
+    expect(chat.body["expiresAt"]).toBe(T0 + 7 * DAY + DAY);
   });
 });

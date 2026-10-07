@@ -106,8 +106,15 @@ sa fenêtre de signature. Contraintes lues dans
    Activé par `CHAIN_INDEX=true`. Routes publiques sans aucune adresse :
    `GET /api/chain/status`, `/api/chain/hunts`, `/api/chain/hunts/:id`.
    Vérifié sur le vrai réseau de test (lecture seule).
-3. **Publication depuis Kastle** : le site envoie le message avec
-   `sendKaspa(adresse du registre, 0,2 KAS, { payload })`.
+3. ✅ **Publication depuis Kastle** (`VITE_DATA_MODE=chain`,
+   `src/lib/chain.ts`) : créer et s'engager envoient le message avec
+   `sendKaspa(adresse du registre, 0,2 KAS, { payload })`. En attendant l'index
+   (≈ 1 min), la chasse s'affiche « en cours d'inscription » sur l'appareil qui
+   l'a envoyée. Le chat reconnaît créateur et engagé·es des chasses sur la
+   chaîne (signature du wallet, comme avant). À essayer :
+   `npm run dev:shared:chain` (Kastle, seuil abaissé à 2).
+   Pas encore : notifications « me prévenir » et récupération de « Mes
+   chasses » sur un autre appareil, pour les chasses sur la chaîne.
 4. **Front** : lit l'état via n'importe quel index (adresse configurable) ;
    écran de connexion qui explique le compte « Huntited ».
 5. **Textes** : l'accueil, la FAQ et la page légale disent aujourd'hui que

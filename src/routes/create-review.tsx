@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { COMMIT_DEPOSIT_KAS } from "@/lib/covenants";
 import { clearCreateHuntDraft, getCreateHuntDraft } from "@/lib/create-hunt-store";
-import { createHunt, HuntActionError } from "@/lib/hunt-repository";
+import { createHunt, getDataMode, HuntActionError } from "@/lib/hunt-repository";
 import { countryName } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { addUserHunt } from "@/lib/user-hunts";
@@ -136,6 +136,10 @@ function CreateReviewPage() {
         <p className="mt-4 text-sm text-muted-foreground" role="status">
           {t("review.needWallet")}
         </p>
+      )}
+
+      {getDataMode() === "chain" && (
+        <p className="mt-4 text-xs text-muted-foreground">{t("chain.createNote")}</p>
       )}
 
       <div className="mt-6 flex justify-end gap-3">
