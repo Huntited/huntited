@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const api = vi.hoisted(() => ({ apiFetch: vi.fn() }));
+const api = vi.hoisted(() => ({ apiFetch: vi.fn(), hasBackend: () => true }));
 vi.mock("./api-client", () => api);
 vi.mock("./hunt-repository", () => ({ getDataMode: () => "api" }));
 

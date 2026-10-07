@@ -30,7 +30,7 @@ interface Indexed {
 let cache: Promise<Indexed[]> | null = null;
 
 /** Charge (une seule fois) et prépare la liste des villes. */
-export function loadCities(url = "/geo/cities.json"): Promise<Indexed[]> {
+export function loadCities(url = `${import.meta.env.BASE_URL}geo/cities.json`): Promise<Indexed[]> {
   cache ??= fetch(url)
     .then((r) => {
       if (!r.ok) throw new Error("cities");

@@ -18,6 +18,7 @@ import {
 } from "@/lib/hunt-lifecycle";
 import { countryName } from "@/lib/countries";
 import { placeLabel } from "@/lib/online";
+import { hasBackend } from "@/lib/api-client";
 import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
 import { getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
 import { useI18n } from "@/lib/i18n";
@@ -288,7 +289,13 @@ function HuntDetailPage() {
 
       {/* Chat Matrix : n'existe qu'après l'activation (jamais avant). */}
       <div className="mt-6">
-        {canOpenChat(status, outcome) ? (
+        {canOpenChat(status, outcome) && !hasBackend() ? (
+          // Version sans serveur : chat chiffré pair à pair à venir.
+          <section className="rounded-lg border bg-card p-4 text-sm">
+            <h2 className="mb-1 font-semibold">{t("hunt.chat.title")}</h2>
+            <p className="text-muted-foreground">{t("chat.soon")}</p>
+          </section>
+        ) : canOpenChat(status, outcome) ? (
           <ChatPanel hunt={hunt} status={status} outcome={outcome} />
         ) : (
           <section className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">

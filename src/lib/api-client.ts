@@ -28,6 +28,13 @@ export function apiBaseUrl(): string {
   return (import.meta.env["VITE_API_BASE_URL"] as string | undefined) ?? "http://localhost:3001";
 }
 
+/**
+ * Un serveur Huntited est-il disponible ? Non dans la version statique
+ * (VITE_API_BASE_URL vide) : les services qui en ont besoin (chat,
+ * notifications, conseil « compte dédié ») sont alors présentés comme à venir.
+ */
+export const hasBackend = () => apiBaseUrl() !== "";
+
 export async function apiFetch<T>(
   method: "GET" | "POST",
   path: string,

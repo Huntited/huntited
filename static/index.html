@@ -1,0 +1,33 @@
+<!doctype html>
+<!--
+  Huntited, version statique (IPFS, ou tout hébergement de fichiers).
+  Aucun serveur Huntited : le site lit la blockchain directement.
+  Construite par `npm run build:static` (voir docs/ipfs.md).
+-->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Huntited — Agir ensemble, sans y aller seul</title>
+    <meta
+      name="description"
+      content="Des actions collectives sans risque d'y aller seul : tout le monde ou personne."
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <!-- Thème appliqué avant l'affichage (même script que la version serveur). -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("huntited:theme");
+          var dark = t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

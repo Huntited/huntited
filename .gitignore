@@ -43,3 +43,6 @@ backend/data/
 # Rapports des tests de parcours (Playwright)
 test-results/
 playwright-report/
+
+# Version statique (IPFS), reconstruite par npm run build:static
+dist-static/

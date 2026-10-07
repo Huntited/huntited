@@ -53,7 +53,7 @@ function MyDataPage() {
     setErasing(true);
     await eraseDeviceData();
     // Rechargement : l'application repart de zéro (wallet, pass, préférences).
-    window.location.assign("/my-data");
+    window.location.reload();
   }
 
   return (

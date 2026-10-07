@@ -189,6 +189,8 @@ export const en: Messages = {
   "common.retry": "Try again",
   "chat.demoRoom":
     "Demo: the room is open, but no chat server is online yet. At launch, an “Open the Matrix chat” button will appear here with your credentials.",
+  "chat.soon":
+    "The hunt is triggered. Encrypted chat between participants is coming soon: meanwhile, get organised through your usual channels.",
   "chat.demo": "(Demo: simulated chat, no real room)",
   "chatLogin.title": "Your login for this chat",
   "chatLogin.step1": "Open the chat with the button above (Element app).",

@@ -194,6 +194,8 @@ export const fr = {
   "common.retry": "Réessayer",
   "chat.demoRoom":
     "Démonstration : le salon est ouvert, mais aucun serveur de chat n'est encore en ligne. À la mise en ligne, un bouton « Ouvrir le chat Matrix » apparaîtra ici avec tes identifiants.",
+  "chat.soon":
+    "La chasse est déclenchée. Le chat chiffré entre participants arrive bientôt : en attendant, organisez-vous par vos moyens habituels.",
   "chat.demo": "(Démonstration : chat simulé, aucun salon réel)",
   "chatLogin.title": "Tes identifiants pour ce chat",
   "chatLogin.step1": "Ouvre le chat avec le bouton ci-dessus (application Element).",

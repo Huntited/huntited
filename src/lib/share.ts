@@ -1,6 +1,17 @@
 /** Lien public d'une chasse : uniquement son identifiant, aucune donnée personnelle. */
 export function huntShareUrl(huntId: string, origin: string): string {
-  return `${origin}/hunt/${encodeURIComponent(huntId)}`;
+  return appUrl(`/hunt/${encodeURIComponent(huntId)}`, origin);
+}
+
+/**
+ * Adresse complète d'une page. Version statique (navigation par « # ») :
+ * https://…/chemin-du-site/#/hunt/… ; sinon : https://…/hunt/….
+ */
+export function appUrl(path: string, origin: string): string {
+  if (import.meta.env["VITE_HASH_ROUTING"] === "true" && typeof window !== "undefined") {
+    return `${origin}${window.location.pathname}#${path}`;
+  }
+  return `${origin}${path}`;
 }
 
 /**
