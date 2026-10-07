@@ -14,6 +14,7 @@ import { encodeKaspaAddress, personalMessageHash } from "./services/kaspa-signat
 import { MockMatrixService } from "./services/matrix-service.js";
 import { PassRegistry } from "./services/pass-registry.js";
 import type { PushService } from "./services/push-service.js";
+import type { ChainIndexer } from "./chain/indexer.js";
 import { createSignatureVerifier } from "./services/wallet-auth.js";
 
 export interface TestWallet {
@@ -43,6 +44,8 @@ export async function startApp(
     push?: PushService;
     /** Conseil « compte dédié » (API factice). */
     walletCheck?: { apiUrl: string; fetch: typeof fetch };
+    /** Index du registre sur la chaîne (réseau simulé). */
+    chain?: { indexer: ChainIndexer; registryAddress: string };
   } = {},
 ) {
   const now = opts.now ?? Date.now;
@@ -66,6 +69,7 @@ export async function startApp(
       : {}),
     ...(opts.push ? { push: { service: opts.push, publicKey: "test-public-key" } } : {}),
     ...(opts.walletCheck ? { walletCheck: opts.walletCheck } : {}),
+    ...(opts.chain ? { chain: opts.chain } : {}),
   });
   const server: Server = app.listen(0);
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;

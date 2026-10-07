@@ -73,6 +73,9 @@ const schema = z
       .string()
       .default("https://api-tn10.kaspa.org")
       .refine((u) => u === "" || /^https:\/\/[^/]*tn10[^/]*$/.test(u), "réseau de test uniquement"),
+    // Index du registre sur la chaîne (réseau de test, lecture seule, via
+    // KASPA_API_URL) : « true » pour l'activer.
+    CHAIN_INDEX: z.enum(["true", "false"]).default("false"),
     // Notifications « me prévenir » (Web Push). Vides = désactivées.
     // Générer la paire : npx web-push generate-vapid-keys. Clé privée backend-only.
     PUSH_VAPID_PUBLIC_KEY: z.string().default(""),

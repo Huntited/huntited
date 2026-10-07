@@ -18,6 +18,8 @@ import type { CreateChatInput } from "./types/chat.js";
 import { passesRouter } from "./routes/passes.js";
 import { pushRouter } from "./routes/push.js";
 import { walletRouter } from "./routes/wallet.js";
+import { chainRouter } from "./routes/chain.js";
+import type { ChainIndexer } from "./chain/indexer.js";
 
 export interface AppDeps {
   chat: ChatService;
@@ -42,6 +44,8 @@ export interface AppDeps {
   push?: { service: PushService; publicKey: string };
   /** Conseil « compte dédié » : API REST Kaspa du réseau de test ; absent = désactivé. */
   walletCheck?: { apiUrl: string; fetch?: typeof fetch };
+  /** Index du registre sur la chaîne (lecture seule) ; absent = désactivé. */
+  chain?: { indexer: ChainIndexer; registryAddress: string };
 }
 
 const DEFAULT_CHAT_TTL_MS = 86_400_000;
@@ -103,6 +107,16 @@ export function createApp(d: AppDeps) {
       },
     }),
   );
+  if (d.chain) {
+    app.use(
+      "/api/chain",
+      chainRouter({
+        indexer: d.chain.indexer,
+        registryAddress: d.chain.registryAddress,
+        ...(d.now ? { now: d.now } : {}),
+      }),
+    );
+  }
   if (d.walletCheck) {
     app.use(
       "/api/wallet",

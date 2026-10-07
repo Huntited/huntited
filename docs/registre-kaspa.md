@@ -76,14 +76,38 @@ depuis un wallet ne peut pas être anonyme tant qu'il n'existe pas de
   le nombre d'engagements est lisible par qui le cherche.
 - Le chat (Matrix) et les notifications restent des services facultatifs.
 
+## Adresse du registre
+
+`kaspatest:qr2ck8qnt0rtj7spzd7am9tsmtd5j4l3tgtah3tzz89l9jvcfg5uvc33cl3yj`
+
+Dérivée de la phrase publique `huntited:registry:v1` (`chain/registry-address.ts`) :
+un point de la courbe obtenu par hachage, dont **personne ne connaît la clé
+privée**. Chacun peut refaire le calcul. Les KAS envoyés à cette adresse ne
+peuvent être dépensés par personne (perdus).
+
+## Publication depuis Kastle (vérifié dans le code de Kastle)
+
+`window.kastle.sendKaspa(adresse, sompi, { payload })` : Kastle construit la
+transaction depuis le compte connecté, rend la monnaie à ce compte, et ouvre
+sa fenêtre de signature. Contraintes lues dans
+`api/background/handlers/kaspa/sendSompi.ts` :
+
+- `payload` en **hexadécimal** ;
+- **0,2 KAS minimum** envoyés : chaque action (créer, s'engager) envoie donc
+  0,2 KAS de test à l'adresse du registre ;
+- une seule transaction (sinon refus « batch required »).
+
 ## Étapes
 
 1. ✅ **Format et règles**, testés hors ligne.
-2. **Index** : lecture des transactions vers l'adresse du registre sur
-   testnet-10 (nœuds publics), avec l'adresse qui envoie et l'heure du bloc ;
-   le backend actuel devient un index parmi d'autres.
-3. **Publication depuis Kastle** : le site construit la transaction (payload)
-   et Kastle la signe et l'envoie (à vérifier : ce que l'API de Kastle permet).
+2. ✅ **Index** (`chain/indexer.ts`) : lit l'API publique du réseau de test
+   (`KASPA_API_URL`), rejoue dans l'ordre (score du bloc qui accepte, puis
+   identifiant) les transactions **finales** (600 de profondeur, ≈ 1 min).
+   Activé par `CHAIN_INDEX=true`. Routes publiques sans aucune adresse :
+   `GET /api/chain/status`, `/api/chain/hunts`, `/api/chain/hunts/:id`.
+   Vérifié sur le vrai réseau de test (lecture seule).
+3. **Publication depuis Kastle** : le site envoie le message avec
+   `sendKaspa(adresse du registre, 0,2 KAS, { payload })`.
 4. **Front** : lit l'état via n'importe quel index (adresse configurable) ;
    écran de connexion qui explique le compte « Huntited ».
 5. **Textes** : l'accueil, la FAQ et la page légale disent aujourd'hui que
