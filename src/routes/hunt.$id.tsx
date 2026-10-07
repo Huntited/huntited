@@ -54,6 +54,7 @@ function HuntDetailPage() {
     isLoading,
     error,
     pending,
+    outcomePending,
     refresh,
   } = useHunt(id);
   // Wallet + engagement (un seul engagement par wallet et par chasse).
@@ -120,6 +121,13 @@ function HuntDetailPage() {
       {pending && (
         <p role="status" className="mt-4 rounded-md border bg-muted p-3 text-sm">
           {t("hunt.pending")}
+        </p>
+      )}
+
+      {/* Mode chaîne : date limite passée, résultat pas encore confirmé */}
+      {outcomePending && (
+        <p role="status" className="mt-4 rounded-md border bg-muted p-3 text-sm">
+          {t("hunt.outcomePending")}
         </p>
       )}
 

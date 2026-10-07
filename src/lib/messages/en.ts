@@ -343,6 +343,8 @@ export const en: Messages = {
   "chain.createNote":
     "Test network. Kastle will ask you to send 0.2 test KAS to the Huntited registry: that's what records the hunt on the blockchain, permanently and publicly (your address is visible there). The deposit is still simulated for now.",
   "hunt.cta.pending": "Being recorded…",
+  "hunt.outcomePending":
+    "Deadline passed: checking the result. The last commitments can take a few minutes to show up.",
   "hunt.pending":
     "Being recorded on the blockchain: the hunt will be visible to everyone in about a minute.",
   "err.alreadyCommitted": "You've already committed to this hunt.",

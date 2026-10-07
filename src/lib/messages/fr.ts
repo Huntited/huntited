@@ -349,6 +349,8 @@ export const fr = {
   "chain.createNote":
     "Réseau de test. Kastle va te demander d'envoyer 0,2 KAS de test au registre Huntited : c'est ce qui inscrit la chasse sur la blockchain, pour toujours et de façon publique (ton adresse y est visible). La caution reste simulée pour l'instant.",
   "hunt.cta.pending": "Inscription en cours…",
+  "hunt.outcomePending":
+    "Date limite passée : vérification du résultat en cours. Les derniers engagements peuvent mettre quelques minutes à apparaître.",
   "hunt.pending":
     "Inscription sur la blockchain en cours : la chasse sera visible par tous dans environ une minute.",
   "err.alreadyCommitted": "Tu es déjà engagé·e dans cette chasse.",

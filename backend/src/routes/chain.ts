@@ -11,6 +11,9 @@ import type { LedgerHunt } from "../chain/ledger.js";
 import { huntIdSchema } from "../chain/protocol.js";
 import type { PublicHunt } from "../types/hunt.js";
 
+/** Délai avant d'annoncer un échec (retard possible de l'API publique). */
+export const OUTCOME_GRACE_MS = 15 * 60_000;
+
 export function chainRouter(deps: {
   indexer: ChainIndexer;
   registryAddress: string;
@@ -22,7 +25,12 @@ export function chainRouter(deps: {
 
   const view = (h: LedgerHunt): PublicHunt => {
     const t = now();
-    const { status, outcome } = indexer.ledger.status(h, t);
+    const computed = indexer.ledger.status(h, t);
+    // Échec annoncé seulement après un délai : l'API publique peut lister en
+    // retard un engagement arrivé à temps (constaté en test). Un déclenchement,
+    // lui, est définitif et s'affiche tout de suite.
+    const outcomePending = computed.outcome === "failure" && t <= h.deadline + OUTCOME_GRACE_MS;
+    const { status, outcome } = outcomePending ? { status: "active" as const } : computed;
     const masked = h.progressVisibility === "hidden" && status === "active";
     const group = indexer.ledger.retainedGroup(h);
     return {
@@ -46,6 +54,7 @@ export function chainRouter(deps: {
       ...(h.activatedAt !== undefined
         ? { activatedAt: new Date(h.activatedAt).toISOString() }
         : {}),
+      ...(outcomePending ? { outcomePending: true } : {}),
     };
   };
 

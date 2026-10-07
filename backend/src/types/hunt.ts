@@ -85,4 +85,6 @@ export interface PublicHunt {
   createdAt: string;
   activatedAt?: string;
   settledAt?: string;
+  /** Registre sur la chaîne : date limite passée, échec pas encore confirmé. */
+  outcomePending?: boolean;
 }

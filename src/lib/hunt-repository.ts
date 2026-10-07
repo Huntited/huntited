@@ -70,6 +70,8 @@ export interface HuntView {
   outcome?: SettlementOutcome;
   /** Mode chaîne : chasse envoyée, pas encore vue par l'index (≈ 1 min). */
   pending?: boolean;
+  /** Mode chaîne : date limite passée, résultat encore en vérification. */
+  outcomePending?: boolean;
 }
 
 export class HuntActionError extends Error {}
@@ -138,6 +140,8 @@ interface PublicHunt {
   outcome?: SettlementOutcome;
   activatedAt?: string;
   settledAt?: string;
+  /** Registre sur la chaîne : date limite passée, échec pas encore confirmé. */
+  outcomePending?: boolean;
 }
 
 function apiView(p: PublicHunt): HuntView {
@@ -165,6 +169,7 @@ function apiView(p: PublicHunt): HuntView {
     commitsOpen: p.commitsOpen ?? p.status === "active",
     ...(p.activationRank !== undefined ? { activationRank: p.activationRank } : {}),
     ...(p.outcome ? { outcome: p.outcome } : {}),
+    ...(p.outcomePending ? { outcomePending: true } : {}),
   };
 }
 

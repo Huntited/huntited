@@ -7,6 +7,7 @@ import { bytesToHex } from "@noble/hashes/utils.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { decodeKaspaAddress } from "../services/kaspa-signature.js";
+import { OUTCOME_GRACE_MS } from "../routes/chain.js";
 import { makeWallet, startApp } from "../test-helpers.js";
 import { ChainIndexer, type ChainSource, type RestTransaction } from "./indexer.js";
 import { Ledger } from "./ledger.js";
@@ -168,6 +169,25 @@ describe("GET /api/chain", () => {
     expect((await app.get(`/api/chain/hunts/${id}`)).body).toMatchObject({ id });
     expect((await app.get("/api/chain/hunts/inconnue")).status).toBe(404);
     expect(list.text + status.text).not.toContain("secret");
+  });
+
+  it("échec annoncé seulement après le délai de vérification", async () => {
+    const { send, indexer } = fakeChain();
+    const id = randomBytes(12).toString("hex");
+    send(hunt(id), "kaspatest:alice", 10);
+    await indexer.sync();
+    let now = T0 + 7 * DAY + 60_000; // une minute après la date limite
+    const app = await startApp({ now: () => now, chain: { indexer, registryAddress: REGISTRY } });
+    server = app.server;
+    expect((await app.get(`/api/chain/hunts/${id}`)).body).toMatchObject({
+      status: "active",
+      commitsOpen: false,
+      outcomePending: true,
+    });
+    now += OUTCOME_GRACE_MS;
+    const after = (await app.get(`/api/chain/hunts/${id}`)).body;
+    expect(after).toMatchObject({ status: "settled", outcome: "failure" });
+    expect(after["outcomePending"]).toBeUndefined();
   });
 
   it("chat : créateur et engagé·es d'une chasse sur la chaîne, reconnus par leur wallet", async () => {

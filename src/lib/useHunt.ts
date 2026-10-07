@@ -24,6 +24,8 @@ export interface UseHuntResult {
   error: string | null;
   /** Mode chaîne : chasse envoyée, pas encore vue par l'index. */
   pending: boolean;
+  /** Mode chaîne : date limite passée, résultat encore en vérification. */
+  outcomePending: boolean;
   refresh: () => void;
 }
 
@@ -51,6 +53,7 @@ export function useHunt(huntId: string): UseHuntResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [outcomePending, setOutcomePending] = useState(false);
   const [version, setVersion] = useState(0); // incrémenté pour forcer un refresh
 
   useEffect(() => {
@@ -60,6 +63,7 @@ export function useHunt(huntId: string): UseHuntResult {
         if (cancelled) return;
         setError(null);
         setPending(view?.pending ?? false);
+        setOutcomePending(view?.outcomePending ?? false);
         setHunt(view?.hunt);
         setCommitCount(view?.commitCount ?? 0);
         setStatus(view?.status ?? "active");
@@ -84,12 +88,13 @@ export function useHunt(huntId: string): UseHuntResult {
 
   useEffect(() => onHuntsChange(() => setVersion((v) => v + 1)), []);
 
-  // En attente de l'index (≈ 1 min) : on relit toutes les 15 s.
+  // En attente de l'index (chasse envoyée, ou résultat en vérification) : on relit toutes les 15 s.
+  const waiting = pending || outcomePending;
   useEffect(() => {
-    if (!pending) return;
+    if (!waiting) return;
     const timer = setInterval(() => setVersion((v) => v + 1), 15_000);
     return () => clearInterval(timer);
-  }, [pending]);
+  }, [waiting]);
 
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
   const covenant = hunt ? getHuntCovenant(hunt) : undefined;
@@ -104,6 +109,7 @@ export function useHunt(huntId: string): UseHuntResult {
     isLoading,
     error,
     pending,
+    outcomePending,
     refresh,
   };
 }
