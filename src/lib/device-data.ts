@@ -10,7 +10,7 @@ export type DataGroupId =
 
 /** Ordre d'affichage et clés de chaque groupe. */
 const GROUPS: { id: DataGroupId; keys: string[] }[] = [
-  { id: "wallet", keys: ["wallet", "mock-wallet"] },
+  { id: "wallet", keys: ["wallet", "mock-wallet", "wallet-guide", "address-checked"] },
   { id: "pass", keys: ["pass", "pass-invite-slots"] },
   {
     id: "hunts",

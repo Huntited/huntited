@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { getHunt } from "@/lib/covenants";
@@ -39,7 +39,9 @@ describe("Création d'une chasse : wallet obligatoire", () => {
   it("sans wallet, la création n'est pas proposée", async () => {
     renderReview();
 
-    expect(await screen.findByRole("button", { name: "Connecter le wallet" })).toBeTruthy();
+    // Le bouton de la page (l'en-tête en a un aussi).
+    const main = await screen.findByRole("main");
+    expect(await within(main).findByRole("button", { name: "Connecter le wallet" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Confirmer et créer la chasse" })).toBeNull();
   });
 

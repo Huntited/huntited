@@ -67,6 +67,12 @@ const schema = z
       )
       .pipe(z.array(z.string().regex(/^[\w-]{24,128}$/))),
     PASS_INVITES_PER_MONTH: z.coerce.number().int().min(1).max(20).default(3),
+    // API REST Kaspa du RÉSEAU DE TEST, pour conseiller un compte dédié
+    // (historique public d'une adresse). Vide = conseil désactivé.
+    KASPA_API_URL: z
+      .string()
+      .default("https://api-tn10.kaspa.org")
+      .refine((u) => u === "" || /^https:\/\/[^/]*tn10[^/]*$/.test(u), "réseau de test uniquement"),
     // Notifications « me prévenir » (Web Push). Vides = désactivées.
     // Générer la paire : npx web-push generate-vapid-keys. Clé privée backend-only.
     PUSH_VAPID_PUBLIC_KEY: z.string().default(""),

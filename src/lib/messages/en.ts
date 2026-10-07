@@ -324,6 +324,20 @@ export const en: Messages = {
   "data.server.never": "Never your wallet address in clear, your IP, your name or your e-mail.",
   "data.server.more": "Details in the privacy policy",
   "footer.data": "Your data",
+  "guide.title": "Before connecting your wallet",
+  "guide.lead":
+    "Your commitments will be public transactions. So they can't be linked to the rest of your activity, use an account reserved for Huntited.",
+  "guide.step1": "In Kastle, create a new account (for example “Huntited”) and select it.",
+  "guide.step2": "Fund it directly from outside: the test network faucet, an exchange or a friend.",
+  "guide.step3":
+    "Avoid funding it from your main account: that transfer would be visible and would link the two.",
+  "guide.note": "Huntited never displays your address. You'll only see this advice once.",
+  "guide.connect": "Connect",
+  "guide.close": "Close",
+  "guide.used.title": "This address has been used outside Huntited",
+  "guide.used.text":
+    "Your commitments could be linked to your other activity. An account reserved for Huntited avoids that.",
+  "guide.used.action": "Advice",
   "tpl.title": "Need a starting point?",
   "tpl.applied": 'Loaded the "{name}" example. Replace what\'s [in brackets].',
   "tpl.why": "Suggested for this example: {why}",

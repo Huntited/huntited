@@ -328,6 +328,22 @@ export const fr = {
   "data.server.never": "Jamais ton adresse de wallet en clair, ton IP, ton nom ou ton e-mail.",
   "data.server.more": "Le détail dans la politique de vie privée",
   "footer.data": "Tes données",
+  "guide.title": "Avant de connecter ton wallet",
+  "guide.lead":
+    "Tes engagements seront des transactions publiques. Pour qu'on ne puisse pas les relier au reste de ton activité, utilise un compte réservé à Huntited.",
+  "guide.step1":
+    "Dans Kastle, crée un nouveau compte (par exemple « Huntited ») et sélectionne-le.",
+  "guide.step2":
+    "Alimente-le directement depuis l'extérieur : le faucet du réseau de test, une plateforme d'échange ou un ami.",
+  "guide.step3":
+    "Évite de l'alimenter depuis ton compte principal : ce transfert serait visible et relierait les deux.",
+  "guide.note": "Huntited n'affiche jamais ton adresse. Ces conseils ne s'afficheront qu'une fois.",
+  "guide.connect": "Connecter",
+  "guide.close": "Fermer",
+  "guide.used.title": "Cette adresse a déjà servi hors de Huntited",
+  "guide.used.text":
+    "Tes engagements pourront être reliés à ton autre activité. Un compte réservé à Huntited l'évite.",
+  "guide.used.action": "Conseils",
   "tpl.title": "Besoin d'un point de départ ?",
   "tpl.applied": "Exemple « {name} » chargé. Remplace ce qui est [entre crochets].",
   "tpl.why": "Conseillé pour cet exemple : {why}",

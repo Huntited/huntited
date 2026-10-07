@@ -99,6 +99,7 @@ const fr: LegalSection[] = [
         heading: "Services tiers",
         paragraphs: [
           "Ton wallet (par exemple Kastle) et le réseau Kaspa ont leurs propres règles. Le bouton « Répondre à un tweet » ouvre X (x.com) : ce que tu y publies relève des conditions de X. Huntited n'envoie aucune donnée à ces services.",
+          "Quand tu connectes Kastle, le serveur Huntited consulte l'historique public de ton adresse sur l'API du réseau de test Kaspa, pour te prévenir si elle a déjà servi hors de Huntited. C'est le serveur qui fait la demande (l'API ne voit pas ton IP), et rien n'est conservé.",
         ],
       },
       {
@@ -225,6 +226,7 @@ const en: LegalSection[] = [
         heading: "Third-party services",
         paragraphs: [
           'Your wallet (for example Kastle) and the Kaspa network have their own rules. The "Reply to a tweet" button opens X (x.com): what you post there falls under X\'s terms. Huntited sends no data to these services.',
+          "When you connect Kastle, the Huntited server looks up your address's public history on the Kaspa test network API, to warn you if it has been used outside Huntited. The server makes the request (the API doesn't see your IP), and nothing is kept.",
         ],
       },
       {

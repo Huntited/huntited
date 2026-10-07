@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { getLocale, translate } from "./i18n";
 import { toast } from "sonner";
 
+import { guideBeforeConnect, needsGuide } from "./wallet-guide";
+
 import {
   connectWallet as connect,
   disconnectWallet as disconnect,
@@ -34,6 +36,8 @@ export function useWallet(): UseWalletResult {
   useEffect(() => subscribeWallet(setState), []);
 
   const connectWallet = useCallback(async () => {
+    // Première connexion de Kastle : conseils « compte dédié » d'abord.
+    if (needsGuide() && !(await guideBeforeConnect())) return;
     setIsLoading(true);
     setError(null);
     try {

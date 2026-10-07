@@ -17,6 +17,7 @@ import type { PushService } from "./services/push-service.js";
 import type { CreateChatInput } from "./types/chat.js";
 import { passesRouter } from "./routes/passes.js";
 import { pushRouter } from "./routes/push.js";
+import { walletRouter } from "./routes/wallet.js";
 
 export interface AppDeps {
   chat: ChatService;
@@ -39,6 +40,8 @@ export interface AppDeps {
   chatTtlMs?: number;
   /** Notifications « me prévenir » ; absent = fonctionnalité désactivée. */
   push?: { service: PushService; publicKey: string };
+  /** Conseil « compte dédié » : API REST Kaspa du réseau de test ; absent = désactivé. */
+  walletCheck?: { apiUrl: string; fetch?: typeof fetch };
 }
 
 const DEFAULT_CHAT_TTL_MS = 86_400_000;
@@ -100,6 +103,16 @@ export function createApp(d: AppDeps) {
       },
     }),
   );
+  if (d.walletCheck) {
+    app.use(
+      "/api/wallet",
+      walletRouter({
+        apiUrl: d.walletCheck.apiUrl,
+        ...(d.walletCheck.fetch ? { fetch: d.walletCheck.fetch } : {}),
+        ...(d.rateLimitMultiplier ? { rateLimitMultiplier: d.rateLimitMultiplier } : {}),
+      }),
+    );
+  }
   if (d.push) {
     app.use(
       "/api/push",

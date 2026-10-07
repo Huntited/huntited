@@ -41,6 +41,8 @@ export async function startApp(
     passes?: { required: boolean; genesis?: string[] };
     /** Notifications « me prévenir » (expéditeur factice). */
     push?: PushService;
+    /** Conseil « compte dédié » (API factice). */
+    walletCheck?: { apiUrl: string; fetch: typeof fetch };
   } = {},
 ) {
   const now = opts.now ?? Date.now;
@@ -63,6 +65,7 @@ export async function startApp(
       ? { passes: { registry: passes, required: opts.passes!.required, invitesPerMonth: 3 } }
       : {}),
     ...(opts.push ? { push: { service: opts.push, publicKey: "test-public-key" } } : {}),
+    ...(opts.walletCheck ? { walletCheck: opts.walletCheck } : {}),
   });
   const server: Server = app.listen(0);
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;

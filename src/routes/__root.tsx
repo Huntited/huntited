@@ -31,6 +31,7 @@ function SkipLink() {
   );
 }
 import { Toaster } from "@/components/ui/sonner";
+import { WalletGuide } from "@/components/WalletGuide";
 
 function NotFoundComponent() {
   const { t } = useI18n();
@@ -146,6 +147,7 @@ function RootComponent() {
       </div>
       <DevResetButton />
       <Toaster />
+      <WalletGuide />
     </QueryClientProvider>
   );
 }
