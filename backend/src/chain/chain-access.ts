@@ -10,20 +10,25 @@ const ADDRESS_PREFIX = "a:";
 const fingerprintOf = (who: string) =>
   who.startsWith(ADDRESS_PREFIX) ? fingerprintWallet(who.slice(ADDRESS_PREFIX.length)) : null;
 
-export function chainAccess(ledger: Ledger, now: () => number = Date.now): HuntAccessStore {
-  const state = (h: LedgerHunt) => ledger.status(h, now());
+/** `getLedger` : le grand livre courant (l'index peut le recalculer). */
+export function chainAccess(
+  getLedger: () => Ledger,
+  now: () => number = Date.now,
+): HuntAccessStore {
+  const state = (h: LedgerHunt) => getLedger().status(h, now());
   return {
     getHuntStatus(id): HuntAccessStatus | undefined {
-      const h = ledger.hunt(id);
+      const h = getLedger().hunt(id);
       if (!h) return undefined;
       const s = state(h);
       return s.outcome ? "settled" : s.status;
     },
     getHuntOutcome(id): HuntOutcome | undefined {
-      const h = ledger.hunt(id);
+      const h = getLedger().hunt(id);
       return h ? state(h).outcome : undefined;
     },
     getWalletRole(id, walletKey): ChatRole | undefined {
+      const ledger = getLedger();
       const h = ledger.hunt(id);
       if (!h) return undefined;
       if (fingerprintOf(h.creator) === walletKey) return "creator";

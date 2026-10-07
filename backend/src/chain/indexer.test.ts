@@ -21,17 +21,23 @@ function fakeChain() {
   const txs: RestTransaction[] = [];
   let tip = 1_000;
   let n = 0;
+  // Transactions déjà envoyées mais que l'API ne liste pas encore (retard).
+  const hidden = new Set<string>();
+  const listed = () => txs.filter((t) => !hidden.has(t.transaction_id));
   const source: ChainSource = {
     virtualBlueScore: async () => tip,
+    addressTransactionCount: async () => listed().length,
     // Plus récentes d'abord, comme l'API publique.
     addressTransactions: async (_a, offset, limit) =>
-      [...txs]
+      listed()
         .sort((a, b) => (b.accepting_block_blue_score ?? 0) - (a.accepting_block_blue_score ?? 0))
         .slice(offset, offset + limit),
   };
-  const send = (m: Message, sender: string, score: number, accepted = true) => {
+  const send = (m: Message, sender: string, score: number, accepted = true, late = false) => {
+    const id = `tx${String(++n).padStart(4, "0")}`;
+    if (late) hidden.add(id);
     txs.push({
-      transaction_id: `tx${String(++n).padStart(4, "0")}`,
+      transaction_id: id,
       is_accepted: accepted,
       accepting_block_blue_score: score,
       accepting_block_time: T0 + score,
@@ -39,15 +45,22 @@ function fakeChain() {
       inputs: [{ previous_outpoint_address: sender }],
     });
   };
-  const ledger = new Ledger({
-    invitationKeys: [],
-    minThreshold: 2,
-    minCautionKas: 30,
-    invitesPerMonth: 3,
-    passRequired: false,
-  });
-  const indexer = new ChainIndexer(source, REGISTRY, ledger, 100);
-  return { send, indexer, ledger, setTip: (s: number) => (tip = s), txs };
+  const newLedger = () =>
+    new Ledger({
+      invitationKeys: [],
+      minThreshold: 2,
+      minCautionKas: 30,
+      invitesPerMonth: 3,
+      passRequired: false,
+    });
+  const indexer = new ChainIndexer(source, REGISTRY, newLedger, 100);
+  return {
+    send,
+    indexer,
+    setTip: (s: number) => (tip = s),
+    /** L'API finit par lister les transactions en retard. */
+    catchUp: () => hidden.clear(),
+  };
 }
 
 const hunt = (id: string): Message => ({
@@ -77,7 +90,7 @@ describe("adresse du registre", () => {
 
 describe("index", () => {
   it("rejoue dans l'ordre de la chaîne, seulement les transactions finales", async () => {
-    const { send, indexer, ledger, setTip } = fakeChain();
+    const { send, indexer, setTip } = fakeChain();
     const id = randomBytes(12).toString("hex");
     // Arrivées dans le désordre : l'engagement d'Alice avant la chasse (score plus bas)
     // doit être refusé ; celui de Bob, après, accepté.
@@ -88,9 +101,9 @@ describe("index", () => {
     send({ t: "commit", hunt: id }, "kaspatest:dave", 950); // pas encore finale
 
     expect(await indexer.sync()).toBe(3);
-    const h = ledger.hunt(id)!;
+    const h = indexer.ledger.hunt(id)!;
     expect(h.commits.map((c) => c.who)).toEqual(["a:kaspatest:bob"]);
-    expect(indexer.appliedScore()).toBe(900);
+    expect(indexer.appliedScore()).toBe(300);
 
     // Plus tard : l'engagement de Dave devient final.
     setTip(1_100);
@@ -100,15 +113,34 @@ describe("index", () => {
     expect(await indexer.sync()).toBe(0);
   });
 
+  it("une transaction listée en retard par l'API est rejouée à sa place", async () => {
+    const { send, indexer, catchUp } = fakeChain();
+    const id = randomBytes(12).toString("hex");
+    send(hunt(id), "kaspatest:alice", 100, true, true); // la chasse : en retard
+    send({ t: "commit", hunt: id }, "kaspatest:bob", 200);
+    send({ t: "commit", hunt: id }, "kaspatest:carol", 300);
+
+    // Sans la chasse, les engagements visent une chasse inconnue.
+    await indexer.sync();
+    expect(indexer.ledger.hunt(id)).toBeUndefined();
+
+    // L'API rattrape son retard : tout est recalculé dans l'ordre de la chaîne.
+    catchUp();
+    expect(await indexer.sync()).toBe(1);
+    const h = indexer.ledger.hunt(id)!;
+    expect(h.commits.map((c) => c.who)).toEqual(["a:kaspatest:bob", "a:kaspatest:carol"]);
+    expect(h.activatedAt).toBe(T0 + 300);
+  });
+
   it("parcourt plusieurs pages", async () => {
-    const { send, indexer, ledger } = fakeChain();
+    const { send, indexer } = fakeChain();
     const id = randomBytes(12).toString("hex");
     send(hunt(id), "kaspatest:alice", 1);
     for (let i = 0; i < 600; i++) send({ t: "commit", hunt: id }, `kaspatest:p${i}`, 2 + i);
     // Pointe à 1000, profondeur 100 : les scores ≤ 900 sont finaux (tous ici),
     // répartis sur deux pages de 500.
     expect(await indexer.sync()).toBe(601);
-    expect(ledger.hunt(id)!.commits).toHaveLength(600);
+    expect(indexer.ledger.hunt(id)!.commits).toHaveLength(600);
   });
 });
 

@@ -45,12 +45,13 @@ const chain =
         indexer: new ChainIndexer(
           restSource(env.KASPA_API_URL),
           registryAddress(),
-          new Ledger({
-            ...DEFAULT_GENESIS,
-            invitationKeys: [],
-            // Doit être identique pour tous les index (7 hors développement).
-            minThreshold: env.MIN_HUNT_THRESHOLD,
-          }),
+          () =>
+            new Ledger({
+              ...DEFAULT_GENESIS,
+              invitationKeys: [],
+              // Doit être identique pour tous les index (7 hors développement).
+              minThreshold: env.MIN_HUNT_THRESHOLD,
+            }),
         ),
         registryAddress: registryAddress(),
       }

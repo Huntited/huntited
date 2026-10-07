@@ -17,15 +17,14 @@ export function chainRouter(deps: {
   now?: () => number;
 }): Router {
   const { indexer } = deps;
-  const ledger = indexer.ledger;
   const now = deps.now ?? Date.now;
   const router = Router();
 
   const view = (h: LedgerHunt): PublicHunt => {
     const t = now();
-    const { status, outcome } = ledger.status(h, t);
+    const { status, outcome } = indexer.ledger.status(h, t);
     const masked = h.progressVisibility === "hidden" && status === "active";
-    const group = ledger.retainedGroup(h);
+    const group = indexer.ledger.retainedGroup(h);
     return {
       id: h.id,
       title: h.title,
@@ -54,15 +53,15 @@ export function chainRouter(deps: {
     res.json({
       registryAddress: deps.registryAddress,
       appliedScore: indexer.appliedScore(),
-      hunts: ledger.allHunts().length,
+      hunts: indexer.ledger.allHunts().length,
     }),
   );
 
-  router.get("/hunts", (_req, res) => res.json(ledger.allHunts().map(view)));
+  router.get("/hunts", (_req, res) => res.json(indexer.ledger.allHunts().map(view)));
 
   router.get("/hunts/:id", (req, res) => {
     const id = huntIdSchema.safeParse(req.params["id"]);
-    const h = id.success ? ledger.hunt(id.data) : undefined;
+    const h = id.success ? indexer.ledger.hunt(id.data) : undefined;
     if (!h) return res.status(404).json({ error: "Chasse introuvable." });
     return res.json(view(h));
   });

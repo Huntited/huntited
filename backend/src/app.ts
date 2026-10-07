@@ -71,7 +71,10 @@ export function createApp(d: AppDeps) {
   };
   // Rôles pour le chat : registre du serveur, puis chasses sur la chaîne.
   const access = d.chain
-    ? combineAccess(d.registry, chainAccess(d.chain.indexer.ledger, d.now))
+    ? combineAccess(
+        d.registry,
+        chainAccess(() => d.chain!.indexer.ledger, d.now),
+      )
     : d.registry;
 
   const app = express();
