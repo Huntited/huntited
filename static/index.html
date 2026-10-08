@@ -15,16 +15,6 @@
     />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="./favicon.ico" sizes="any" />
-    <!-- Thème appliqué avant l'affichage (même script que la version serveur). -->
-    <script>
-      (function () {
-        try {
-          var t = localStorage.getItem("huntited:theme");
-          var dark = t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
-          if (dark) document.documentElement.classList.add("dark");
-        } catch (e) {}
-      })();
-    </script>
   </head>
   <body>
     <div id="app"></div>

@@ -2,6 +2,7 @@
 // mais rendue entièrement dans le navigateur (aucun serveur), avec une
 // navigation par « # » (/#/hunt/…) qui fonctionne sur n'importe quelle
 // passerelle IPFS, sans règle de réécriture.
+import "./theme";
 import { QueryClient } from "@tanstack/react-query";
 import {
   createHashHistory,
