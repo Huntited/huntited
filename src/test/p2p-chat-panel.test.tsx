@@ -14,6 +14,7 @@ const chain = vi.hoisted(() => ({
 const relay = vi.hoisted(() => ({
   events: [] as NostrEvent[],
   listeners: [] as ((e: NostrEvent) => void)[],
+  down: false,
 }));
 
 vi.mock("@/lib/onchain/browser-index", () => ({
@@ -28,6 +29,7 @@ vi.mock("@/lib/nostr-relays", () => ({
       return () => undefined;
     },
     publish: async (e: NostrEvent) => {
+      if (relay.down) throw new Error("relays_timeout");
       relay.events.push(e);
     },
     close: () => undefined,
@@ -38,6 +40,7 @@ beforeEach(() => {
   localStorage.clear();
   relay.events = [];
   relay.listeners = [];
+  relay.down = false;
 });
 afterEach(() => cleanup());
 
@@ -45,30 +48,47 @@ describe("chat chiffré (sans serveur)", () => {
   it("un membre écrit et relit son message, chiffré sur le relais", async () => {
     const mine = ensureChatKey(HUNT)!;
     chain.members = [mine, "11".repeat(32)];
-    render(<P2PChatPanel huntId={HUNT} />);
+    render(<P2PChatPanel huntId={HUNT} title="Test" />);
     const box = await screen.findByRole("textbox");
     fireEvent.change(box, { target: { value: "On se retrouve à 18 h" } });
-    fireEvent.click(screen.getByRole("button", { name: "Envoyer" }));
-    // Le message apparaît dans la liste, signé « Toi ».
-    expect(await screen.findByText(/^Toi ·/)).toBeTruthy();
+    // Entrée envoie (Maj+Entrée irait à la ligne).
+    fireEvent.keyDown(box, { key: "Enter" });
+    // Affiché tout de suite, puis confirmé par le relais (l'heure remplace « Envoi… »).
+    await waitFor(() => expect(relay.events).toHaveLength(1));
+    await waitFor(() => expect(screen.queryByText("Envoi…")).toBeNull());
     const items = screen.getAllByRole("listitem").map((li) => li.textContent);
     expect(items.some((x) => x?.includes("On se retrouve à 18 h"))).toBe(true);
-    expect(relay.events).toHaveLength(1);
+    expect((box as HTMLTextAreaElement).value).toBe("");
     expect(relay.events[0]!.content).not.toContain("18 h");
     expect(chatPublicKey(getChatKey(HUNT)!)).toBe(mine);
+  });
+
+  it("message non envoyé : le dit, et permet de réessayer", async () => {
+    chain.members = [ensureChatKey(HUNT)!];
+    render(<P2PChatPanel huntId={HUNT} title="Test" />);
+    const box = await screen.findByRole("textbox");
+    relay.down = true;
+    fireEvent.change(box, { target: { value: "Coucou" } });
+    fireEvent.keyDown(box, { key: "Enter" });
+    const retry = await screen.findByRole("button", { name: "Réessayer" });
+    expect(screen.getByText(/Non envoyé/)).toBeTruthy();
+    relay.down = false;
+    fireEvent.click(retry);
+    await waitFor(() => expect(relay.events).toHaveLength(1));
+    await waitFor(() => expect(screen.queryByText(/Non envoyé/)).toBeNull());
   });
 
   it("refuse une personne qui n'est pas membre", async () => {
     ensureChatKey(HUNT);
     chain.members = ["11".repeat(32)];
-    render(<P2PChatPanel huntId={HUNT} />);
+    render(<P2PChatPanel huntId={HUNT} title="Test" />);
     await waitFor(() => expect(screen.getByText(/réservé aux personnes engagées/)).toBeTruthy());
     expect(screen.queryByRole("textbox")).toBeNull();
   });
 
   it("sans clé dans ce navigateur : explique où ouvrir le chat", async () => {
     chain.members = ["11".repeat(32)];
-    render(<P2PChatPanel huntId={HUNT} />);
+    render(<P2PChatPanel huntId={HUNT} title="Test" />);
     await waitFor(() => expect(screen.getByText(/pas de clé de chat/)).toBeTruthy());
   });
 });

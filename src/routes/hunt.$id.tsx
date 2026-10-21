@@ -292,7 +292,7 @@ function HuntDetailPage() {
       <div className="mt-6">
         {canOpenChat(status, outcome) && getDataMode() === "chain" ? (
           // Chasse sur la chaîne : chat chiffré entre membres, sans serveur.
-          <P2PChatPanel huntId={hunt.id} />
+          <P2PChatPanel huntId={hunt.id} title={hunt.title} />
         ) : canOpenChat(status, outcome) && !hasBackend() ? (
           // Version sans serveur : chat chiffré pair à pair à venir.
           <section className="rounded-lg border bg-card p-4 text-sm">

@@ -191,8 +191,19 @@ export const en: Messages = {
     "Demo: the room is open, but no chat server is online yet. At launch, an “Open the Matrix chat” button will appear here with your credentials.",
   "chat.soon":
     "The hunt is triggered. Encrypted chat between participants is coming soon: meanwhile, get organised through your usual channels.",
-  "chat.p2p.intro":
-    "Encrypted chat between the hunt's members: only the people who committed and the creator can read and write. The relays that carry the messages only see unreadable content.",
+  "chat.p2p.secure": "Encrypted: only the hunt's members can read.",
+  "chat.p2p.creator": "Creator",
+  "chat.p2p.failed": "Not sent",
+  "chat.p2p.keyHint": "Enter to send, Shift+Enter for a new line",
+  "chat.p2p.charsLeft": "{n} characters left",
+  "chat.p2p.notifyOn": "Notify me",
+  "chat.p2p.notifyActive": "Notifying",
+  "chat.p2p.notifyHint":
+    "A notification for each new message, as long as a Huntited page stays open (even in the background).",
+  "chat.p2p.notifyDenied":
+    "Notifications are blocked for this site: allow them in your browser settings.",
+  "chat.notify.title": "New message",
+  "chat.notify.body": 'In the chat of "{title}"',
   "chat.p2p.loading": "Connecting to the chat…",
   "chat.p2p.noKey":
     "This browser has no chat key for this hunt. It is created on the device you committed (or created the hunt) from: open the chat there.",

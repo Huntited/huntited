@@ -176,13 +176,17 @@ export async function getChainHunt(id: string, now = Date.now()): Promise<ChainH
  */
 export async function getChainChat(
   id: string,
-): Promise<{ members: string[]; deadline: number } | null> {
+): Promise<{ members: string[]; creator?: string; deadline: number } | null> {
   const h = (await synced()).hunt(id);
   if (!h || h.activatedAt === undefined) return null;
   const members = [h.chat, ...h.commits.map((c) => c.chat)].filter(
     (k): k is string => typeof k === "string",
   );
-  return { members: [...new Set(members)], deadline: h.deadline };
+  return {
+    members: [...new Set(members)],
+    ...(h.chat ? { creator: h.chat } : {}),
+    deadline: h.deadline,
+  };
 }
 
 /** Versions officielles du site ancrées sur la chaîne. */

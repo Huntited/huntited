@@ -22,6 +22,10 @@ le chat ne passe par aucun serveur Huntited.
   de l'identifiant de chasse), signés par la clé de chat de l'auteur. Un
   événement d'une clé non membre, mal signé ou modifié est ignoré.
 - Étiquette `expiration` (NIP-40) : 24 h après la date limite.
+- **Notifications** (`src/lib/chat-notify.ts`, `ChatWatcher`) : bouton « Me
+  prévenir » par chasse ; tant qu'une page Huntited est ouverte, un nouveau
+  message d'un autre membre affiche une notification du navigateur, sans le
+  texte du message. Sans serveur, rien quand le site est fermé.
 - Relais : `VITE_NOSTR_RELAYS` (par défaut relay.damus.io, nos.lol,
   relay.primal.net). Envoi à tous, lecture sur tous, doublons écartés
   (`src/lib/nostr-relays.ts`).

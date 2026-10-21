@@ -24,7 +24,7 @@ const GROUPS: { id: DataGroupId; keys: string[] }[] = [
     ],
   },
   { id: "draft", keys: ["create-hunt-draft"] },
-  { id: "notify", keys: ["push"] },
+  { id: "notify", keys: ["push", "chat-notify"] },
   { id: "prefs", keys: ["locale", "theme", "badge-visibility", "shares"] },
   {
     id: "demo",

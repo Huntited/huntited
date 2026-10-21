@@ -196,8 +196,19 @@ export const fr = {
     "Démonstration : le salon est ouvert, mais aucun serveur de chat n'est encore en ligne. À la mise en ligne, un bouton « Ouvrir le chat Matrix » apparaîtra ici avec tes identifiants.",
   "chat.soon":
     "La chasse est déclenchée. Le chat chiffré entre participants arrive bientôt : en attendant, organisez-vous par vos moyens habituels.",
-  "chat.p2p.intro":
-    "Chat chiffré entre les membres de la chasse : seules les personnes engagées et le créateur ou la créatrice peuvent lire et écrire. Les relais qui transmettent les messages ne voient que du contenu illisible.",
+  "chat.p2p.secure": "Chiffré : seuls les membres de la chasse peuvent lire.",
+  "chat.p2p.creator": "Créateur·rice",
+  "chat.p2p.failed": "Non envoyé",
+  "chat.p2p.keyHint": "Entrée pour envoyer, Maj+Entrée pour aller à la ligne",
+  "chat.p2p.charsLeft": "{n} caractères restants",
+  "chat.p2p.notifyOn": "Me prévenir",
+  "chat.p2p.notifyActive": "Prévenu·e",
+  "chat.p2p.notifyHint":
+    "Une notification à chaque nouveau message, tant qu'une page Huntited reste ouverte (même en arrière-plan).",
+  "chat.p2p.notifyDenied":
+    "Les notifications sont bloquées pour ce site : autorise-les dans les réglages du navigateur.",
+  "chat.notify.title": "Nouveau message",
+  "chat.notify.body": "Dans le chat de « {title} »",
   "chat.p2p.loading": "Connexion au chat…",
   "chat.p2p.noKey":
     "Ce navigateur n'a pas de clé de chat pour cette chasse. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé la chasse) : ouvre le chat depuis celui-ci.",

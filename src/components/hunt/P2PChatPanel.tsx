@@ -1,10 +1,19 @@
 // Chat chiffré d'une chasse sur la chaîne, sans serveur Huntited
 // (src/lib/p2p-chat.ts, docs/chat.md). Membres = clés de chat inscrites sur
 // la chaîne ; messages chiffrés, transmis par des relais Nostr publics.
-import { useEffect, useRef, useState } from "react";
+import { Bell, BellOff, Lock, SendHorizontal } from "lucide-react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  chatNotifySupported,
+  disableChatNotify,
+  enableChatNotify,
+  isChatNotifyOn,
+  onChatNotifyChange,
+  setVisibleChat,
+} from "@/lib/chat-notify";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { createRelayPool, nostrRelays, type RelayPool } from "@/lib/nostr-relays";
 import { getChainChat } from "@/lib/onchain/browser-index";
@@ -17,21 +26,35 @@ import {
   openMessage,
   sealMessage,
   type ChatMessage,
+  type NostrEvent,
 } from "@/lib/p2p-chat";
+
+const MAX_TEXT = 2000;
+/** Messages d'une même personne à moins de 5 min : un seul nom affiché. */
+const GROUP_MS = 5 * 60_000;
 
 type Phase =
   | { kind: "loading" }
   | { kind: "info"; key: MessageKey }
-  | { kind: "ready"; priv: string; members: string[]; closesAt: number };
+  | {
+      kind: "ready";
+      priv: string;
+      members: string[];
+      creator: string | undefined;
+      deadline: number;
+    };
 
-export function P2PChatPanel({ huntId }: { huntId: string }) {
+/** Message affiché : reçu, ou envoyé depuis ici (avec son état d'envoi). */
+type Shown = ChatMessage & { status?: "sending" | "failed"; event?: NostrEvent };
+
+export function P2PChatPanel({ huntId, title }: { huntId: string; title: string }) {
   const { t, date } = useI18n();
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<Shown[]>([]);
   const [draft, setDraft] = useState("");
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<MessageKey | null>(null);
+  const [notice, setNotice] = useState<MessageKey | null>(null);
   const pool = useRef<RelayPool | null>(null);
+  const list = useRef<HTMLOListElement | null>(null);
 
   // Membres (sur la chaîne) et clé de ce navigateur.
   useEffect(() => {
@@ -41,13 +64,20 @@ export function P2PChatPanel({ huntId }: { huntId: string }) {
         if (cancelled) return;
         const priv = getChatKey(huntId);
         if (!chat) return setPhase({ kind: "info", key: "chat.p2p.unavailable" });
-        const closesAt = chat.deadline + CHAT_TTL_AFTER_DEADLINE_MS;
-        if (Date.now() > closesAt) return setPhase({ kind: "info", key: "chat.p2p.ended" });
+        if (Date.now() > chat.deadline + CHAT_TTL_AFTER_DEADLINE_MS) {
+          return setPhase({ kind: "info", key: "chat.p2p.ended" });
+        }
         if (!priv) return setPhase({ kind: "info", key: "chat.p2p.noKey" });
         if (!chat.members.includes(chatPublicKey(priv))) {
           return setPhase({ kind: "info", key: "chat.p2p.notMember" });
         }
-        setPhase({ kind: "ready", priv, members: chat.members, closesAt });
+        setPhase({
+          kind: "ready",
+          priv,
+          members: chat.members,
+          creator: chat.creator,
+          deadline: chat.deadline,
+        });
       })
       .catch(() => !cancelled && setPhase({ kind: "info", key: "chat.p2p.unavailable" }));
     return () => {
@@ -61,72 +91,152 @@ export function P2PChatPanel({ huntId }: { huntId: string }) {
     if (!ready) return;
     const p = createRelayPool(nostrRelays());
     pool.current = p;
+    setVisibleChat(huntId); // pas de notification pour le chat affiché
     const stop = p.subscribe({ kinds: [CHAT_KIND], "#h": [chatTopic(huntId)] }, (e) => {
       void openMessage(huntId, ready.priv, ready.members, e).then((m) => {
-        if (m) setMessages((all) => add(all, m));
+        if (m) setMessages((all) => upsert(all, m));
       });
     });
     return () => {
       stop();
       p.close();
       pool.current = null;
+      setVisibleChat(null);
     };
     // Une seule connexion par clé et liste de membres.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [huntId, ready?.priv, ready?.members.join()]);
 
-  async function send() {
-    if (!ready || !pool.current || !draft.trim()) return;
-    setSending(true);
-    setError(null);
+  // Défile vers le bas à l'arrivée d'un message (si on était déjà en bas,
+  // ou si c'est le sien).
+  const last = messages.at(-1);
+  const me = ready ? chatPublicKey(ready.priv) : null;
+  useEffect(() => {
+    const el = list.current;
+    if (!el || !last) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    if (nearBottom || last.author === me) el.scrollTop = el.scrollHeight;
+  }, [last, me]);
+
+  async function deliver(e: NostrEvent) {
+    setMessages((all) => all.map((m) => (m.id === e.id ? { ...m, status: "sending" } : m)));
     try {
-      const e = await sealMessage(
-        huntId,
-        ready.priv,
-        ready.members,
-        draft,
-        ready.closesAt - CHAT_TTL_AFTER_DEADLINE_MS,
-      );
-      const mine = await openMessage(huntId, ready.priv, ready.members, e);
+      if (!pool.current) throw new Error("no_relays");
       await pool.current.publish(e);
-      if (mine) setMessages((all) => add(all, mine));
-      setDraft("");
+      setMessages((all) =>
+        all.map((m) => (m.id === e.id ? { ...m, status: undefined, event: undefined } : m)),
+      );
     } catch {
-      setError("chat.p2p.sendFailed");
-    } finally {
-      setSending(false);
+      setMessages((all) => all.map((m) => (m.id === e.id ? { ...m, status: "failed" } : m)));
     }
   }
 
-  const me = ready ? chatPublicKey(ready.priv) : null;
-  const who = (author: string) =>
-    author === me
-      ? t("chat.p2p.you")
-      : t("chat.p2p.member", { n: (ready?.members.indexOf(author) ?? 0) + 1 });
+  async function send() {
+    if (!ready || !draft.trim()) return;
+    const e = await sealMessage(huntId, ready.priv, ready.members, draft, ready.deadline);
+    const mine = await openMessage(huntId, ready.priv, ready.members, e);
+    if (!mine) return;
+    // Affiché tout de suite, avec son état d'envoi.
+    setMessages((all) => upsert(all, { ...mine, status: "sending", event: e }));
+    setDraft("");
+    await deliver(e);
+  }
+
+  function onKeyDown(ev: KeyboardEvent<HTMLTextAreaElement>) {
+    if (ev.key === "Enter" && !ev.shiftKey && !ev.nativeEvent.isComposing) {
+      ev.preventDefault();
+      void send();
+    }
+  }
+
+  const who = (author: string) => {
+    if (author === ready?.creator) return t("chat.p2p.creator");
+    const others = ready?.members.filter((m) => m !== ready.creator) ?? [];
+    return t("chat.p2p.member", { n: others.indexOf(author) + 1 });
+  };
+  const when = (at: number) =>
+    new Date(at).toDateString() === new Date().toDateString()
+      ? date(at, { timeStyle: "short" })
+      : date(at, { dateStyle: "short", timeStyle: "short" });
 
   return (
     <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
-      <h2 className="font-semibold">{t("hunt.chat.title")}</h2>
-      {phase.kind === "loading" && <p className="text-muted-foreground">{t("chat.p2p.loading")}</p>}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-semibold">{t("hunt.chat.title")}</h2>
+        {ready && <NotifyToggle huntId={huntId} title={title} onNotice={setNotice} />}
+      </div>
+
+      {phase.kind === "loading" && (
+        <p className="text-muted-foreground" role="status">
+          {t("chat.p2p.loading")}
+        </p>
+      )}
       {phase.kind === "info" && <p className="text-muted-foreground">{t(phase.key)}</p>}
+
       {ready && (
         <>
-          <p className="text-muted-foreground">{t("chat.p2p.intro")}</p>
-          <ol className="max-h-96 space-y-2 overflow-y-auto" aria-live="polite">
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Lock className="size-3.5 shrink-0" aria-hidden />
+            {t("chat.p2p.secure")}
+          </p>
+
+          <ol
+            ref={list}
+            className="h-80 space-y-1 overflow-y-auto rounded-md border bg-background p-3"
+            aria-live="polite"
+            aria-label={t("hunt.chat.title")}
+          >
             {messages.length === 0 && (
-              <li className="text-muted-foreground">{t("chat.p2p.empty")}</li>
-            )}
-            {messages.map((m) => (
-              <li key={m.id} className="rounded-md border bg-background p-2">
-                <p className="text-xs text-muted-foreground">
-                  {who(m.author)} · {date(m.at, { timeStyle: "short", dateStyle: "short" })}
-                </p>
-                <p className="whitespace-pre-wrap break-words">{m.text}</p>
+              <li className="flex h-full items-center justify-center text-muted-foreground">
+                {t("chat.p2p.empty")}
               </li>
-            ))}
+            )}
+            {messages.map((m, i) => {
+              const mine = m.author === me;
+              const prev = messages[i - 1];
+              const grouped = prev?.author === m.author && m.at - prev.at < GROUP_MS;
+              return (
+                <li
+                  key={m.id}
+                  className={`flex flex-col ${mine ? "items-end" : "items-start"} ${grouped ? "" : "pt-2"}`}
+                >
+                  {!grouped && !mine && (
+                    <span className="mb-0.5 px-1 text-xs font-medium text-muted-foreground">
+                      {who(m.author)}
+                    </span>
+                  )}
+                  <p
+                    className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3 py-1.5 ${
+                      mine ? "bg-primary text-primary-foreground" : "bg-muted"
+                    } ${m.status === "sending" ? "opacity-60" : ""}`}
+                  >
+                    {m.text}
+                  </p>
+                  <span className="mt-0.5 px-1 text-[11px] text-muted-foreground">
+                    {m.status === "sending" ? (
+                      t("chat.p2p.sending")
+                    ) : m.status === "failed" ? (
+                      <span className="text-destructive">
+                        {t("chat.p2p.failed")} ·{" "}
+                        <button
+                          type="button"
+                          className="underline underline-offset-2"
+                          onClick={() => m.event && void deliver(m.event)}
+                        >
+                          {t("common.retry")}
+                        </button>
+                      </span>
+                    ) : (
+                      when(m.at)
+                    )}
+                  </span>
+                </li>
+              );
+            })}
           </ol>
+
           <form
-            className="space-y-2"
+            className="flex items-end gap-2"
             onSubmit={(ev) => {
               ev.preventDefault();
               void send();
@@ -135,23 +245,40 @@ export function P2PChatPanel({ huntId }: { huntId: string }) {
             <Textarea
               value={draft}
               onChange={(ev) => setDraft(ev.target.value)}
+              onKeyDown={onKeyDown}
               placeholder={t("chat.p2p.placeholder")}
-              maxLength={2000}
-              rows={2}
               aria-label={t("chat.p2p.placeholder")}
+              maxLength={MAX_TEXT}
+              rows={1}
+              className="max-h-40 min-h-10 resize-none"
             />
-            <Button type="submit" disabled={sending || !draft.trim()}>
-              {sending ? t("chat.p2p.sending") : t("chat.p2p.send")}
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!draft.trim()}
+              aria-label={t("chat.p2p.send")}
+              title={t("chat.p2p.send")}
+            >
+              <SendHorizontal aria-hidden />
             </Button>
           </form>
-          {error && (
-            <p role="alert" className="text-destructive">
-              {t(error)}
+          <p className="flex justify-between gap-2 text-xs text-muted-foreground">
+            <span className="hidden sm:inline">{t("chat.p2p.keyHint")}</span>
+            {draft.length > MAX_TEXT - 200 && (
+              <span>{t("chat.p2p.charsLeft", { n: MAX_TEXT - draft.length })}</span>
+            )}
+          </p>
+          {notice && (
+            <p role="alert" className="text-xs text-destructive">
+              {t(notice)}
             </p>
           )}
           <p className="text-xs text-muted-foreground">
             {t("chat.p2p.ends", {
-              date: date(ready.closesAt, { dateStyle: "long", timeStyle: "short" }),
+              date: date(ready.deadline + CHAT_TTL_AFTER_DEADLINE_MS, {
+                dateStyle: "long",
+                timeStyle: "short",
+              }),
             })}
           </p>
         </>
@@ -160,8 +287,54 @@ export function P2PChatPanel({ huntId }: { huntId: string }) {
   );
 }
 
-/** Ajoute un message (sans doublon), dans l'ordre d'envoi. */
-function add(all: ChatMessage[], m: ChatMessage): ChatMessage[] {
-  if (all.some((x) => x.id === m.id)) return all;
+/** Bouton « me prévenir des nouveaux messages » (notifications du navigateur). */
+function NotifyToggle({
+  huntId,
+  title,
+  onNotice,
+}: {
+  huntId: string;
+  title: string;
+  onNotice: (k: MessageKey | null) => void;
+}) {
+  const { t } = useI18n();
+  const [on, setOn] = useState(false);
+  useEffect(() => {
+    const read = () => setOn(isChatNotifyOn(huntId));
+    read();
+    return onChatNotifyChange(read);
+  }, [huntId]);
+  if (!chatNotifySupported()) return null;
+
+  async function toggle() {
+    onNotice(null);
+    if (on) return disableChatNotify(huntId);
+    const res = await enableChatNotify(huntId, title);
+    if (res === "denied") onNotice("chat.p2p.notifyDenied");
+  }
+
+  return (
+    <>
+      <Button
+        variant={on ? "secondary" : "outline"}
+        size="sm"
+        onClick={() => void toggle()}
+        aria-pressed={on}
+        title={t("chat.p2p.notifyHint")}
+      >
+        {on ? <Bell aria-hidden /> : <BellOff aria-hidden />}
+        {on ? t("chat.p2p.notifyActive") : t("chat.p2p.notifyOn")}
+      </Button>
+      {on && (
+        <span className="w-full text-xs text-muted-foreground">{t("chat.p2p.notifyHint")}</span>
+      )}
+    </>
+  );
+}
+
+/** Ajoute ou met à jour un message (sans doublon), dans l'ordre d'envoi. */
+function upsert(all: Shown[], m: Shown): Shown[] {
+  const i = all.findIndex((x) => x.id === m.id);
+  if (i >= 0) return all;
   return [...all, m].sort((a, b) => a.at - b.at || (a.id < b.id ? -1 : 1));
 }

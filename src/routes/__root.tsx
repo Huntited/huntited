@@ -12,6 +12,8 @@ import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AppFooter, AppHeader } from "@/components/AppHeader";
+import { ChatWatcher } from "@/components/hunt/ChatWatcher";
+import { getDataMode } from "@/lib/hunt-repository";
 import { DevResetButton } from "@/components/DevResetButton";
 import { LogoMark } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -149,6 +151,8 @@ function RootComponent() {
       <DevResetButton />
       <Toaster />
       <WalletGuide />
+      {/* Chasses sur la chaîne : notifications des chats suivis, sans serveur. */}
+      {getDataMode() === "chain" && <ChatWatcher />}
     </QueryClientProvider>
   );
 }
