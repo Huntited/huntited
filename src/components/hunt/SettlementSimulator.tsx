@@ -3,7 +3,7 @@
 // du créateur ou le dépôt d'un·e engagé·e (calculs de hunt-economics.ts, les
 // mêmes que pour le règlement réel).
 import { CheckCircle2, CircleSlash } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { Slider } from "@/components/ui/slider";
 import { REGISTRY_FEE_SOMPI } from "@/lib/chain";
@@ -33,7 +33,11 @@ export function SettlementSimulator({ role, cautionKas, threshold, personalThres
   const validThreshold = Number.isInteger(threshold) && threshold > 0 ? threshold : 7;
   const max = Math.max(validThreshold * 3, validThreshold + 10);
   const [count, setCount] = useState<number | null>(null);
+  // Le seuil change (formulaire) : le curseur revient dessus.
+  useEffect(() => setCount(null), [validThreshold]);
   const n = Math.min(count ?? validThreshold, max);
+  // Position sur la piste, alignée sur le centre du curseur (16 px de large).
+  const at = (v: number) => `calc(8px + (100% - 16px) * ${v / max})`;
 
   const caution =
     BigInt(
@@ -57,22 +61,32 @@ export function SettlementSimulator({ role, cautionKas, threshold, personalThres
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
             {t("sim.people")}
           </p>
-          <Slider
-            min={0}
-            max={max}
-            step={1}
-            value={[n]}
-            onValueChange={([v]) => setCount(v ?? validThreshold)}
-            aria-label={t("sim.people")}
-          />
+          <div className="relative">
+            {/* Repère du seuil, sur la piste. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 z-[1] h-3 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded bg-green-600"
+              style={{ left: at(validThreshold) }}
+            />
+            <Slider
+              min={0}
+              max={max}
+              step={1}
+              value={[n]}
+              onValueChange={([v]) => setCount(v ?? validThreshold)}
+              aria-label={t("sim.people")}
+            />
+          </div>
           <div className="relative h-4 text-[11px] text-muted-foreground">
             <span className="absolute left-0">0</span>
-            <span
-              className="absolute -translate-x-1/2 font-medium text-foreground"
-              style={{ left: `${(validThreshold / max) * 100}%` }}
+            <button
+              type="button"
+              className="absolute -translate-x-1/2 whitespace-nowrap font-medium text-green-700 hover:underline dark:text-green-400"
+              style={{ left: at(validThreshold) }}
+              onClick={() => setCount(validThreshold)}
             >
               {t("sim.threshold", { n: validThreshold })}
-            </span>
+            </button>
             <span className="absolute right-0">{max}</span>
           </div>
         </div>
@@ -91,7 +105,11 @@ export function SettlementSimulator({ role, cautionKas, threshold, personalThres
         ) : (
           <CircleSlash className="size-4" aria-hidden />
         )}
-        {success ? t("sim.success") : t("sim.failure", { n: validThreshold - n })}
+        {success
+          ? t("sim.success")
+          : t(validThreshold - n === 1 ? "sim.failure.one" : "sim.failure", {
+              n: validThreshold - n,
+            })}
       </p>
 
       {role === "creator" ? (

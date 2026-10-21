@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { SettlementSimulator } from "@/components/hunt/SettlementSimulator";
@@ -54,5 +54,16 @@ describe("simulation avant de créer ou de s'engager", () => {
     render(<SettlementSimulator role="creator" cautionKas={30} threshold={7} />);
     expect(screen.getByText(/Seul coût réel : 0,2 KAS/)).toBeTruthy();
     mode.value = "local";
+  });
+
+  it("un de moins que le seuil : il manque 1 personne ; le curseur suit un nouveau seuil", () => {
+    const { rerender } = render(
+      <SettlementSimulator role="creator" cautionKas={1000} threshold={24} />,
+    );
+    fireEvent.keyDown(screen.getByRole("slider"), { key: "ArrowLeft" });
+    expect(screen.getByText("Il manque 1 personne : l'action n'a pas lieu.")).toBeTruthy();
+    rerender(<SettlementSimulator role="creator" cautionKas={1000} threshold={30} />);
+    expect(screen.getByRole("slider").getAttribute("aria-valuenow")).toBe("30");
+    expect(screen.getByText(/l'action a lieu/)).toBeTruthy();
   });
 });

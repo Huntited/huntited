@@ -226,6 +226,7 @@ export const en: Messages = {
   "sim.committed": "committed",
   "sim.success": "The threshold is reached: the action happens.",
   "sim.failure": "{n} more people needed: the action doesn't happen.",
+  "sim.failure.one": "1 more person needed: the action doesn't happen.",
   "sim.locked": "locked until the end",
   "sim.creator.caution": "Your deposit",
   "sim.creator.back": "Returned to you",
