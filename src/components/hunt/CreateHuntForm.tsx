@@ -409,6 +409,7 @@ export function CreateHuntForm() {
               role="creator"
               cautionKas={Number(values.deposit)}
               threshold={Number(values.threshold)}
+              onThresholdChange={(v) => setValues((prev) => ({ ...prev, threshold: String(v) }))}
             />
           </div>
 

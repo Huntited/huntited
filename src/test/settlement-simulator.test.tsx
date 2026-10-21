@@ -21,13 +21,36 @@ const cardValue = (label: string) =>
   screen.getByText(label).parentElement!.querySelector("p:nth-of-type(2)")!.textContent;
 
 describe("simulation avant de créer ou de s'engager", () => {
-  it("créateur : au seuil, ce qui est rendu et ce qui est versé", () => {
+  it("créateur : ce que devient la caution au seuil, si l'action a lieu ou non", () => {
     render(<SettlementSimulator role="creator" cautionKas={30} threshold={7} />);
-    expect(screen.getByText(/l'action a lieu/)).toBeTruthy();
     expect(cardValue("Ta caution")).toBe("30 KAS");
-    expect(cardValue("Rendu à toi")).toBe("22,25 KAS");
-    expect(cardValue("Versé aux engagé·es")).toBe("7 KAS");
-    expect(screen.getByText("0,75 KAS vont à Huntited")).toBeTruthy();
+    expect(cardValue("Si l'action a lieu")).toBe("22,25 KAS");
+    expect(
+      screen.getByText((text) =>
+        text.includes("7 KAS aux engagé·es (1 KAS chacun), 0,75 KAS à Huntited"),
+      ),
+    ).toBeTruthy();
+    expect(cardValue("Si elle n'a pas lieu")).toBe("29 KAS");
+  });
+
+  it("créateur : la barre règle le seuil du formulaire, et le suit", () => {
+    const changes: number[] = [];
+    const { rerender } = render(
+      <SettlementSimulator
+        role="creator"
+        cautionKas={30}
+        threshold={7}
+        onThresholdChange={(v) => changes.push(v)}
+      />,
+    );
+    fireEvent.keyDown(screen.getByRole("slider"), { key: "ArrowRight" });
+    expect(changes).toEqual([8]);
+    fireEvent.click(screen.getByRole("button", { name: "50" }));
+    expect(changes.at(-1)).toBe(50);
+    rerender(<SettlementSimulator role="creator" cautionKas={30} threshold={100} />);
+    // Le grand nombre et le cran de la barre suivent le seuil saisi.
+    expect(screen.getByText("personnes minimum").previousElementSibling?.textContent).toBe("100");
+    expect(screen.getByRole("button", { name: "100" }).className).toContain("font-semibold");
   });
 
   it("engagé·e : dépôt toujours rendu, récompense si l'action a lieu", () => {
@@ -56,14 +79,9 @@ describe("simulation avant de créer ou de s'engager", () => {
     mode.value = "local";
   });
 
-  it("un de moins que le seuil : il manque 1 personne ; le curseur suit un nouveau seuil", () => {
-    const { rerender } = render(
-      <SettlementSimulator role="creator" cautionKas={1000} threshold={24} />,
-    );
+  it("engagé·e : un de moins que le seuil, il manque 1 personne", () => {
+    render(<SettlementSimulator role="participant" cautionKas={30} threshold={24} />);
     fireEvent.keyDown(screen.getByRole("slider"), { key: "ArrowLeft" });
     expect(screen.getByText("Il manque 1 personne : l'action n'a pas lieu.")).toBeTruthy();
-    rerender(<SettlementSimulator role="creator" cautionKas={1000} threshold={30} />);
-    expect(screen.getByRole("slider").getAttribute("aria-valuenow")).toBe("30");
-    expect(screen.getByText(/l'action a lieu/)).toBeTruthy();
   });
 });
