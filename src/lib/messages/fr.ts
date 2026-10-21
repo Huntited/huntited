@@ -237,13 +237,14 @@ export const fr = {
   "sim.locked": "bloqué jusqu'à la fin",
   "sim.creator.threshold": "Personnes nécessaires",
   "sim.creator.minimum": "personnes minimum",
-  "sim.creator.ifYes": "Si l'action a lieu",
-  "sim.creator.ifYesSub": "rendu à toi ; {paid} aux engagé·es ({per} chacun), {fee} à Huntited",
-  "sim.creator.ifNo": "Si elle n'a pas lieu",
+  "sim.creator.ifYes": "Action réussie",
+  "sim.creator.ifNo": "Action annulée",
   "sim.creator.more":
     "Calculé avec {n} engagé·es. Avec plus de monde, chacun reçoit un peu moins : le total versé ne dépasse jamais 47,5 % de ta caution.",
-  "sim.creator.caution": "Ta caution",
-  "sim.creator.fee": "{fee} vont à Huntited",
+  "sim.creator.ifYesShort": "rendus · {per} par engagé·e",
+  "sim.creator.ifNoShort": "rendus",
+  "sim.creator.noteChain":
+    "Montants simulés pour l'instant. Seul coût réel : {fee} pour inscrire la chasse.",
   "sim.part.deposit": "Ton dépôt",
   "sim.part.back": "Rendu à toi",
   "sim.part.always": "dans tous les cas",
@@ -350,15 +351,7 @@ export const fr = {
     "Recommandé : sans compteur visible, personne n'attend de voir les autres pour se lancer, et s'engager le premier n'expose pas.",
   "form.caution": "Ta caution",
   "form.caution.label": "Ta caution (KAS)",
-  "form.caution.success": "Action réussie :",
-  "form.caution.successText":
-    "jusqu'à {cap} par engagé ({pool} au plus), {fee} à Huntited, le reste t'est rendu.",
-  "form.caution.failure": "Action annulée :",
-  "form.caution.why":
-    "Ta caution n'est pas rendue en entier : elle paie les participants et Huntited, ce qui finance le développement et l'hébergement du service.",
-  "form.caution.failureText": "{fee} à Huntited, {refund} te sont rendus.",
-  "form.caution.min":
-    "Minimum {min} KAS. Une caution plus élevée récompense davantage les engagés.",
+  "form.caution.short": "Minimum {min} KAS. Une partie paie les engagé·es et Huntited.",
   "form.commitDeposit": "Dépôt d'engagement (par participant)",
   "form.commitDeposit.help": "Rendu au participant à la fin, que l'action réussisse ou non.",
   "form.draftError": "Impossible d'enregistrer le brouillon. Réessaie.",

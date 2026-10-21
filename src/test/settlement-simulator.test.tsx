@@ -21,16 +21,11 @@ const cardValue = (label: string) =>
   screen.getByText(label).parentElement!.querySelector("p:nth-of-type(2)")!.textContent;
 
 describe("simulation avant de créer ou de s'engager", () => {
-  it("créateur : ce que devient la caution au seuil, si l'action a lieu ou non", () => {
+  it("créateur : ce qui est rendu si l'action a lieu, et sinon", () => {
     render(<SettlementSimulator role="creator" cautionKas={30} threshold={7} />);
-    expect(cardValue("Ta caution")).toBe("30 KAS");
-    expect(cardValue("Si l'action a lieu")).toBe("22,25 KAS");
-    expect(
-      screen.getByText((text) =>
-        text.includes("7 KAS aux engagé·es (1 KAS chacun), 0,75 KAS à Huntited"),
-      ),
-    ).toBeTruthy();
-    expect(cardValue("Si elle n'a pas lieu")).toBe("29 KAS");
+    expect(cardValue("Action réussie")).toBe("22,25 KAS");
+    expect(screen.getByText("rendus · 1 KAS par engagé·e")).toBeTruthy();
+    expect(cardValue("Action annulée")).toBe("29 KAS");
   });
 
   it("créateur : la barre règle le seuil du formulaire, et le suit", () => {
@@ -75,7 +70,7 @@ describe("simulation avant de créer ou de s'engager", () => {
   it("sur la blockchain : affiche le seul coût réel (inscription)", () => {
     mode.value = "chain";
     render(<SettlementSimulator role="creator" cautionKas={30} threshold={7} />);
-    expect(screen.getByText(/Seul coût réel : 0,2 KAS/)).toBeTruthy();
+    expect(screen.getByText(/Seul coût réel : 0,2 KAS pour inscrire la chasse/)).toBeTruthy();
     mode.value = "local";
   });
 

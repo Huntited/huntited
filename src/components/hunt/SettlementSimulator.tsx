@@ -77,7 +77,6 @@ function CreatorSimulator({ cautionKas, threshold, onThresholdChange }: Props) {
   const caution = cautionSompi(cautionKas);
   const win = calculateSettlement(valid, "success", caution);
   const lose = calculateSettlement(valid, "failure", caution);
-  const paid = win.participantBonusPerCommitSompi * BigInt(valid);
   const onChain = getDataMode() === "chain";
 
   return (
@@ -118,30 +117,26 @@ function CreatorSimulator({ cautionKas, threshold, onThresholdChange }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Card label={t("sim.creator.caution")} value={kas(caution)} sub={t("sim.locked")} />
+      {/* Deux issues, en une ligne chacune. */}
+      <div className="grid grid-cols-2 gap-2">
         <Card
           label={t("sim.creator.ifYes")}
           value={kas(win.creatorCreationRefundSompi)}
-          sub={t("sim.creator.ifYesSub", {
-            paid: kas(paid),
-            per: kas(win.participantBonusPerCommitSompi),
-            fee: kas(win.treasurySompi),
-          })}
+          sub={t("sim.creator.ifYesShort", { per: kas(win.participantBonusPerCommitSompi) })}
           strong
         />
         <Card
           label={t("sim.creator.ifNo")}
           value={kas(lose.creatorCreationRefundSompi)}
-          sub={t("sim.creator.fee", { fee: kas(lose.treasurySompi) })}
+          sub={t("sim.creator.ifNoShort")}
         />
       </div>
 
-      <ul className="space-y-0.5 text-xs text-muted-foreground">
-        <li>{t("sim.creator.more", { n: valid })}</li>
-        {onChain && <li>{t("sim.fee.create", { fee: kas(BigInt(REGISTRY_FEE_SOMPI)) })}</li>}
-        <li>{t("sim.simulated")}</li>
-      </ul>
+      <p className="text-xs text-muted-foreground">
+        {onChain
+          ? t("sim.creator.noteChain", { fee: kas(BigInt(REGISTRY_FEE_SOMPI)) })
+          : t("sim.simulated")}
+      </p>
     </section>
   );
 }

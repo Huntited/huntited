@@ -28,10 +28,9 @@ import { MIN_CAUTION_KAS } from "@/lib/hunt-economics";
 function CautionBreakdown() {
   const { t } = useI18n();
   return (
-    <ul className="space-y-0.5 text-xs text-muted-foreground">
-      <li>{t("form.caution.why")}</li>
-      <li>{t("form.caution.min", { min: MIN_CAUTION_KAS })}</li>
-    </ul>
+    <p className="text-xs text-muted-foreground">
+      {t("form.caution.short", { min: MIN_CAUTION_KAS })}
+    </p>
   );
 }
 
