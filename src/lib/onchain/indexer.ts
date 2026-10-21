@@ -59,6 +59,13 @@ export function restSource(apiUrls: string | string[], fetchFn: typeof fetch = f
 export const FINALITY_DEPTH = 600;
 const PAGE = 500;
 const MAX_PAGES = 200;
+/**
+ * Relecture limitée au récent : une fois l'index rempli, on s'arrête à la
+ * première page entièrement plus vieille que le dernier état d'environ une
+ * heure (36 000 en score « blue » à 10 blocs/s). Un retard de l'API se compte
+ * en minutes ; chaque visiteur ne relit plus tout l'historique.
+ */
+export const RESCAN_DEPTH = 36_000;
 
 type ScoredEvent = ChainEvent & { score: number };
 const byChainOrder = (a: ScoredEvent, b: ScoredEvent) =>
@@ -169,6 +176,8 @@ export class ChainIndexer {
         });
       }
       if (txs.length < PAGE || seen >= count) break;
+      const oldest = txs.at(-1)?.accepting_block_blue_score ?? 0;
+      if (this.maxScore > 0 && oldest > 0 && oldest < this.maxScore - RESCAN_DEPTH) break;
     }
     this.hasUnfinal = unfinal;
     this.lastCount = count;

@@ -153,6 +153,29 @@ describe("archives du registre", () => {
   });
 });
 
+describe("relecture limitée au récent", () => {
+  it("une fois l'index rempli, ne relit pas tout l'historique à chaque nouveauté", async () => {
+    const { send, indexer, setTip, source } = fakeChain();
+    let pages = 0;
+    const read = source.addressTransactions;
+    source.addressTransactions = (a, o, l) => {
+      pages++;
+      return read(a, o, l);
+    };
+    const id = randomBytes(12).toString("hex");
+    send(hunt(id), "kaspatest:alice", 50);
+    for (let i = 1; i <= 1100; i++) send({ t: "commit", hunt: id }, `kaspatest:w${i}`, 100 * i);
+    setTip(200_000);
+    await indexer.sync();
+    expect(pages).toBe(3); // premier remplissage : tout
+    pages = 0;
+    send({ t: "commit", hunt: id }, "kaspatest:late", 120_000);
+    expect(await indexer.sync()).toBe(1);
+    expect(pages).toBe(1); // ensuite : seulement le récent
+    expect(indexer.ledger.hunt(id)!.commits).toHaveLength(1101);
+  });
+});
+
 describe("index", () => {
   it("rejoue dans l'ordre de la chaîne, seulement les transactions finales", async () => {
     const { send, indexer, setTip } = fakeChain();
