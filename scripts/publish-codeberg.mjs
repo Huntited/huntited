@@ -62,7 +62,11 @@ try {
       "dist-static/registry-snapshot.json",
       "--allow-offline",
     ],
-    { stdio: "inherit" },
+    {
+      stdio: "inherit",
+      // Clé d'archivage (facultative) : l'archive en ligne est signée.
+      env: { ...process.env, ARCHIVE_SIGNING_KEY: env.ARCHIVE_SIGNING_KEY ?? "" },
+    },
   );
   git("add", "-A");
   try {

@@ -41,13 +41,23 @@ archives existantes avec ce que l'API liste encore, sans jamais rien retirer.
 Le site lit les archives listées dans `VITE_CHAIN_ARCHIVES` (par défaut, en
 version statique : les deux premières). Une archive absente est ignorée.
 
-## Limites (à traiter)
+## Confiance
 
-- **Confiance** : une transaction plus vieille que la fenêtre de l'API ne peut
-  plus être revérifiée sur la chaîne. Le site fait confiance aux archives qu'il
-  liste lui-même (celle qu'il embarque est couverte par l'ancrage). Ajouter des
-  archives tenues par d'autres personnes demandera un accord entre plusieurs
-  sources avant d'accepter une transaction.
+- L'archive **livrée avec le site** est acceptée telle quelle : elle fait
+  partie du manifest, donc de la version ancrée par huntited.kas.
+- Une archive **en ligne** n'est acceptée que **signée** par une clé
+  d'archivage autorisée (`src/lib/onchain/archive-signature.ts`, clé publique
+  officielle dans le code ; `VITE_ARCHIVE_SIGNERS` pour d'autres). La clé
+  privée est un secret du job d'archive (`ARCHIVE_SIGNING_KEY`, aussi dans
+  `.env.publish`). Prendre le compte qui héberge l'archive ne suffit donc pas
+  à y glisser de fausses chasses ou une fausse « version officielle ».
+- Limite : une transaction plus vieille que la fenêtre de l'API ne peut plus
+  être revérifiée sur la chaîne ; on fait confiance à la clé d'archivage.
+  Ajouter des archives tenues par d'autres personnes demandera un accord
+  entre plusieurs sources.
+
+## Limites
+
 - **Ce qui est perdu reste perdu** : les transactions oubliées par l'API avant
   la première archive (chasses de test d'octobre 2026) ne reviendront pas.
 

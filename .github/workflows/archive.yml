@@ -1,7 +1,9 @@
 # Archive en ligne du registre (docs/archives.md) : toutes les 6 heures, bien
 # avant que l'API publique n'oublie les transactions (~30 h), on ajoute les
 # nouvelles à https://huntited.codeberg.page/registry-live.json.
-# Ne fait qu'ajouter : rien n'est écrit si l'API ne répond pas.
+# Ne fait qu'ajouter : rien n'est écrit si l'API ne répond pas. L'archive
+# est signée (secret ARCHIVE_SIGNING_KEY) : le site refuse une archive en
+# ligne qui n'est pas signée par la clé officielle.
 name: Archive du registre
 
 on:
@@ -21,10 +23,14 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+      # Bibliothèques de signature de l'archive (versions du lockfile).
+      - run: bun install --frozen-lockfile
       - name: Mettre à jour l'archive en ligne
         env:
           CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+          ARCHIVE_SIGNING_KEY: ${{ secrets.ARCHIVE_SIGNING_KEY }}
         run: |
           if [ -z "$CODEBERG_TOKEN" ]; then
             echo "Secret CODEBERG_TOKEN absent : rien à faire."

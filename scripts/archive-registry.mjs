@@ -12,6 +12,7 @@
 //     [--from https://huntited.codeberg.page/registry-live.json] [--from fichier.json] \
 //     [--api https://api-tn10.kaspa.org] [--allow-offline]
 // Sans --allow-offline, rien n'est écrit si l'API ne répond pas.
+// Avec ARCHIVE_SIGNING_KEY (variable d'environnement), l'archive est signée.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 const REGISTRY = "kaspatest:qr2ck8qnt0rtj7spzd7am9tsmtd5j4l3tgtah3tzz89l9jvcfg5uvc33cl3yj";
@@ -113,8 +114,18 @@ const body = sorted
     JSON.stringify({ txId, score, time, sender, payload }),
   )
   .join(",\n    ");
+// Signature (facultative) par la clé d'archivage : le site n'accepte une
+// archive en ligne que signée (src/lib/onchain/archive-signature.ts).
+let signature = "";
+if (process.env.ARCHIVE_SIGNING_KEY) {
+  const { signArchive } = await import("../src/lib/onchain/archive-signature.ts");
+  const { signer, sig } = signArchive(sorted, process.env.ARCHIVE_SIGNING_KEY.trim());
+  signature = `  "signer": "${signer}",\n  "sig": "${sig}",\n`;
+}
 writeFileSync(
   out,
-  `{\n  "format": "${FORMAT}",\n  "version": 1,\n  "registry": "${REGISTRY}",\n  "entries": [${sorted.length ? `\n    ${body}\n  ` : ""}]\n}\n`,
+  `{\n  "format": "${FORMAT}",\n  "version": 1,\n  "registry": "${REGISTRY}",\n${signature}  "entries": [${sorted.length ? `\n    ${body}\n  ` : ""}]\n}\n`,
 );
-console.log(`Archive : ${sorted.length} transaction(s), dont ${fromApi} lue(s) sur l'API → ${out}`);
+console.log(
+  `Archive : ${sorted.length} transaction(s), dont ${fromApi} lue(s) sur l'API${signature ? ", signée" : ""} → ${out}`,
+);

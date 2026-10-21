@@ -4,6 +4,7 @@
 // l'index du serveur (backend/src/routes/chain.ts).
 import { REGISTRY_ADDRESS } from "../chain";
 import { minHuntThreshold } from "../validation";
+import { OFFICIAL_ARCHIVE_SIGNER, archiveSignedBy } from "./archive-signature";
 import { ChainIndexer, parseArchive, restSource } from "./indexer";
 import { Ledger, type LedgerHunt, type LedgerRelease } from "./ledger";
 import { DEFAULT_GENESIS } from "./protocol";
@@ -110,13 +111,32 @@ let indexer: ChainIndexer | null = null;
 let lastSync = 0;
 let archives: Promise<void> | null = null;
 
-/** Charge chaque archive une fois ; une archive absente ou illisible est ignorée. */
+/** Clés d'archivage acceptées (VITE_ARCHIVE_SIGNERS ; par défaut, la clé officielle). */
+export function archiveSigners(): string[] {
+  const env = import.meta.env["VITE_ARCHIVE_SIGNERS"] as string | undefined;
+  return (env || OFFICIAL_ARCHIVE_SIGNER)
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Charge chaque archive une fois ; une archive absente ou illisible est
+ * ignorée. Seule l'archive livrée avec le site (adresse relative, couverte
+ * par l'ancrage) est acceptée sans signature ; les autres doivent être
+ * signées par une clé d'archivage autorisée.
+ */
 async function loadArchives(idx: ChainIndexer): Promise<void> {
   await Promise.all(
     chainArchiveUrls().map(async (url) => {
       try {
         const res = await fetch(url, { cache: "no-cache" });
-        if (res.ok) await idx.seed(parseArchive(await res.json(), REGISTRY_ADDRESS));
+        if (!res.ok) return;
+        const data: unknown = await res.json();
+        // Adresse relative = fichier du site lui-même (couvert par l'ancrage).
+        const shipped = !url.includes(":");
+        if (!shipped && !archiveSignedBy(data, archiveSigners())) return;
+        await idx.seed(parseArchive(data, REGISTRY_ADDRESS));
       } catch {
         /* archive indisponible : l'API et les autres archives suffisent */
       }
