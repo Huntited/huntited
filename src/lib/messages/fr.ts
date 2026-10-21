@@ -18,7 +18,7 @@ export const fr = {
   "wallet.connecting": "Connexion…",
   "wallet.disconnect": "Déconnecter",
   "footer.tagline": "Tout le monde ou personne. Aucune donnée personnelle.",
-  "footer.testnet": "Version de test : aucun vrai KAS.",
+  "footer.testnet": "Réseau de test · aucun vrai KAS",
   "dev.reset": "Réinitialiser les données de démonstration",
   "dev.resetConfirm": "Réinitialiser les données de démonstration Huntited ?",
 
@@ -227,6 +227,31 @@ export const fr = {
   "chat.p2p.nameHint":
     "Visible seulement par les membres, et seulement dans ce chat. Évite ton vrai nom.",
   "chat.p2p.save": "OK",
+  "sim.title": "Simulation",
+  "sim.people": "Si autant de personnes s'engagent",
+  "sim.threshold": "seuil {n}",
+  "sim.committed": "engagé·es",
+  "sim.success": "Le seuil est atteint : l'action a lieu.",
+  "sim.failure": "Il manque {n} personne(s) : l'action n'a pas lieu.",
+  "sim.locked": "bloqué jusqu'à la fin",
+  "sim.creator.caution": "Ta caution",
+  "sim.creator.back": "Rendu à toi",
+  "sim.creator.fee": "{fee} vont à Huntited",
+  "sim.creator.paid": "Versé aux engagé·es",
+  "sim.creator.per": "{per} chacun·e",
+  "sim.creator.none": "rien si l'action n'a pas lieu",
+  "sim.part.deposit": "Ton dépôt",
+  "sim.part.back": "Rendu à toi",
+  "sim.part.always": "dans tous les cas",
+  "sim.part.reward": "Ta récompense",
+  "sim.part.fromCreator": "payée par le créateur",
+  "sim.part.onlyIf": "seulement si l'action a lieu",
+  "sim.part.notRetained": "ton seuil ({n}) n'est pas atteint : tu n'y vas pas",
+  "sim.fee.create":
+    "Seul coût réel : {fee} de test pour inscrire la chasse sur la blockchain (non rendus).",
+  "sim.fee.commit":
+    "Seul coût réel : {fee} de test pour inscrire ton engagement sur la blockchain (non rendus).",
+  "sim.simulated": "Pour l'instant, caution et dépôts sont simulés : aucun KAS n'est bloqué.",
   "chat.p2p.loading": "Connexion au chat…",
   "chat.p2p.noKey":
     "Ce navigateur n'a pas de clé de chat pour cette chasse. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé la chasse) : ouvre le chat depuis celui-ci.",
@@ -326,7 +351,7 @@ export const fr = {
     "jusqu'à {cap} par engagé ({pool} au plus), {fee} à Huntited, le reste t'est rendu.",
   "form.caution.failure": "Action annulée :",
   "form.caution.why":
-    "Ta caution n'est donc pas rendue en entier : elle paie les participants et Huntited, ce qui finance le développement et l'hébergement du service.",
+    "Ta caution n'est pas rendue en entier : elle paie les participants et Huntited, ce qui finance le développement et l'hébergement du service.",
   "form.caution.failureText": "{fee} à Huntited, {refund} te sont rendus.",
   "form.caution.min":
     "Minimum {min} KAS. Une caution plus élevée récompense davantage les engagés.",
@@ -381,6 +406,9 @@ export const fr = {
     "Pour chaque engagement, une empreinte propre à la chasse, qui ne permet pas de retrouver ton wallet. Effacée 24 h après une chasse ratée.",
   "data.server.never": "Jamais ton adresse de wallet en clair, ton IP, ton nom ou ton e-mail.",
   "data.server.more": "Le détail dans la politique de vie privée",
+  "footer.legalShort": "Conditions et vie privée",
+  "footer.versions": "Versions",
+  "footer.nav": "Liens utiles",
   "footer.data": "Tes données",
   "guide.title": "Avant de connecter ton wallet",
   "guide.lead":

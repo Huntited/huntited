@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { SettlementSimulator } from "@/components/hunt/SettlementSimulator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -15,12 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { getDataMode } from "@/lib/hunt-repository";
 import { useI18n } from "@/lib/i18n";
 import { getPassConfig, hasPass, onPassChange } from "@/lib/pass";
-import {
-  commitDepositTerms,
-  commitRefundHighlight,
-  termsFullFor,
-  termsShortFor,
-} from "@/lib/terms";
+import { commitRefundHighlight, termsFullFor, termsShortFor } from "@/lib/terms";
 import type { Hunt } from "@/lib/types";
 import type { UseCommitmentResult } from "@/lib/useCommitment";
 
@@ -113,7 +109,6 @@ export function CommitModal({
               {commitRefundHighlight(hunt.deposit, locale)}
             </p>
             <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
-              <p>{commitDepositTerms(hunt.deposit, locale)}</p>
               <p className="text-xs text-muted-foreground">
                 {getDataMode() === "chain" ? t("chain.commitNote") : t("commit.testNote")}
               </p>
@@ -159,6 +154,14 @@ export function CommitModal({
                 </p>
               )}
             </div>
+            <SettlementSimulator
+              role="participant"
+              cautionKas={hunt.deposit}
+              threshold={hunt.threshold}
+              {...(personalValid && personalValue > hunt.threshold
+                ? { personalThreshold: personalValue }
+                : {})}
+            />
           </>
         )}
 

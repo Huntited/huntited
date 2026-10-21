@@ -190,30 +190,40 @@ function LanguageSwitch({
 /** Pied de page : promesse, rappel « version de test ». */
 export function AppFooter() {
   const { t } = useI18n();
+  const link = "underline-offset-2 hover:text-foreground hover:underline";
   return (
     <footer className="mx-auto mt-16 w-full max-w-3xl border-t px-4 py-6 text-xs text-muted-foreground">
-      <p>{t("footer.tagline")}</p>
-      <p className="mt-1">{t("footer.testnet")}</p>
-      <VersionBadge />
-      <p className="mt-1">
-        <Link to="/legal" className="underline-offset-2 hover:underline">
-          {t("footer.legal")}
-        </Link>
-        {" · "}
-        <Link to="/my-data" className="underline-offset-2 hover:underline">
-          {t("footer.data")}
-        </Link>
-      </p>
-      <p className="mt-1">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        <p>
+          <span className="font-semibold text-foreground">Huntited</span> · {t("footer.tagline")}
+        </p>
+        <nav aria-label={t("footer.nav")} className="flex flex-wrap gap-x-4 gap-y-1">
+          <Link to="/legal" className={link}>
+            {t("footer.legalShort")}
+          </Link>
+          <Link to="/my-data" className={link}>
+            {t("footer.data")}
+          </Link>
+          <Link to="/publish" className={link}>
+            {t("footer.versions")}
+          </Link>
+        </nav>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5">
+          <span aria-hidden className="size-1.5 rounded-full bg-amber-500" />
+          {t("footer.testnet")}
+        </span>
+        <VersionBadge />
         <a
           href="https://www.geonames.org/"
           target="_blank"
           rel="noopener noreferrer"
-          className="underline-offset-2 hover:underline"
+          className={`ml-auto ${link}`}
         >
           {t("footer.geonames")}
         </a>
-      </p>
+      </div>
     </footer>
   );
 }

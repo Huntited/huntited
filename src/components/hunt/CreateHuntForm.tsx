@@ -21,41 +21,14 @@ import {
 import { sortedCountries } from "@/lib/countries";
 import { useI18n } from "@/lib/i18n";
 import { minHuntThreshold, validateHuntForm, hasErrors, type FormErrors } from "@/lib/validation";
-import {
-  MAX_CAUTION_KAS,
-  MIN_CAUTION_KAS,
-  SOMPI_PER_KAS,
-  cautionTerms,
-  sompiToKasFr,
-  sompiToKasText,
-} from "@/lib/hunt-economics";
+import { SettlementSimulator } from "@/components/hunt/SettlementSimulator";
+import { MIN_CAUTION_KAS } from "@/lib/hunt-economics";
 
-/** Ce que devient la caution saisie, selon l'issue (recalculé à chaque saisie). */
-function CautionBreakdown({ deposit }: { deposit: number }) {
-  const { t, locale } = useI18n();
-  const valid =
-    Number.isInteger(deposit) && deposit >= MIN_CAUTION_KAS && deposit <= MAX_CAUTION_KAS;
-  const caution = BigInt(valid ? deposit : MIN_CAUTION_KAS) * SOMPI_PER_KAS;
-  const c = cautionTerms(caution);
-  const kas = (s: bigint) =>
-    `${locale === "fr" ? sompiToKasFr(s) : sompiToKasText(((s + 500_000n) / 1_000_000n) * 1_000_000n)} KAS`;
+/** Pourquoi la caution n'est pas rendue en entier (les montants : simulation ci-dessous). */
+function CautionBreakdown() {
+  const { t } = useI18n();
   return (
     <ul className="space-y-0.5 text-xs text-muted-foreground">
-      <li>
-        <strong>{t("form.caution.success")}</strong>{" "}
-        {t("form.caution.successText", {
-          cap: kas(c.capPerCommitSompi),
-          pool: kas(c.successPoolSompi),
-          fee: kas(c.successTreasurySompi),
-        })}
-      </li>
-      <li>
-        <strong>{t("form.caution.failure")}</strong>{" "}
-        {t("form.caution.failureText", {
-          fee: kas(c.failureTreasurySompi),
-          refund: kas(caution - c.failureTreasurySompi),
-        })}
-      </li>
       <li>{t("form.caution.why")}</li>
       <li>{t("form.caution.min", { min: MIN_CAUTION_KAS })}</li>
     </ul>
@@ -429,7 +402,14 @@ export function CreateHuntForm() {
               onChange={setField("deposit")}
             />
             <ErrorText id="deposit" msg={errors.deposit} />
-            <CautionBreakdown deposit={Number(values.deposit)} />
+            <CautionBreakdown />
+          </div>
+          <div>
+            <SettlementSimulator
+              role="creator"
+              cautionKas={Number(values.deposit)}
+              threshold={Number(values.threshold)}
+            />
           </div>
 
           {/* Dépôt d'engagement — fixé par le protocole pour le MVP */}
