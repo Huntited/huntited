@@ -4,7 +4,7 @@
 // l'index du serveur (backend/src/routes/chain.ts).
 import { REGISTRY_ADDRESS } from "../chain";
 import { minHuntThreshold } from "../validation";
-import { ChainIndexer, restSource } from "./indexer";
+import { ChainIndexer, parseArchive, restSource } from "./indexer";
 import { Ledger, type LedgerHunt, type LedgerRelease } from "./ledger";
 import { DEFAULT_GENESIS } from "./protocol";
 import { OFFICIAL_PUBLISHER } from "./publisher";
@@ -21,6 +21,20 @@ const MIN_SYNC_INTERVAL_MS = 10_000;
 export function kaspaApiUrls(): string[] {
   const raw =
     (import.meta.env["VITE_KASPA_API_URL"] as string | undefined) ?? "https://api-tn10.kaspa.org";
+  return raw
+    .split(",")
+    .map((u) => u.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Archives du registre (VITE_CHAIN_ARCHIVES, plusieurs séparées par des
+ * virgules) : elles gardent les transactions que l'API publique a oubliées.
+ * Version statique : l'archive livrée avec le site, puis l'archive tenue à
+ * jour en ligne (docs/archives.md).
+ */
+export function chainArchiveUrls(): string[] {
+  const raw = (import.meta.env["VITE_CHAIN_ARCHIVES"] as string | undefined) ?? "";
   return raw
     .split(",")
     .map((u) => u.trim())
@@ -94,6 +108,21 @@ export function viewOf(ledger: Ledger, h: LedgerHunt, t: number): ChainHuntView 
 
 let indexer: ChainIndexer | null = null;
 let lastSync = 0;
+let archives: Promise<void> | null = null;
+
+/** Charge chaque archive une fois ; une archive absente ou illisible est ignorée. */
+async function loadArchives(idx: ChainIndexer): Promise<void> {
+  await Promise.all(
+    chainArchiveUrls().map(async (url) => {
+      try {
+        const res = await fetch(url, { cache: "no-cache" });
+        if (res.ok) await idx.seed(parseArchive(await res.json(), REGISTRY_ADDRESS));
+      } catch {
+        /* archive indisponible : l'API et les autres archives suffisent */
+      }
+    }),
+  );
+}
 
 function getIndexer(): ChainIndexer {
   indexer ??= new ChainIndexer(
@@ -114,6 +143,8 @@ function getIndexer(): ChainIndexer {
 /** Index à jour (une lecture du réseau au plus toutes les 10 s). */
 async function synced(): Promise<Ledger> {
   const idx = getIndexer();
+  archives ??= loadArchives(idx);
+  await archives;
   if (Date.now() - lastSync >= MIN_SYNC_INTERVAL_MS) {
     lastSync = Date.now();
     try {
@@ -147,4 +178,5 @@ export async function getChainReleases(): Promise<LedgerRelease[]> {
 export function resetBrowserIndex(): void {
   indexer = null;
   lastSync = 0;
+  archives = null;
 }

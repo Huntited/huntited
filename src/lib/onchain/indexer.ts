@@ -4,7 +4,7 @@
 // recalcule l'état lui-même, et obtient le même que tous les autres.
 // ⚠️ Copie conforme de backend/src/chain/indexer.ts (même ordre, même
 // finalité, même tolérance au retard de l'API).
-import { hexToBytes } from "@noble/hashes/utils.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 
 import type { ChainEvent, Ledger } from "./ledger";
 
@@ -64,6 +64,51 @@ type ScoredEvent = ChainEvent & { score: number };
 const byChainOrder = (a: ScoredEvent, b: ScoredEvent) =>
   a.score - b.score || (a.txId < b.txId ? -1 : a.txId > b.txId ? 1 : 0);
 
+/**
+ * Entrée d'archive : une transaction finale du registre, telle que la chaîne
+ * l'a acceptée. L'API publique ne garde pas tout l'historique (les nœuds
+ * effacent les vieux blocs, et l'API du réseau de test a été réinitialisée) :
+ * les archives gardent les anciennes transactions (docs/archives.md).
+ */
+export interface ArchiveEntry {
+  txId: string;
+  score: number;
+  time: number;
+  sender: string;
+  /** Contenu du message, en hexadécimal. */
+  payload: string;
+}
+
+/** Format du fichier d'archive (même format pour tous les archiveurs). */
+export const ARCHIVE_FORMAT = "huntited-registry-archive";
+
+const isArchiveEntry = (e: unknown): e is ArchiveEntry => {
+  if (!e || typeof e !== "object") return false;
+  const { txId, score, time, sender, payload } = e as Record<string, unknown>;
+  return (
+    typeof txId === "string" &&
+    /^[0-9a-f]{64}$/.test(txId) &&
+    Number.isSafeInteger(score) &&
+    (score as number) > 0 &&
+    typeof time === "number" &&
+    Number.isFinite(time) &&
+    time >= 0 &&
+    typeof sender === "string" &&
+    sender.length > 0 &&
+    sender.length <= 100 &&
+    typeof payload === "string" &&
+    /^(?:[0-9a-f]{2})+$/.test(payload)
+  );
+};
+
+/** Lit un fichier d'archive du registre ; ignore ce qui est mal formé. */
+export function parseArchive(data: unknown, registry: string): ArchiveEntry[] {
+  if (!data || typeof data !== "object") return [];
+  const { format, registry: r, entries } = data as Record<string, unknown>;
+  if (format !== ARCHIVE_FORMAT || r !== registry || !Array.isArray(entries)) return [];
+  return entries.filter(isArchiveEntry);
+}
+
 export class ChainIndexer {
   private current: Ledger;
   private readonly known = new Map<string, ScoredEvent>();
@@ -71,6 +116,8 @@ export class ChainIndexer {
   private lastCount = -1;
   private hasUnfinal = false;
   private running: Promise<number> | null = null;
+  /** Une seule mise à jour du grand livre à la fois (lecture réseau ou archive). */
+  private lock: Promise<unknown> = Promise.resolve();
 
   constructor(
     private readonly source: ChainSource,
@@ -86,7 +133,7 @@ export class ChainIndexer {
   }
 
   sync(): Promise<number> {
-    this.running ??= this.doSync().finally(() => {
+    this.running ??= this.exclusive(() => this.doSync()).finally(() => {
       this.running = null;
     });
     return this.running;
@@ -127,9 +174,55 @@ export class ChainIndexer {
     this.lastCount = count;
     if (fresh.length === 0) return 0;
 
+    await this.integrate(fresh);
+    return fresh.length;
+  }
+
+  /**
+   * Ajoute des transactions venues d'une archive (déjà finales) ; renvoie le
+   * nombre de nouvelles. Même résultat que si l'API les avait listées.
+   */
+  seed(entries: ArchiveEntry[]): Promise<number> {
+    return this.exclusive(async () => {
+      const fresh = new Map<string, ScoredEvent>();
+      for (const e of entries) {
+        if (this.known.has(e.txId) || fresh.has(e.txId)) continue;
+        fresh.set(e.txId, {
+          score: e.score,
+          txId: e.txId,
+          time: e.time,
+          sender: e.sender,
+          payload: hexToBytes(e.payload),
+        });
+      }
+      await this.integrate([...fresh.values()]);
+      return fresh.size;
+    });
+  }
+
+  /** Transactions finales connues, dans l'ordre de la chaîne (pour archiver). */
+  entries(): ArchiveEntry[] {
+    return [...this.known.values()].sort(byChainOrder).map((e) => ({
+      txId: e.txId,
+      score: e.score,
+      time: e.time,
+      sender: e.sender,
+      payload: bytesToHex(e.payload),
+    }));
+  }
+
+  private exclusive<T>(fn: () => Promise<T>): Promise<T> {
+    const run = this.lock.then(fn);
+    this.lock = run.catch(() => undefined);
+    return run;
+  }
+
+  private async integrate(fresh: ScoredEvent[]): Promise<void> {
+    if (fresh.length === 0) return;
     for (const e of fresh) this.known.set(e.txId, e);
     fresh.sort(byChainOrder);
     if (fresh[0]!.score <= this.maxScore) {
+      // Arrivée « dans le passé » : tout recalculer dans l'ordre de la chaîne.
       const ledger = this.newLedger();
       for (const e of [...this.known.values()].sort(byChainOrder)) await ledger.apply(e);
       this.current = ledger;
@@ -137,6 +230,5 @@ export class ChainIndexer {
       for (const e of fresh) await this.current.apply(e);
     }
     this.maxScore = Math.max(this.maxScore, fresh.at(-1)!.score);
-    return fresh.length;
   }
 }

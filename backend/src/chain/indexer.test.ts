@@ -9,7 +9,13 @@ import { afterEach, describe, expect, it } from "vitest";
 import { decodeKaspaAddress } from "../services/kaspa-signature.js";
 import { OUTCOME_GRACE_MS } from "../routes/chain.js";
 import { makeWallet, startApp } from "../test-helpers.js";
-import { ChainIndexer, type ChainSource, type RestTransaction } from "./indexer.js";
+import {
+  ARCHIVE_FORMAT,
+  ChainIndexer,
+  parseArchive,
+  type ChainSource,
+  type RestTransaction,
+} from "./indexer.js";
 import { Ledger } from "./ledger.js";
 import { encodeMessage, type Message } from "./protocol.js";
 import { REGISTRY_LABEL, registryAddress } from "./registry-address.js";
@@ -62,6 +68,10 @@ function fakeChain() {
     setTip: (s: number) => (tip = s),
     /** L'API finit par lister les transactions en retard. */
     catchUp: () => hidden.clear(),
+    /** L'API oublie tout l'historique (réinitialisation, vieux blocs effacés). */
+    forget: () => txs.forEach((t) => hidden.add(t.transaction_id)),
+    newLedger,
+    source,
   };
 }
 
@@ -87,6 +97,56 @@ describe("adresse du registre", () => {
     expect(REGISTRY.startsWith("kaspatest:")).toBe(true);
     expect(decodeKaspaAddress(REGISTRY).prefix).toBe("kaspatest");
     expect(registryAddress("kaspatest", `${REGISTRY_LABEL}-autre`)).not.toBe(REGISTRY);
+  });
+});
+
+describe("archives du registre", () => {
+  it("un index reconstruit le même état depuis une archive quand l'API a oublié", async () => {
+    const { send, indexer, forget, newLedger, source } = fakeChain();
+    const id = randomBytes(12).toString("hex");
+    send(hunt(id), "kaspatest:alice", 100);
+    send({ t: "commit", hunt: id }, "kaspatest:bob", 200);
+    await indexer.sync();
+    const archive = indexer.entries();
+    expect(archive.map((e) => e.score)).toEqual([100, 200]);
+
+    // L'API oublie ; un engagement récent arrive ensuite.
+    forget();
+    send({ t: "commit", hunt: id }, "kaspatest:carol", 300);
+    const fresh = new ChainIndexer(source, REGISTRY, newLedger, 100);
+    await fresh.sync();
+    expect(fresh.ledger.hunt(id)).toBeUndefined(); // sans archive : chasse perdue
+
+    // Avec l'archive (même chargée après coup) : tout est rejoué dans l'ordre.
+    expect(await fresh.seed(archive)).toBe(2);
+    expect(await fresh.seed(archive)).toBe(0); // rien de nouveau
+    const h = fresh.ledger.hunt(id)!;
+    expect(h.commits.map((c) => c.who)).toEqual(["a:kaspatest:bob", "a:kaspatest:carol"]);
+    expect(h.activatedAt).toBe(T0 + 300);
+    expect(fresh.entries()).toHaveLength(3);
+  });
+
+  it("n'accepte qu'un fichier du bon format, pour ce registre", () => {
+    const entry = {
+      txId: "ab".repeat(32),
+      score: 5,
+      time: T0,
+      sender: "kaspatest:alice",
+      payload: "484e5431",
+    };
+    const doc = { format: ARCHIVE_FORMAT, version: 1, registry: REGISTRY, entries: [entry] };
+    expect(parseArchive(doc, REGISTRY)).toEqual([entry]);
+    expect(parseArchive({ ...doc, registry: "kaspatest:autre" }, REGISTRY)).toEqual([]);
+    expect(parseArchive({ ...doc, format: "x" }, REGISTRY)).toEqual([]);
+    expect(parseArchive(null, REGISTRY)).toEqual([]);
+    // Entrées mal formées ignorées une à une.
+    const bad = [
+      { ...entry, txId: "zz" },
+      { ...entry, score: -1 },
+      { ...entry, payload: "abc" },
+      { ...entry, sender: "" },
+    ];
+    expect(parseArchive({ ...doc, entries: [...bad, entry] }, REGISTRY)).toEqual([entry]);
   });
 });
 
@@ -195,7 +255,9 @@ describe("GET /api/chain", () => {
     const { send, indexer } = fakeChain();
     const [alice, bob, carol, eve] = [makeWallet(), makeWallet(), makeWallet(), makeWallet()];
     const id = randomBytes(12).toString("hex");
-    send(hunt(id), alice.address, 10);
+    // Échéance dans le futur réel : le salon refuse une expiration déjà passée.
+    const deadline = Date.now() + 7 * DAY;
+    send({ ...hunt(id), deadline } as Message, alice.address, 10);
     send({ t: "commit", hunt: id }, bob.address, 20);
     send({ t: "commit", hunt: id }, carol.address, 30); // seuil 2 atteint : déclenchée
     await indexer.sync();
@@ -217,6 +279,6 @@ describe("GET /api/chain", () => {
       bobToken,
     );
     expect(chat.status).toBe(201);
-    expect(chat.body["expiresAt"]).toBe(T0 + 7 * DAY + DAY);
+    expect(chat.body["expiresAt"]).toBe(deadline + DAY);
   });
 });

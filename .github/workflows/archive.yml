@@ -1,0 +1,42 @@
+# Archive en ligne du registre (docs/archives.md) : toutes les 6 heures, bien
+# avant que l'API publique n'oublie les transactions (~30 h), on ajoute les
+# nouvelles à https://huntited.codeberg.page/registry-live.json.
+# Ne fait qu'ajouter : rien n'est écrit si l'API ne répond pas.
+name: Archive du registre
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency: archive
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Mettre à jour l'archive en ligne
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+        run: |
+          if [ -z "$CODEBERG_TOKEN" ]; then
+            echo "Secret CODEBERG_TOKEN absent : rien à faire."
+            exit 0
+          fi
+          git clone --quiet --depth 1 --branch pages https://codeberg.org/Huntited/pages.git site
+          node scripts/archive-registry.mjs --out site/registry-live.json --from site/registry-live.json
+          cd site
+          git add registry-live.json
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau."
+            exit 0
+          fi
+          git -c user.name=Huntited -c user.email=huntited@noreply.codeberg.org commit --quiet -m "Archive du registre"
+          git -c http.extraHeader="Authorization: token $CODEBERG_TOKEN" push --quiet origin pages

@@ -8,6 +8,10 @@
 // empreinte (sha256), et l'empreinte de cette liste (« manifest »), à ancrer
 // sur Kaspa (page #/publish) et que n'importe qui peut revérifier
 // (scripts/verify-release.mjs).
+//
+// Et dist-static/registry-snapshot.json : l'archive du registre au moment de
+// la construction (couverte par le manifest, donc par l'ancrage), en plus de
+// l'archive tenue à jour en ligne (CHAIN_ARCHIVE_URL, docs/archives.md).
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -23,6 +27,8 @@ try {
   /* pas de dépôt git : version locale */
 }
 const version = `${pkg.version ?? "0.0.0"}+${commit}`;
+const liveArchive =
+  process.env.CHAIN_ARCHIVE_URL ?? "https://huntited.codeberg.page/registry-live.json";
 
 Object.assign(process.env, {
   VITE_DATA_MODE: "chain",
@@ -35,12 +41,20 @@ Object.assign(process.env, {
   // (src/lib/onchain/publisher.ts) ; RELEASE_PUBLISHERS pour la remplacer.
   VITE_RELEASE_PUBLISHERS: process.env.RELEASE_PUBLISHERS ?? "",
   VITE_APP_VERSION: version,
+  // Archives du registre : celle livrée avec le site, puis celle en ligne.
+  VITE_CHAIN_ARCHIVES: ["./registry-snapshot.json", liveArchive].filter(Boolean).join(","),
 });
 
 await build({ configFile: "vite.static.config.ts", mode: "production" });
 
 // Fichiers du pass (en réserve, inutilisé ici) : 5,5 Mo de moins à publier.
 rmSync(join(OUT, "zk"), { recursive: true, force: true });
+
+// Archive du registre livrée avec le site (l'API et l'archive en ligne, fusionnées).
+execSync(
+  `node scripts/archive-registry.mjs --out ${join(OUT, "registry-snapshot.json")} --from ${liveArchive} --allow-offline`,
+  { stdio: "inherit" },
+);
 
 const sha256 = (data) => createHash("sha256").update(data).digest("hex");
 const walk = (dir) =>
