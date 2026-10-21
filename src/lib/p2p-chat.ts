@@ -42,6 +42,10 @@ export function getChatKey(huntId: string): string | null {
   return typeof k === "string" && /^[0-9a-f]{64}$/.test(k) ? k : null;
 }
 
+/** Chasses pour lesquelles ce navigateur a une clé (créées ou rejointes ici). */
+export const chatKeyHunts = (): string[] =>
+  Object.keys(readKeys()).filter((id) => /^[0-9a-f]{24}$/.test(id));
+
 /**
  * Clé publique de chat à inscrire sur la chaîne pour cette chasse (créée la
  * première fois). Sans stockage, renvoie undefined : on s'engage sans chat.

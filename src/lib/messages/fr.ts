@@ -209,6 +209,18 @@ export const fr = {
     "Les notifications sont bloquées pour ce site : autorise-les dans les réglages du navigateur.",
   "chat.notify.title": "Nouveau message",
   "chat.notify.body": "Dans le chat de « {title} »",
+  "inbox.title": "Activité",
+  "inbox.open": "Activité de tes chasses",
+  "inbox.openUnread": "Activité de tes chasses : {n} nouveauté(s)",
+  "inbox.empty":
+    "Rien de nouveau. Ici apparaîtront les messages et les résultats des chasses que tu as créées ou rejointes.",
+  "inbox.message": "Nouveau message dans « {title} »",
+  "inbox.activated": "« {title} » est déclenchée : l'action a lieu.",
+  "inbox.failed": "« {title} » n'a pas atteint son seuil.",
+  "inbox.markRead": "Tout marquer comme lu",
+  "data.group.inbox": "Activité",
+  "data.group.inbox.text":
+    "Les nouveautés de tes chasses (cloche de l'en-tête), et leur dernier état connu.",
   "chat.p2p.loading": "Connexion au chat…",
   "chat.p2p.noKey":
     "Ce navigateur n'a pas de clé de chat pour cette chasse. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé la chasse) : ouvre le chat depuis celui-ci.",

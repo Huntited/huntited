@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useI18n, type Locale, type MessageKey } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useWallet } from "@/lib/useWallet";
+import { NotificationBell } from "@/components/NotificationBell";
+import { getDataMode } from "@/lib/hunt-repository";
 
 const NAV: { to: "/" | "/create" | "/my-hunts" | "/pass"; label: MessageKey }[] = [
   { to: "/", label: "nav.hunts" },
@@ -55,6 +57,8 @@ export function AppHeader() {
           <div className="hidden sm:block">
             <LanguageSwitch locale={locale} onChange={setLocale} label={t("lang.switch")} />
           </div>
+          {/* Activité de tes chasses (sur la chaîne) : messages, résultats. */}
+          {getDataMode() === "chain" && <NotificationBell />}
           <ThemeToggle />
           {isConnected && address ? (
             <>

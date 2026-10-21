@@ -204,6 +204,17 @@ export const en: Messages = {
     "Notifications are blocked for this site: allow them in your browser settings.",
   "chat.notify.title": "New message",
   "chat.notify.body": 'In the chat of "{title}"',
+  "inbox.title": "Activity",
+  "inbox.open": "Your hunts' activity",
+  "inbox.openUnread": "Your hunts' activity: {n} new",
+  "inbox.empty":
+    "Nothing new. Messages and results of the hunts you created or joined will show up here.",
+  "inbox.message": 'New message in "{title}"',
+  "inbox.activated": '"{title}" is triggered: the action is on.',
+  "inbox.failed": '"{title}" didn\'t reach its threshold.',
+  "inbox.markRead": "Mark all as read",
+  "data.group.inbox": "Activity",
+  "data.group.inbox.text": "Your hunts' news (bell in the header), and their last known state.",
   "chat.p2p.loading": "Connecting to the chat…",
   "chat.p2p.noKey":
     "This browser has no chat key for this hunt. It is created on the device you committed (or created the hunt) from: open the chat there.",

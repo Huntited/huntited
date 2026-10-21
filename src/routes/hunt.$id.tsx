@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ChatPanel } from "@/components/hunt/ChatPanel";
 import { P2PChatPanel } from "@/components/hunt/P2PChatPanel";
@@ -23,6 +23,7 @@ import { hasBackend } from "@/lib/api-client";
 import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
 import { getDataMode, getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
 import { useI18n } from "@/lib/i18n";
+import { markRead } from "@/lib/inbox";
 import { commitRefundShort } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
 import { useHunt } from "@/lib/useHunt";
@@ -40,6 +41,8 @@ export const Route = createFileRoute("/hunt/$id")({
 
 function HuntDetailPage() {
   const { id } = Route.useParams();
+  // Ouvrir la chasse = voir ses nouveautés (cloche de l'en-tête).
+  useEffect(() => markRead({ huntId: id }), [id]);
   const { t, date, locale } = useI18n();
   const [commitOpen, setCommitOpen] = useState(false);
 

@@ -6,13 +6,14 @@ import { isFollowing, unfollowHunt } from "./push";
 const PREFIX = "huntited:";
 
 export type DataGroupId =
-  "wallet" | "pass" | "chat" | "hunts" | "draft" | "notify" | "prefs" | "demo" | "other";
+  "wallet" | "pass" | "chat" | "inbox" | "hunts" | "draft" | "notify" | "prefs" | "demo" | "other";
 
 /** Ordre d'affichage et clés de chaque groupe. */
 const GROUPS: { id: DataGroupId; keys: string[] }[] = [
   { id: "wallet", keys: ["wallet", "mock-wallet", "wallet-guide", "address-checked"] },
   { id: "pass", keys: ["pass", "pass-invite-slots"] },
   { id: "chat", keys: ["chat-keys"] },
+  { id: "inbox", keys: ["inbox", "hunt-seen"] },
   {
     id: "hunts",
     keys: [
