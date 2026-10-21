@@ -17,7 +17,7 @@ export const fr = {
   "wallet.connect": "Connecter le wallet",
   "wallet.connecting": "Connexion…",
   "wallet.disconnect": "Déconnecter",
-  "footer.tagline": "Tout le monde ou personne. Aucune donnée personnelle.",
+  "footer.tagline": "Tout le monde ou personne. Sans compte ni e-mail.",
   "footer.testnet": "Réseau de test · aucun vrai KAS",
   "dev.reset": "Réinitialiser les données de démonstration",
   "dev.resetConfirm": "Réinitialiser les données de démonstration Huntited ?",
@@ -46,7 +46,7 @@ export const fr = {
   // Accueil
   "home.title": "Agir ensemble, sans y aller seul",
   "home.lead":
-    "Tu voudrais agir, mais pas seul·e. Ici, tu t'engages en privé, et l'action n'a lieu que si assez de monde suit.",
+    "Tu voudrais agir, mais pas seul·e. Ici, tu t'engages sans attendre que les autres se montrent, et l'action n'a lieu que si assez de monde suit.",
   "hunt.explain":
     "Ici, personne n'y va seul·e : ton engagement ne compte que si au moins {threshold} personnes s'engagent avant la date limite. Sinon, ton dépôt t'est rendu.",
   "hunt.explain.link": "Comment ça marche ?",
@@ -55,9 +55,9 @@ export const fr = {
   "home.example.1":
     "Sam veut défendre le parc du quartier au conseil municipal du 12 mars. Seul·e, Sam n'ira pas. Sam crée une chasse : « On y va si on est au moins 20 ».",
   "home.example.2":
-    "Les voisins s'engagent, chacun de son côté, avec un dépôt de 5 KAS. Personne ne voit qui s'est engagé, pas même Sam.",
+    "Les voisins s'engagent, chacun de son côté, avec un dépôt de 5 KAS. Le site n'affiche pas qui s'est engagé, pas même à Sam.",
   "home.example.3":
-    "Au 20e engagement, la chasse se déclenche : tout le monde est prévenu et un chat chiffré s'ouvre pour s'organiser. Si on n'arrive pas à 20, rien ne se passe : chacun récupère son dépôt, et personne ne saura qui était partant.",
+    "Au 20e engagement, la chasse se déclenche : tout le monde est prévenu et un chat chiffré s'ouvre pour s'organiser. Si on n'arrive pas à 20, rien ne se passe : chacun récupère son dépôt.",
   "home.example.cardLabel": "Exemple de chasse",
   "home.example.cardTitle": "Conseil municipal : sauvons le parc",
   "home.example.cardMeta": "Mairie · avant le 12 mars",
@@ -71,13 +71,13 @@ export const fr = {
     "Pour que l'engagement compte : on réfléchit avant de cliquer, et créer de faux engagements coûte cher. Le dépôt est toujours rendu à la fin.",
   "home.faq.who.q": "Qui sait que je me suis engagé·e ?",
   "home.faq.who.a":
-    "Personne. Le serveur ne garde qu'une empreinte qui ne permet pas de remonter à ton wallet, et la personne qui a créé la chasse ne voit pas qui s'est engagé.",
+    "Le site ne l'affiche jamais, pas même au créateur. Mais ton engagement est inscrit sur la blockchain Kaspa avec l'adresse de ton wallet : c'est public et permanent, et quelqu'un qui lit la blockchain peut le voir. Pour plus de discrétion, utilise un wallet qui n'est pas relié à ton identité.",
   "home.faq.after.q": "Et si la chasse se déclenche ?",
   "home.faq.after.a":
     "Tu restes libre : Huntited ne force personne. Mais tu sais que tu ne seras pas seul·e, et le chat permet de s'organiser.",
   "home.faq.cost.q": "Ça coûte quelque chose ?",
   "home.faq.cost.a":
-    "Pas pour s'engager : ton dépôt t'est rendu. Pour créer une chasse, oui : la caution n'est pas rendue en entier. Une partie paie les participants si l'action a lieu, et une petite partie revient à Huntited, ce qui finance le développement et l'hébergement du service.",
+    "S'engager coûte 0,2 KAS, non rendus : c'est ce qui inscrit ton engagement sur la blockchain. Ton dépôt de 5 KAS, lui, est rendu. Créer une chasse coûte aussi 0,2 KAS, et la caution n'est pas rendue en entier : une partie paie les participants si l'action a lieu, une petite partie revient à Huntited pour financer le service. Pour l'instant, tout se fait en KAS de test.",
   "home.create": "Créer une chasse",
   "home.search": "Rechercher une chasse…",
   "home.filter": "Filtrer par statut",
@@ -346,9 +346,9 @@ export const fr = {
   "form.threshold.help": "Personnes nécessaires pour que l'action ait lieu. Minimum {min}.",
   "form.hide": "Masquer la progression",
   "form.hide.help":
-    "Personne ne voit le nombre d'engagés avant la fin. (Version de test : caché à l'écran seulement.)",
+    "Le site n'affiche pas le nombre d'engagés avant la fin. Il reste lisible sur la blockchain pour qui sait la lire.",
   "form.hide.recommended":
-    "Recommandé : sans compteur visible, personne n'attend de voir les autres pour se lancer, et s'engager le premier n'expose pas.",
+    "Recommandé : sans compteur visible sur le site, personne n'attend de voir les autres pour se lancer.",
   "form.caution": "Ta caution",
   "form.caution.label": "Ta caution (KAS)",
   "form.caution.short": "Minimum {min} KAS. Une partie paie les engagé·es et Huntited.",

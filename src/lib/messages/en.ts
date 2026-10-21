@@ -18,7 +18,7 @@ export const en: Messages = {
   "wallet.connect": "Connect wallet",
   "wallet.connecting": "Connecting…",
   "wallet.disconnect": "Disconnect",
-  "footer.tagline": "Everyone or no one. No personal data.",
+  "footer.tagline": "Everyone or no one. No account, no e-mail.",
   "footer.testnet": "Test network · no real KAS",
   "dev.reset": "Reset demo data",
   "dev.resetConfirm": "Reset Huntited demo data?",
@@ -47,7 +47,7 @@ export const en: Messages = {
   // Home
   "home.title": "Act together, never alone",
   "home.lead":
-    "You'd like to act, but not alone. Here you commit privately, and the action only happens if enough people join.",
+    "You'd like to act, but not alone. Here you commit without waiting for others to show up, and the action only happens if enough people join.",
   "hunt.explain":
     "Nobody goes alone here: your commitment only counts if at least {threshold} people commit before the deadline. Otherwise, your deposit is returned.",
   "hunt.explain.link": "How does it work?",
@@ -56,9 +56,9 @@ export const en: Messages = {
   "home.example.1":
     'Sam wants to defend the local park at the council meeting on 12 March. Alone, Sam won\'t go. So Sam creates a hunt: "We go if there are at least 20 of us".',
   "home.example.2":
-    "Neighbours commit, each on their own, with a 5 KAS deposit. Nobody can see who committed, not even Sam.",
+    "Neighbours commit, each on their own, with a 5 KAS deposit. The site doesn't show who committed, not even to Sam.",
   "home.example.3":
-    "The 20th commitment triggers the hunt: everyone is notified and an encrypted chat opens to get organised. If it doesn't reach 20, nothing happens: everyone gets their deposit back, and nobody will ever know who was in.",
+    "The 20th commitment triggers the hunt: everyone is notified and an encrypted chat opens to get organised. If it doesn't reach 20, nothing happens: everyone gets their deposit back.",
   "home.example.cardLabel": "Example hunt",
   "home.example.cardTitle": "Council meeting: save the park",
   "home.example.cardMeta": "Town hall · before 12 March",
@@ -72,13 +72,13 @@ export const en: Messages = {
     "So a commitment means something: you think before clicking, and fake commitments get expensive. The deposit is always returned at the end.",
   "home.faq.who.q": "Who knows I committed?",
   "home.faq.who.a":
-    "Nobody. The server only keeps a fingerprint that can't be traced back to your wallet, and the hunt's creator can't see who committed.",
+    "The site never shows it, not even to the creator. But your commitment is written on the Kaspa blockchain with your wallet address: it's public and permanent, and someone reading the blockchain can see it. For more discretion, use a wallet that isn't linked to your identity.",
   "home.faq.after.q": "What if the hunt triggers?",
   "home.faq.after.a":
     "You're still free: Huntited doesn't force anyone. But you know you won't be alone, and the chat helps you get organised.",
   "home.faq.cost.q": "Does it cost anything?",
   "home.faq.cost.a":
-    "Not to commit: your deposit is returned. To create a hunt, yes: the guarantee isn't fully returned. Part of it pays participants if the action happens, and a small part goes to Huntited, which funds the development and hosting of the service.",
+    "Committing costs 0.2 KAS, not returned: that's what writes your commitment on the blockchain. Your 5 KAS deposit is returned. Creating a hunt also costs 0.2 KAS, and the deposit isn't fully returned: part of it pays participants if the action happens, a small part goes to Huntited to fund the service. For now, everything uses test KAS.",
   "home.create": "Create a hunt",
   "home.search": "Search hunts…",
   "home.filter": "Filter by status",
@@ -337,9 +337,9 @@ export const en: Messages = {
   "form.threshold.help": "People needed for the action to happen. Minimum {min}.",
   "form.hide": "Hide progress",
   "form.hide.help":
-    "Nobody sees the number of commitments before the end. (Test version: only hidden on screen.)",
+    "The site doesn't show the number of commitments before the end. It stays readable on the blockchain for anyone who knows how.",
   "form.hide.recommended":
-    "Recommended: with no visible counter, nobody waits to see the others before joining, and committing first doesn't expose you.",
+    "Recommended: with no counter on the site, nobody waits to see the others before joining.",
   "form.caution": "Your deposit",
   "form.caution.label": "Your deposit (KAS)",
   "form.caution.short": "Minimum {min} KAS. Part of it pays participants and Huntited.",

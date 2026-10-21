@@ -56,8 +56,8 @@ export const createDepositTerms = (cautionKas: number, locale: Locale = "fr") =>
 export const commitRefundHighlight = (cautionKas: number, locale: Locale = "fr") => {
   const { cap } = amounts(cautionKas, locale);
   return locale === "fr"
-    ? `Tu ne perds rien : tes 5 KAS te sont rendus intégralement à la fin. Et si l'action a lieu, tu reçois une récompense du créateur, jusqu'à ${cap}.`
-    : `You lose nothing: your 5 KAS are returned in full at the end. And if the action happens, you receive a reward from the creator, up to ${cap}.`;
+    ? `Tes 5 KAS de dépôt te sont rendus intégralement à la fin. Et si l'action a lieu, tu reçois une récompense du créateur, jusqu'à ${cap}.`
+    : `Your 5 KAS deposit is returned in full at the end. And if the action happens, you receive a reward from the creator, up to ${cap}.`;
 };
 
 /** Version courte, sous le bouton d'engagement. */
@@ -83,13 +83,13 @@ export const termsShortFor = (cautionKas: number, locale: Locale = "fr"): string
         createDepositTerms(cautionKas, locale),
         "Tes KAS restent bloqués jusqu'à la fin de la chasse.",
         "Tout le monde ou personne : l'action n'a lieu que si le seuil est atteint.",
-        "Anonyme : ton engagement n'est jamais enregistré sous ton adresse.",
+        "Public : ton engagement est inscrit sur la blockchain avec l'adresse de ton wallet (0,2 KAS d'inscription, non rendus).",
       ]
     : [
         createDepositTerms(cautionKas, locale),
         "Your KAS stay locked until the end of the hunt.",
         "Everyone or no one: the action only happens if the threshold is reached.",
-        "Anonymous: your commitment is never recorded under your address.",
+        "Public: your commitment is written on the blockchain with your wallet address (0.2 KAS to register, not returned).",
       ];
 export const termsShort = termsShortFor(MIN);
 
@@ -130,12 +130,14 @@ what's left is returned to the creator.
 The action triggers for all participants at the same time, or not at
 all. Nobody ends up exposed alone.
 
-4. Anonymity
-Your commitment is recorded under an anonymous fingerprint, never
-under your address. The creator chooses whether the number of
-commitments is visible to all or hidden until the hunt triggers or
-the deadline. In this version, it's only hidden on screen:
-it is not yet a cryptographic guarantee.
+4. What is public
+Your commitment is written on the Kaspa blockchain with your wallet
+address, the hunt's identifier and any personal threshold. It is
+public and permanent: anyone can read it, even though the site doesn't
+show it. The creator can hide the number of commitments on the site,
+but it stays readable on the blockchain. For more discretion, use a
+wallet that isn't linked to your identity.
+Registering the commitment costs 0.2 KAS, not returned.
 `.trim();
   }
   return `
@@ -168,12 +170,15 @@ ce qui reste est rendu au créateur.
 L'action se déclenche pour tous les participants en même temps, ou
 pas du tout. Personne ne se retrouve exposé seul.
 
-4. Anonymat
-Ton engagement est enregistré sous une empreinte anonyme, jamais sous
-ton adresse. Le créateur choisit si le nombre d'engagés est visible
-de tous ou caché jusqu'au déclenchement ou à la date limite. Dans
-cette version, c'est seulement caché à l'écran :
-ce n'est pas encore une garantie cryptographique.
+4. Ce qui est public
+Ton engagement est inscrit sur la blockchain Kaspa avec l'adresse de
+ton wallet, l'identifiant de la chasse et ton éventuel seuil
+personnel. C'est public et permanent : n'importe qui peut le lire,
+même si le site ne l'affiche pas. Le créateur peut masquer le nombre
+d'engagés sur le site, mais il reste lisible sur la blockchain. Pour
+plus de discrétion, utilise un wallet qui n'est pas relié à ton
+identité.
+Inscrire l'engagement coûte 0,2 KAS, non rendus.
 `.trim();
 };
 export const termsFull = termsFullFor(MIN);

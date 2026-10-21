@@ -37,6 +37,7 @@ const fr: LegalSection[] = [
         paragraphs: [
           "En t'engageant, tu bloques un dépôt (5 KAS) rendu à la fin, et tu acceptes les règles de résolution affichées au moment de l'engagement (récompense du créateur, seuil personnel).",
           "Un engagement ne peut pas être retiré avant la fin de la chasse. Huntited n'a aucun moyen de forcer quiconque à participer à l'action : le déclenchement signifie seulement que le seuil est atteint.",
+          "Créer une chasse ou s'engager l'inscrit sur la blockchain Kaspa : cela coûte 0,2 KAS, non rendus, et c'est public et permanent (voir « Vie privée »).",
           "Si tu crées une chasse, ta caution n'est pas rendue en entier : une partie récompense les participants si l'action a lieu, et une partie revient à Huntited pour financer le développement et l'hébergement du service. Le détail exact est affiché avant la création.",
         ],
       },
@@ -51,7 +52,7 @@ const fr: LegalSection[] = [
         heading: "5. Usages interdits",
         paragraphs: [
           "Il est interdit d'utiliser Huntited pour organiser ou encourager des violences, des actes illégaux, du harcèlement, de la discrimination, ou pour exposer, ficher ou piéger des personnes ; ainsi que pour tromper les participants ou contourner les protections (multiplication de wallets, revente de pass).",
-          "Signalement : écris à [contact] en indiquant le lien de la chasse. Les chasses manifestement contraires à ces règles peuvent être retirées de l'affichage.",
+          "Signalement : écris à [contact] en indiquant le lien de la chasse. Les chasses manifestement contraires à ces règles pourront être masquées sur le site (outil en préparation) ; elles restent inscrites sur la blockchain, que personne ne peut modifier.",
         ],
       },
       {
@@ -76,6 +77,16 @@ const fr: LegalSection[] = [
         heading: "Le principe",
         paragraphs: [
           "Huntited est conçu pour collecter le moins possible : pas de compte, pas d'e-mail, pas de nom, pas de traceur publicitaire, pas de cookie de mesure d'audience.",
+          "Mais sur huntited.com, les chasses et les engagements sont inscrits sur la blockchain Kaspa (réseau de test pour l'instant). Ce qui y est écrit est public et permanent : personne, pas même Huntited, ne peut l'effacer.",
+        ],
+      },
+      {
+        heading: "Ce qui est public sur la blockchain",
+        paragraphs: [
+          "Création d'une chasse : son contenu (titre, description, lieu, pays, date limite, seuil, caution), l'adresse du wallet du créateur et sa clé publique de chat.",
+          "Engagement : l'adresse de ton wallet, l'identifiant de la chasse, ton éventuel seuil personnel et ta clé publique de chat.",
+          "Le site n'affiche jamais qui s'est engagé, mais quelqu'un qui lit la blockchain peut le voir, et compter les engagements même quand la progression est masquée sur le site. Huntited garde aussi une copie publique de ces transactions (archives du registre). Pour plus de discrétion, utilise un wallet qui n'est pas relié à ton identité.",
+          "Les messages du chat ne sont pas sur la blockchain : ils sont chiffrés pour les seuls membres de la chasse (voir « Services tiers »).",
         ],
       },
       {
@@ -86,12 +97,11 @@ const fr: LegalSection[] = [
         ],
       },
       {
-        heading: "Ce que conserve le serveur",
+        heading: "Ancienne version avec serveur",
         paragraphs: [
           "Les informations publiques des chasses (titre, description, lieu, pays, date limite, seuil, caution), une empreinte du wallet créateur, une empreinte par engagement (propre à chaque chasse) et l'éventuel seuil personnel ; pour les pass, uniquement des empreintes anonymes et des codes à usage unique.",
           "L'adresse de ton wallet n'est jamais conservée en clair. Les adresses IP ne sont pas enregistrées : elles servent seulement, sous forme d'empreinte gardée en mémoire quelques minutes, à limiter les abus.",
           "Chat : les salons sont créés sur un serveur Matrix géré par Huntited, sans fédération, avec chiffrement de bout en bout ; ils sont supprimés, avec les comptes temporaires, 24 heures après la date limite.",
-          "Chat des chasses sur la blockchain : sans serveur Huntited. Chaque membre a une clé de chat par chasse, créée et gardée dans son navigateur ; sa partie publique est inscrite sur la blockchain avec la création ou l'engagement. Les messages sont chiffrés pour les seuls membres et transmis par des relais Nostr publics, qui voient l'adresse IP et l'heure d'envoi mais pas le contenu. Ils portent une date d'expiration (24 heures après la date limite), que les relais peuvent ne pas respecter.",
           "Chasse ratée : 24 heures après la date limite, les empreintes d'engagement, seuils personnels et codes de pass de la chasse sont effacés ; seul leur nombre reste affiché.",
           "Notifications (facultatives) : si tu demandes à être prévenu·e, le serveur garde l'adresse de livraison fournie par ton navigateur, l'identifiant de la chasse et ta langue, sans lien avec ton wallet. Elles sont supprimées dès la notification envoyée. Le message, chiffré de bout en bout, transite par le service de notification de ton navigateur (Google, Mozilla, Apple ou Microsoft), qui ne peut pas le lire.",
         ],
@@ -99,6 +109,8 @@ const fr: LegalSection[] = [
       {
         heading: "Services tiers",
         paragraphs: [
+          "Sur huntited.com, ton navigateur contacte directement : l'API publique du réseau de test Kaspa (pour lire la blockchain), Codeberg (hébergement du site et de l'archive du registre) et, pour le chat, des relais Nostr publics (relay.damus.io, nos.lol, relay.primal.net). Une copie du site est aussi publiée sur IPFS (Filebase). Ces services voient ton adresse IP et l'heure de tes visites, pas le contenu de tes messages.",
+          "Chat : chaque membre a une clé de chat par chasse, créée et gardée dans son navigateur. Les messages et les pseudos sont chiffrés pour les seuls membres ; les relais voient l'heure d'envoi et la clé publique de l'auteur, inscrite sur la blockchain avec son engagement. Les messages portent une date d'expiration (24 heures après la date limite), que les relais peuvent ne pas respecter.",
           "Ton wallet (par exemple Kastle) et le réseau Kaspa ont leurs propres règles. Le bouton « Répondre à un tweet » ouvre X (x.com) : ce que tu y publies relève des conditions de X. Huntited n'envoie aucune donnée à ces services.",
           "Quand tu connectes Kastle, le serveur Huntited consulte l'historique public de ton adresse sur l'API du réseau de test Kaspa, pour te prévenir si elle a déjà servi hors de Huntited. C'est le serveur qui fait la demande (l'API ne voit pas ton IP), et rien n'est conservé.",
         ],
@@ -106,6 +118,7 @@ const fr: LegalSection[] = [
       {
         heading: "Tes droits",
         paragraphs: [
+          "Ce qui est inscrit sur la blockchain, et ses copies dans les archives publiques du registre, ne peut être ni corrigé ni effacé : c'est le principe d'une blockchain. Réfléchis avant de créer une chasse ou de t'engager.",
           "Conformément au RGPD, tu peux demander l'accès, la rectification ou l'effacement des données te concernant en écrivant à [contact]. Comme Huntited ne connaît ni ton nom ni ton adresse de wallet en clair, il faudra fournir l'élément permettant de retrouver la donnée (par exemple le lien de la chasse créée). Tu peux aussi saisir la CNIL.",
           "Responsable du traitement : [éditeur], [contact]. Hébergement : [hébergeur, à compléter à la mise en ligne].",
         ],
@@ -165,6 +178,7 @@ const en: LegalSection[] = [
         paragraphs: [
           "By committing, you lock a deposit (5 KAS) that is returned at the end, and you accept the settlement rules shown when you commit (creator's reward, personal threshold).",
           "A commitment can't be withdrawn before the end of the hunt. Huntited has no way to force anyone to take part in the action: triggering only means the threshold was reached.",
+          "Creating a hunt or committing writes it on the Kaspa blockchain: it costs 0.2 KAS, not returned, and it's public and permanent (see “Privacy”).",
           "If you create a hunt, your deposit isn't fully returned: part of it rewards participants if the action happens, and part goes to Huntited to fund the development and hosting of the service. The exact breakdown is shown before you create it.",
         ],
       },
@@ -179,7 +193,7 @@ const en: LegalSection[] = [
         heading: "5. Prohibited uses",
         paragraphs: [
           "Huntited must not be used to organise or encourage violence, illegal acts, harassment or discrimination, or to expose, profile or entrap people; nor to deceive participants or bypass protections (multiple wallets, reselling passes).",
-          "Reporting: write to [contact] with the hunt's link. Hunts clearly breaching these rules may be removed from display.",
+          "Reporting: write to [contact] with the hunt's link. Hunts clearly breaching these rules will be hideable on the site (tool in preparation); they remain written on the blockchain, which nobody can change.",
         ],
       },
       {
@@ -204,6 +218,16 @@ const en: LegalSection[] = [
         heading: "The principle",
         paragraphs: [
           "Huntited is designed to collect as little as possible: no account, no e-mail, no name, no ad tracker, no analytics cookie.",
+          "But on huntited.com, hunts and commitments are written on the Kaspa blockchain (test network for now). What is written there is public and permanent: nobody, not even Huntited, can erase it.",
+        ],
+      },
+      {
+        heading: "What is public on the blockchain",
+        paragraphs: [
+          "Creating a hunt: its content (title, description, place, country, deadline, threshold, deposit), the creator's wallet address and their public chat key.",
+          "Committing: your wallet address, the hunt's identifier, any personal threshold and your public chat key.",
+          "The site never shows who committed, but someone reading the blockchain can see it, and count commitments even when progress is hidden on the site. Huntited also keeps a public copy of these transactions (registry archives). For more discretion, use a wallet that isn't linked to your identity.",
+          "Chat messages are not on the blockchain: they are encrypted for the hunt's members only (see “Third-party services”).",
         ],
       },
       {
@@ -214,12 +238,11 @@ const en: LegalSection[] = [
         ],
       },
       {
-        heading: "What the server keeps",
+        heading: "Former version with a server",
         paragraphs: [
           "Public hunt information (title, description, place, country, deadline, threshold, deposit), a fingerprint of the creator's wallet, one fingerprint per commitment (specific to each hunt) and any personal threshold; for passes, only anonymous fingerprints and single-use codes.",
           "Your wallet address is never stored in clear. IP addresses aren't recorded: they're only used, as a fingerprint kept in memory for a few minutes, to limit abuse.",
           "Chat: rooms are created on a Matrix server run by Huntited, without federation, with end-to-end encryption; they're deleted, along with the temporary accounts, 24 hours after the deadline.",
-          "Chat for hunts on the blockchain: no Huntited server. Each member has one chat key per hunt, created and kept in their browser; its public part is written on the blockchain with the hunt or the commitment. Messages are encrypted for members only and carried by public Nostr relays, which see the IP address and sending time but not the content. They carry an expiry date (24 hours after the deadline), which relays may not honour.",
           "Failed hunt: 24 hours after the deadline, the hunt's commitment fingerprints, personal thresholds and pass codes are erased; only their number remains displayed.",
           "Notifications (optional): if you ask to be notified, the server keeps the delivery address provided by your browser, the hunt's identifier and your language, with no link to your wallet. They're deleted as soon as the notification is sent. The message, end-to-end encrypted, goes through your browser's notification service (Google, Mozilla, Apple or Microsoft), which can't read it.",
         ],
@@ -227,6 +250,8 @@ const en: LegalSection[] = [
       {
         heading: "Third-party services",
         paragraphs: [
+          "On huntited.com, your browser directly contacts: the public Kaspa test network API (to read the blockchain), Codeberg (hosting of the site and of the registry archive) and, for the chat, public Nostr relays (relay.damus.io, nos.lol, relay.primal.net). A copy of the site is also published on IPFS (Filebase). These services see your IP address and when you visit, not the content of your messages.",
+          "Chat: each member has one chat key per hunt, created and kept in their browser. Messages and nicknames are encrypted for members only; relays see the sending time and the author's public key, which is written on the blockchain with their commitment. Messages carry an expiry date (24 hours after the deadline), which relays may not honour.",
           'Your wallet (for example Kastle) and the Kaspa network have their own rules. The "Reply to a tweet" button opens X (x.com): what you post there falls under X\'s terms. Huntited sends no data to these services.',
           "When you connect Kastle, the Huntited server looks up your address's public history on the Kaspa test network API, to warn you if it has been used outside Huntited. The server makes the request (the API doesn't see your IP), and nothing is kept.",
         ],
@@ -234,6 +259,7 @@ const en: LegalSection[] = [
       {
         heading: "Your rights",
         paragraphs: [
+          "What is written on the blockchain, and its copies in the public registry archives, can be neither corrected nor erased: that's how a blockchain works. Think before creating a hunt or committing.",
           "Under the GDPR, you can request access to, correction or erasure of data about you by writing to [contact]. Since Huntited knows neither your name nor your wallet address in clear, you'll need to provide something that lets us find the data (for example the link of the hunt you created). You can also contact the CNIL (French data protection authority).",
           "Data controller: [publisher], [contact]. Hosting: [host, to be completed at launch].",
         ],

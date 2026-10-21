@@ -28,12 +28,14 @@ export const Route = createFileRoute("/")({
       { title: "Huntited — Agir ensemble, sans y aller seul" },
       {
         name: "description",
-        content: "Rejoins des actions collectives en privé : tout le monde ensemble, ou personne.",
+        content:
+          "Des actions collectives où personne n'y va seul : tout le monde ensemble, ou personne.",
       },
       { property: "og:title", content: "Huntited" },
       {
         property: "og:description",
-        content: "Rejoins des actions collectives en privé : tout le monde ensemble, ou personne.",
+        content:
+          "Des actions collectives où personne n'y va seul : tout le monde ensemble, ou personne.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

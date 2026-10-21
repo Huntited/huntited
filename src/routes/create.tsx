@@ -16,7 +16,7 @@ export const Route = createFileRoute("/create")({
       {
         property: "og:description",
         content:
-          "Créez une action collective coordonnée : seuil, caution et engagements anonymes : tout le monde ou personne.",
+          "Créez une action collective coordonnée : un seuil, une caution, et l'action n'a lieu que si assez de monde s'engage.",
       },
     ],
   }),

@@ -22,7 +22,7 @@ const MOCK_HUNTS: Record<string, Hunt> = {
     id: "sol",
     title: "Distribution solidaire — secteur nord",
     description:
-      "Distribution de repas et de couvertures. Engagement anonyme, coordination sur place le jour J uniquement.",
+      "Distribution de repas et de couvertures. Coordination sur place le jour J uniquement.",
     location: "Lille, gare Lille-Flandres",
     country: "FR",
     deadline: "2026-10-18T09:00:00Z",

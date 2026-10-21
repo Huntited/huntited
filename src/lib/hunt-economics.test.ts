@@ -198,10 +198,11 @@ describe("textes UX des dépôts", () => {
   const failure = calculateSettlement(1, "failure");
   const pool = calculateSettlement(1_000, "success");
 
-  it("ne promettent pas une confidentialité cryptographique qui n'existe pas encore", () => {
-    for (const line of termsShort) expect(line).not.toMatch(/\bZK\b/);
-    expect(termsFull).not.toMatch(/ne peut savoir/);
-    expect(termsFull).toMatch(/pas encore une garantie cryptographique/);
+  it("ne promettent pas un anonymat qui n'existe pas : l'engagement est public", () => {
+    for (const line of termsShort) expect(line).not.toMatch(/\bZK\b|[Aa]nonyme/);
+    expect(termsFull).not.toMatch(/ne peut savoir|empreinte anonyme/);
+    expect(termsFull).toMatch(/public et permanent/);
+    expect(termsFull).toMatch(/0,2 KAS, non rendus/);
   });
 
   it("annoncent les montants calculés par l'économie", () => {
