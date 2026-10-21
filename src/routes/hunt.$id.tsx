@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { ChatPanel } from "@/components/hunt/ChatPanel";
+import { P2PChatPanel } from "@/components/hunt/P2PChatPanel";
 import { HuntSettlementPanel } from "@/components/hunt/HuntSettlementPanel";
 import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
 import { CommitModal } from "@/components/hunt/CommitModal";
@@ -20,7 +21,7 @@ import { countryName } from "@/lib/countries";
 import { placeLabel } from "@/lib/online";
 import { hasBackend } from "@/lib/api-client";
 import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
-import { getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
+import { getDataMode, getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
 import { useI18n } from "@/lib/i18n";
 import { commitRefundShort } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
@@ -289,7 +290,10 @@ function HuntDetailPage() {
 
       {/* Chat Matrix : n'existe qu'après l'activation (jamais avant). */}
       <div className="mt-6">
-        {canOpenChat(status, outcome) && !hasBackend() ? (
+        {canOpenChat(status, outcome) && getDataMode() === "chain" ? (
+          // Chasse sur la chaîne : chat chiffré entre membres, sans serveur.
+          <P2PChatPanel huntId={hunt.id} />
+        ) : canOpenChat(status, outcome) && !hasBackend() ? (
           // Version sans serveur : chat chiffré pair à pair à venir.
           <section className="rounded-lg border bg-card p-4 text-sm">
             <h2 className="mb-1 font-semibold">{t("hunt.chat.title")}</h2>

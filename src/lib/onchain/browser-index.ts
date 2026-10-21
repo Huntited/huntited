@@ -169,6 +169,22 @@ export async function getChainHunt(id: string, now = Date.now()): Promise<ChainH
   return h ? viewOf(ledger, h, now) : null;
 }
 
+/**
+ * Membres du chat chiffré d'une chasse (clés publiques de chat inscrites sur
+ * la chaîne : créateur puis engagements, dans l'ordre). Seulement une fois la
+ * chasse déclenchée ; null sinon. Aucune adresse n'est renvoyée.
+ */
+export async function getChainChat(
+  id: string,
+): Promise<{ members: string[]; deadline: number } | null> {
+  const h = (await synced()).hunt(id);
+  if (!h || h.activatedAt === undefined) return null;
+  const members = [h.chat, ...h.commits.map((c) => c.chat)].filter(
+    (k): k is string => typeof k === "string",
+  );
+  return { members: [...new Set(members)], deadline: h.deadline };
+}
+
 /** Versions officielles du site ancrées sur la chaîne. */
 export async function getChainReleases(): Promise<LedgerRelease[]> {
   return (await synced()).releases();

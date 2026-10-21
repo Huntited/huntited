@@ -196,6 +196,24 @@ export const fr = {
     "Démonstration : le salon est ouvert, mais aucun serveur de chat n'est encore en ligne. À la mise en ligne, un bouton « Ouvrir le chat Matrix » apparaîtra ici avec tes identifiants.",
   "chat.soon":
     "La chasse est déclenchée. Le chat chiffré entre participants arrive bientôt : en attendant, organisez-vous par vos moyens habituels.",
+  "chat.p2p.intro":
+    "Chat chiffré entre les membres de la chasse : seules les personnes engagées et le créateur ou la créatrice peuvent lire et écrire. Les relais qui transmettent les messages ne voient que du contenu illisible.",
+  "chat.p2p.loading": "Connexion au chat…",
+  "chat.p2p.noKey":
+    "Ce navigateur n'a pas de clé de chat pour cette chasse. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé la chasse) : ouvre le chat depuis celui-ci.",
+  "chat.p2p.notMember":
+    "Le chat est réservé aux personnes engagées et au créateur ou à la créatrice.",
+  "chat.p2p.empty": "Aucun message pour l'instant.",
+  "chat.p2p.placeholder": "Écrire un message…",
+  "chat.p2p.send": "Envoyer",
+  "chat.p2p.sending": "Envoi…",
+  "chat.p2p.sendFailed": "Message non envoyé : aucun relais n'a répondu. Réessaie.",
+  "chat.p2p.you": "Toi",
+  "chat.p2p.member": "Membre {n}",
+  "chat.p2p.ends":
+    "Le chat ferme le {date}, et ses messages sont alors effacés des relais qui le permettent.",
+  "chat.p2p.ended": "Le chat est fermé (24 h après la date limite).",
+  "chat.p2p.unavailable": "Chat indisponible pour le moment.",
   "chat.demo": "(Démonstration : chat simulé, aucun salon réel)",
   "chatLogin.title": "Tes identifiants pour ce chat",
   "chatLogin.step1": "Ouvre le chat avec le bouton ci-dessus (application Element).",
@@ -304,6 +322,9 @@ export const fr = {
   "data.group.pass": "Ton pass",
   "data.group.pass.text":
     "Le secret qui prouve que tu as été invité·e. Si tu le perds, il faudra une nouvelle invitation.",
+  "data.group.chat": "Tes clés de chat",
+  "data.group.chat.text":
+    "Une clé par chasse, pour lire et écrire dans son chat chiffré. Si tu les effaces, tu ne pourras plus lire ces chats depuis cet appareil.",
   "data.group.hunts": "Tes chasses et engagements",
   "data.group.hunts.text":
     "Les chasses que tu as créées ou rejointes, et ton seuil personnel, pour les retrouver dans « Mes chasses ».",

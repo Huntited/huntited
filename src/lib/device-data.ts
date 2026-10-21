@@ -6,12 +6,13 @@ import { isFollowing, unfollowHunt } from "./push";
 const PREFIX = "huntited:";
 
 export type DataGroupId =
-  "wallet" | "pass" | "hunts" | "draft" | "notify" | "prefs" | "demo" | "other";
+  "wallet" | "pass" | "chat" | "hunts" | "draft" | "notify" | "prefs" | "demo" | "other";
 
 /** Ordre d'affichage et clés de chaque groupe. */
 const GROUPS: { id: DataGroupId; keys: string[] }[] = [
   { id: "wallet", keys: ["wallet", "mock-wallet", "wallet-guide", "address-checked"] },
   { id: "pass", keys: ["pass", "pass-invite-slots"] },
+  { id: "chat", keys: ["chat-keys"] },
   {
     id: "hunts",
     keys: [
@@ -32,7 +33,7 @@ const GROUPS: { id: DataGroupId; keys: string[] }[] = [
 ];
 
 /** Groupes dont le contenu n'est pas affiché à l'écran (secret). */
-export const SECRET_GROUPS: DataGroupId[] = ["pass"];
+export const SECRET_GROUPS: DataGroupId[] = ["pass", "chat"];
 
 export interface DataGroup {
   id: DataGroupId;

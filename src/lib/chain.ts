@@ -27,12 +27,16 @@ export interface ChainHuntMessage {
   threshold: number;
   deposit: number;
   progressVisibility: "visible" | "hidden";
+  /** Clé publique de chat du créateur (src/lib/p2p-chat.ts). */
+  chat?: string;
 }
 
 export interface ChainCommitMessage {
   t: "commit";
   hunt: string;
   threshold?: number;
+  /** Clé publique de chat de la personne qui s'engage. */
+  chat?: string;
 }
 
 /** Version officielle du site (seule l'adresse de publication est prise en compte). */

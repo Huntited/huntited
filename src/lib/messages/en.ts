@@ -191,6 +191,23 @@ export const en: Messages = {
     "Demo: the room is open, but no chat server is online yet. At launch, an “Open the Matrix chat” button will appear here with your credentials.",
   "chat.soon":
     "The hunt is triggered. Encrypted chat between participants is coming soon: meanwhile, get organised through your usual channels.",
+  "chat.p2p.intro":
+    "Encrypted chat between the hunt's members: only the people who committed and the creator can read and write. The relays that carry the messages only see unreadable content.",
+  "chat.p2p.loading": "Connecting to the chat…",
+  "chat.p2p.noKey":
+    "This browser has no chat key for this hunt. It is created on the device you committed (or created the hunt) from: open the chat there.",
+  "chat.p2p.notMember": "The chat is for the people who committed and the creator.",
+  "chat.p2p.empty": "No messages yet.",
+  "chat.p2p.placeholder": "Write a message…",
+  "chat.p2p.send": "Send",
+  "chat.p2p.sending": "Sending…",
+  "chat.p2p.sendFailed": "Message not sent: no relay answered. Try again.",
+  "chat.p2p.you": "You",
+  "chat.p2p.member": "Member {n}",
+  "chat.p2p.ends":
+    "The chat closes on {date}; its messages are then erased from the relays that allow it.",
+  "chat.p2p.ended": "The chat is closed (24 h after the deadline).",
+  "chat.p2p.unavailable": "Chat unavailable for now.",
   "chat.demo": "(Demo: simulated chat, no real room)",
   "chatLogin.title": "Your login for this chat",
   "chatLogin.step1": "Open the chat with the button above (Element app).",
@@ -300,6 +317,9 @@ export const en: Messages = {
   "data.group.pass": "Your pass",
   "data.group.pass.text":
     "The secret proving you were invited. If you lose it, you'll need a new invitation.",
+  "data.group.chat": "Your chat keys",
+  "data.group.chat.text":
+    "One key per hunt, to read and write in its encrypted chat. If you erase them, you can no longer read these chats from this device.",
   "data.group.hunts": "Your hunts and commitments",
   "data.group.hunts.text":
     "Hunts you created or joined, and your personal threshold, so you can find them in “My hunts”.",

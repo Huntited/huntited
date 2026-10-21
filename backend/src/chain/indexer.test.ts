@@ -104,9 +104,12 @@ describe("archives du registre", () => {
   it("un index reconstruit le même état depuis une archive quand l'API a oublié", async () => {
     const { send, indexer, forget, newLedger, source } = fakeChain();
     const id = randomBytes(12).toString("hex");
-    send(hunt(id), "kaspatest:alice", 100);
-    send({ t: "commit", hunt: id }, "kaspatest:bob", 200);
+    send({ ...hunt(id), chat: "aa".repeat(32) } as Message, "kaspatest:alice", 100);
+    send({ t: "commit", hunt: id, chat: "bb".repeat(32) }, "kaspatest:bob", 200);
     await indexer.sync();
+    // Clés de chat (chat chiffré) gardées avec la chasse et l'engagement.
+    expect(indexer.ledger.hunt(id)!.chat).toBe("aa".repeat(32));
+    expect(indexer.ledger.hunt(id)!.commits[0]!.chat).toBe("bb".repeat(32));
     const archive = indexer.entries();
     expect(archive.map((e) => e.score)).toEqual([100, 200]);
 

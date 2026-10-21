@@ -43,6 +43,7 @@ import {
 } from "./chain";
 import { WalletError } from "./wallet";
 import { getChainHunt, listChainHunts } from "./onchain/browser-index";
+import { ensureChatKey } from "./p2p-chat";
 
 export type DataMode = "local" | "api" | "chain";
 
@@ -259,9 +260,12 @@ async function publishOrThrow(m: ChainMessage, fallback: MessageKey): Promise<vo
 export async function createHunt(data: HuntFormData, address: string): Promise<string> {
   if (getDataMode() === "local") return (await createHuntCovenant(data)).huntId;
   if (getDataMode() === "chain") {
+    const id = newHuntId();
+    // Clé de chat (chat chiffré entre membres, à l'ouverture de la chasse).
+    const chat = ensureChatKey(id);
     const hunt: ChainHuntMessage = {
       t: "hunt",
-      id: newHuntId(),
+      id,
       title: data.title.trim(),
       description: data.description.trim(),
       location: data.location.trim(),
@@ -270,6 +274,7 @@ export async function createHunt(data: HuntFormData, address: string): Promise<s
       threshold: data.threshold,
       deposit: data.deposit,
       progressVisibility: data.progressVisibility ?? "visible",
+      ...(chat ? { chat } : {}),
     };
     await publishOrThrow(hunt, "err.create");
     addPendingHunt(hunt);
@@ -351,11 +356,13 @@ export async function commit(
     if (getMyCommitment(address, huntId)) {
       throw new HuntActionError(translate(getLocale(), "err.alreadyCommitted"));
     }
+    const chat = ensureChatKey(huntId);
     await publishOrThrow(
       {
         t: "commit",
         hunt: huntId,
         ...(personalThreshold === undefined ? {} : { threshold: personalThreshold }),
+        ...(chat ? { chat } : {}),
       },
       "err.commit",
     );

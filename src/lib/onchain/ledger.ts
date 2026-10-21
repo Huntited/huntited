@@ -64,6 +64,8 @@ export interface LedgerCommit {
   personalThreshold: number;
   at: number;
   txId: string;
+  /** Clé publique de chat (chat chiffré, docs/chat.md). */
+  chat?: string;
 }
 
 export interface LedgerHunt extends Omit<HuntMessage, "t" | "proof"> {
@@ -266,7 +268,13 @@ export class Ledger {
     if (m.proof && !(await this.proofOk(m.proof, huntScope(h.id), t))) {
       return { ok: false, reason: "invalid_proof" };
     }
-    h.commits.push({ who, personalThreshold: t, at: e.time, txId: e.txId });
+    h.commits.push({
+      who,
+      personalThreshold: t,
+      at: e.time,
+      txId: e.txId,
+      ...(m.chat ? { chat: m.chat } : {}),
+    });
     if (h.activatedAt === undefined && this.retainedGroup(h).retainedThreshold !== null) {
       h.activatedAt = e.time;
       h.activationRank = h.commits.length;

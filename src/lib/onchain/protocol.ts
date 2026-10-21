@@ -79,6 +79,8 @@ export const huntMessage = z.object({
   threshold: z.number().int().max(100_000),
   deposit: z.number().int().max(100_000),
   progressVisibility: z.enum(["visible", "hidden"]),
+  /** Clé publique de chat du créateur (chat chiffré, docs/chat.md). */
+  chat: hex(64).optional(),
   proof: proofSchema.optional(),
 });
 
@@ -86,6 +88,8 @@ export const commitMessage = z.object({
   t: z.literal("commit"),
   hunt: huntIdSchema,
   threshold: z.number().int().positive().optional(),
+  /** Clé publique de chat de la personne qui s'engage. */
+  chat: hex(64).optional(),
   proof: proofSchema.optional(),
 });
 

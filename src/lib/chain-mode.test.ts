@@ -82,6 +82,8 @@ describe("mode chaîne", () => {
       t: "commit",
       hunt,
       threshold: 9,
+      // Clé publique de chat (chat chiffré entre membres), créée sur l'appareil.
+      chat: expect.stringMatching(/^[0-9a-f]{64}$/),
     });
     expect(isCommitted(hunt, ADDR)).toBe(true);
     await expect(commit(hunt, ADDR)).rejects.toThrow("déjà engagé");

@@ -100,6 +100,8 @@ export const huntMessage = z.object({
   /** Caution du créateur, en KAS entiers (simulée pour l'instant). */
   deposit: z.number().int().max(100_000),
   progressVisibility: z.enum(["visible", "hidden"]),
+  /** Clé publique de chat du créateur (chat chiffré, docs/chat.md). */
+  chat: hex(64).optional(),
   /** Pass (en réserve) : scope createScope(id), message huntDigest(contenu). */
   proof: proofSchema.optional(),
 });
@@ -109,6 +111,8 @@ export const commitMessage = z.object({
   hunt: huntIdSchema,
   /** Seuil personnel (≥ seuil de la chasse) ; absent = seuil de la chasse. */
   threshold: z.number().int().positive().optional(),
+  /** Clé publique de chat de la personne qui s'engage. */
+  chat: hex(64).optional(),
   /** Pass (en réserve) : scope huntScope(hunt), message = seuil personnel. */
   proof: proofSchema.optional(),
 });
