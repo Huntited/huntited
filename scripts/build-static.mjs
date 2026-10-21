@@ -50,6 +50,50 @@ await build({ configFile: "vite.static.config.ts", mode: "production" });
 // Fichiers du pass (en réserve, inutilisé ici) : 5,5 Mo de moins à publier.
 rmSync(join(OUT, "zk"), { recursive: true, force: true });
 
+// Politique de sécurité (CSP) : la page ne charge que ses propres fichiers,
+// et ne contacte que les services listés (API Kaspa, relais Nostr du chat,
+// archive en ligne). Limite les dégâts d'une injection de script.
+const list = (raw, fallback) =>
+  (raw || fallback)
+    .split(",")
+    .map((u) => u.trim())
+    .filter(Boolean);
+const origin = (u) => {
+  try {
+    return new URL(u).origin;
+  } catch {
+    return null;
+  }
+};
+const connect = [
+  ...list(process.env.VITE_KASPA_API_URL, "https://api-tn10.kaspa.org").map(origin),
+  ...list(
+    process.env.VITE_NOSTR_RELAYS,
+    "wss://relay.damus.io,wss://nos.lol,wss://relay.primal.net",
+  ),
+  origin(liveArchive),
+].filter(Boolean);
+const csp = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self' data:",
+  `connect-src 'self' ${[...new Set(connect)].join(" ")}`,
+  "worker-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+const indexPath = join(OUT, "index.html");
+writeFileSync(
+  indexPath,
+  readFileSync(indexPath, "utf8").replace(
+    "<head>",
+    `<head>\n    <meta http-equiv="Content-Security-Policy" content="${csp}" />`,
+  ),
+);
+
 // Archive du registre livrée avec le site (l'API et l'archive en ligne, fusionnées).
 execSync(
   `node scripts/archive-registry.mjs --out ${join(OUT, "registry-snapshot.json")} --from ${liveArchive} --allow-offline`,
