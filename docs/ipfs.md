@@ -61,3 +61,18 @@ identiques et version officielle reconnue ; un fichier modifié est détecté.
 **Plusieurs points d'accès** : `VITE_KASPA_API_URL` (et `CHAIN_API_URLS` côté
 serveur) acceptent plusieurs adresses séparées par des virgules ; l'ordre est
 tiré au hasard et les suivantes servent de secours.
+
+## Adresse principale : huntited.com (Codeberg Pages)
+
+`huntited.com` (Njalla) est servi par Codeberg Pages depuis le dépôt public
+`Huntited/pages`, branche `pages`. Publier : `npm run build:static` puis
+`npm run publish:codeberg` (clé dans `.env.publish`, jamais versionnée). Le
+script garde l'archive du registre (`registry-live.json`, docs/archives.md) et
+ajoute la redirection `www.huntited.com` → `huntited.com` (`_redirects`, réglage
+de l'hébergeur, hors du manifest ancré).
+
+DNS chez Njalla : `ANAME @ → codeberg.page`, `CNAME www → codeberg.page`, et
+`TXT _git-pages-repository[.www] → https://codeberg.org/Huntited/pages.git`.
+Un webhook Codeberg (Forgejo, branche `pages`) par adresse servie. Premier
+déploiement d'une nouvelle adresse en `http://` (le certificat n'existe pas
+encore), puis repasser le webhook en `https://`.

@@ -6,7 +6,15 @@
 // CODEBERG_TOKEN (jamais affichés, jamais versionnés).
 // Usage : node scripts/publish-codeberg.mjs
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -38,6 +46,8 @@ try {
     }
   }
   cpSync("dist-static", dir, { recursive: true });
+  // Réglage de l'hébergeur, hors du site ancré : www.huntited.com → huntited.com.
+  writeFileSync(join(dir, "_redirects"), "//www.huntited.com/* https://huntited.com/:splat 302!\n");
   // Archive en ligne : la complète (ou la crée) avec l'API et l'archive du site.
   const live = join(dir, "registry-live.json");
   execFileSync(
