@@ -21,6 +21,10 @@ le chat ne passe par aucun serveur Huntited.
 - Envoyés comme événements **Nostr** (type `4242`, étiquette `h` = empreinte
   de l'identifiant de chasse), signés par la clé de chat de l'auteur. Un
   événement d'une clé non membre, mal signé ou modifié est ignoré.
+- **Pseudo** : un par chasse, au hasard au départ (« Renard bleu »), modifiable ;
+  envoyé dans la partie chiffrée du message, jamais sur la chaîne. Affiché avec
+  une marque fixe tirée de la clé (`#4F2A`) : un pseudo ne peut pas en imiter
+  un autre ; le rôle « Créateur·rice » vient de la chaîne.
 - Étiquette `expiration` (NIP-40) : 24 h après la date limite.
 - **Notifications** (`src/lib/chat-notify.ts`, `ChatWatcher`) : bouton « Me
   prévenir » par chasse ; tant qu'une page Huntited est ouverte, un nouveau

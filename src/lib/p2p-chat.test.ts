@@ -4,6 +4,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import {
   chatPublicKey,
+  cleanName,
+  getChatName,
+  memberTag,
+  setChatName,
   ensureChatKey,
   getChatKey,
   openMessage,
@@ -71,5 +75,27 @@ describe("clé invalide inscrite sur la chaîne", () => {
     const members = [chatPublicKey(alice), "11".repeat(32), chatPublicKey(bob)];
     const e = await sealMessage(HUNT, alice, members, "ok", DEADLINE);
     expect((await openMessage(HUNT, bob, members, e))?.text).toBe("ok");
+  });
+});
+
+describe("pseudo du chat", () => {
+  it("voyage chiffré avec le message, nettoyé à la lecture", async () => {
+    const [alice, bob] = [newKey(), newKey()];
+    const members = [alice, bob].map(chatPublicKey);
+    const e = await sealMessage(HUNT, alice, members, "salut", DEADLINE, {
+      name: "  Renard bleu‮ ",
+    });
+    expect(e.content).not.toContain("Renard"); // invisible pour les relais
+    expect((await openMessage(HUNT, bob, members, e))?.name).toBe("Renard bleu");
+  });
+
+  it("au hasard au départ, propre à chaque chasse, modifiable", () => {
+    localStorage.clear();
+    const name = getChatName(HUNT, "fr");
+    expect(name).toMatch(/^\S.+ \S+$/);
+    expect(getChatName(HUNT, "fr")).toBe(name);
+    expect(setChatName(HUNT, "x".repeat(50))).toHaveLength(30);
+    expect(cleanName("\u0007")).toBeUndefined();
+    expect(memberTag("4f2a" + "0".repeat(60))).toBe("#4F2A");
   });
 });

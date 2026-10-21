@@ -12,7 +12,7 @@ export type DataGroupId =
 const GROUPS: { id: DataGroupId; keys: string[] }[] = [
   { id: "wallet", keys: ["wallet", "mock-wallet", "wallet-guide", "address-checked"] },
   { id: "pass", keys: ["pass", "pass-invite-slots"] },
-  { id: "chat", keys: ["chat-keys"] },
+  { id: "chat", keys: ["chat-keys", "chat-names"] },
   { id: "inbox", keys: ["inbox", "hunt-seen"] },
   {
     id: "hunts",

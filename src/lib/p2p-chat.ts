@@ -62,10 +62,90 @@ export function ensureChatKey(huntId: string): string | undefined {
   return getChatKey(huntId) ? chatPublicKey(priv) : undefined;
 }
 
+// --- Pseudo (un par chasse, jamais sur la chaîne, envoyé chiffré) ---
+
+const NAMES_STORAGE = "huntited:chat-names";
+const ANIMALS = {
+  fr: [
+    "Renard",
+    "Hibou",
+    "Castor",
+    "Lynx",
+    "Blaireau",
+    "Héron",
+    "Loup",
+    "Faucon",
+    "Écureuil",
+    "Hérisson",
+    "Corbeau",
+    "Ours",
+    "Chamois",
+    "Martin-pêcheur",
+  ],
+  en: [
+    "Fox",
+    "Owl",
+    "Beaver",
+    "Lynx",
+    "Badger",
+    "Heron",
+    "Wolf",
+    "Falcon",
+    "Squirrel",
+    "Hedgehog",
+    "Raven",
+    "Bear",
+    "Chamois",
+    "Kingfisher",
+  ],
+};
+const COLORS = {
+  fr: ["bleu", "vert", "gris", "roux", "doré", "pourpre", "orange", "ocre", "argenté", "cuivré"],
+  en: ["Blue", "Green", "Grey", "Red", "Golden", "Purple", "Orange", "Ochre", "Silver", "Copper"],
+};
+
+/** Pseudo au hasard, pour ne pas inciter à donner son vrai nom. */
+export function randomName(locale: "fr" | "en"): string {
+  const pick = <T>(l: T[]) => l[crypto.getRandomValues(new Uint32Array(1))[0]! % l.length]!;
+  const animal = pick(ANIMALS[locale]);
+  const color = pick(COLORS[locale]);
+  return locale === "fr" ? `${animal} ${color}` : `${color} ${animal}`;
+}
+
+function readNames(): Record<string, string> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(NAMES_STORAGE) ?? "{}") as unknown;
+    return raw && typeof raw === "object" ? (raw as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Ton pseudo dans le chat de cette chasse (créé au hasard la première fois). */
+export function getChatName(huntId: string, locale: "fr" | "en"): string {
+  const existing = cleanName(readNames()[huntId]);
+  if (existing) return existing;
+  return setChatName(huntId, randomName(locale));
+}
+
+export function setChatName(huntId: string, name: string): string {
+  const clean = cleanName(name) ?? randomName("fr");
+  try {
+    localStorage.setItem(NAMES_STORAGE, JSON.stringify({ ...readNames(), [huntId]: clean }));
+  } catch {
+    /* pseudo valable pour cette visite */
+  }
+  return clean;
+}
+
+/** Marque fixe d'un membre (tirée de sa clé) : un pseudo ne peut pas en imiter un autre. */
+export const memberTag = (pub: string) => `#${pub.slice(0, 4).toUpperCase()}`;
+
 /** Oublie les clés de chat de ce navigateur (page « Tes données »). */
 export function forgetChatKeys(): void {
   try {
     localStorage.removeItem(KEYS_STORAGE);
+    localStorage.removeItem(NAMES_STORAGE);
   } catch {
     /* rien à faire */
   }
@@ -141,6 +221,28 @@ export interface ChatMessage {
   text: string;
   /** Date d'envoi (horloge de l'auteur), en millisecondes. */
   at: number;
+  /** Pseudo choisi par l'auteur pour cette chasse (chiffré, comme le texte). */
+  name?: string;
+}
+
+const MAX_NAME = 30;
+/** Caractères de contrôle et de mise en forme invisibles (sens d’écriture…), retirés des pseudos. */
+const INVISIBLE = new RegExp(
+  `[${[
+    [0x00, 0x1f],
+    [0x7f, 0x9f],
+    [0x200b, 0x200f],
+    [0x202a, 0x202e],
+  ]
+    .map(([a, b]) => `${String.fromCharCode(a!)}-${String.fromCharCode(b!)}`)
+    .join("")}]`,
+  "g",
+);
+/** Pseudo propre : une ligne, sans caractères de contrôle, 30 caractères au plus. */
+export function cleanName(name: unknown): string | undefined {
+  if (typeof name !== "string") return undefined;
+  const clean = name.replace(INVISIBLE, "").trim();
+  return clean ? clean.slice(0, MAX_NAME) : undefined;
 }
 
 /** Message chiffré pour tous les membres, signé par la clé de chat de l'auteur. */
@@ -150,13 +252,17 @@ export async function sealMessage(
   members: string[],
   text: string,
   deadline: number,
-  now = Date.now(),
+  { now = Date.now(), name }: { now?: number; name?: string } = {},
 ): Promise<NostrEvent> {
   const clean = text.trim().slice(0, MAX_TEXT);
   if (!clean) throw new Error("empty_message");
   const pubkey = chatPublicKey(priv);
   const contentKey = crypto.getRandomValues(new Uint8Array(32));
-  const body = await aesEncrypt(contentKey, utf8ToBytes(JSON.stringify({ text: clean, at: now })));
+  const pseudo = cleanName(name);
+  const body = await aesEncrypt(
+    contentKey,
+    utf8ToBytes(JSON.stringify({ text: clean, at: now, ...(pseudo ? { name: pseudo } : {}) })),
+  );
   const keys: Record<string, string> = {};
   for (const m of new Set([...members, pubkey])) {
     let pair: Uint8Array;
@@ -203,14 +309,22 @@ export async function openMessage(
     const wrapped = keys[slot(chatPublicKey(priv))];
     if (v !== 1 || !wrapped) return null;
     const contentKey = await aesDecrypt(pairKey(priv, e.pubkey, huntId), unb64(wrapped));
-    const { text, at } = JSON.parse(
+    const { text, at, name } = JSON.parse(
       new TextDecoder().decode(await aesDecrypt(contentKey, unb64(body))),
     ) as {
       text: unknown;
       at: unknown;
+      name: unknown;
     };
     if (typeof text !== "string" || typeof at !== "number") return null;
-    return { id: e.id, author: e.pubkey, text: text.slice(0, MAX_TEXT), at };
+    const pseudo = cleanName(name);
+    return {
+      id: e.id,
+      author: e.pubkey,
+      text: text.slice(0, MAX_TEXT),
+      at,
+      ...(pseudo ? { name: pseudo } : {}),
+    };
   } catch {
     return null;
   }

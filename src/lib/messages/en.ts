@@ -215,6 +215,11 @@ export const en: Messages = {
   "inbox.markRead": "Mark all as read",
   "data.group.inbox": "Activity",
   "data.group.inbox.text": "Your hunts' news (bell in the header), and their last known state.",
+  "chat.p2p.as": "You write as",
+  "chat.p2p.rename": "Change",
+  "chat.p2p.nameLabel": "Your nickname in this chat",
+  "chat.p2p.nameHint": "Only members see it, and only in this chat. Avoid your real name.",
+  "chat.p2p.save": "OK",
   "chat.p2p.loading": "Connecting to the chat…",
   "chat.p2p.noKey":
     "This browser has no chat key for this hunt. It is created on the device you committed (or created the hunt) from: open the chat there.",

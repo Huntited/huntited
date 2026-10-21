@@ -5,6 +5,7 @@ import { Bell, BellOff, Lock, SendHorizontal } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   chatNotifySupported,
@@ -23,8 +24,11 @@ import {
   chatPublicKey,
   chatTopic,
   getChatKey,
+  getChatName,
+  memberTag,
   openMessage,
   sealMessage,
+  setChatName,
   type ChatMessage,
   type NostrEvent,
 } from "@/lib/p2p-chat";
@@ -48,11 +52,15 @@ type Phase =
 type Shown = ChatMessage & { status?: "sending" | "failed"; event?: NostrEvent };
 
 export function P2PChatPanel({ huntId, title }: { huntId: string; title: string }) {
-  const { t, date } = useI18n();
+  const { t, date, locale } = useI18n();
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
   const [messages, setMessages] = useState<Shown[]>([]);
   const [draft, setDraft] = useState("");
   const [notice, setNotice] = useState<MessageKey | null>(null);
+  // Ton pseudo dans ce chat (au hasard au départ, modifiable).
+  const [myName, setMyName] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  useEffect(() => setMyName(getChatName(huntId, locale)), [huntId, locale]);
   const pool = useRef<RelayPool | null>(null);
   const list = useRef<HTMLOListElement | null>(null);
 
@@ -133,7 +141,9 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
 
   async function send() {
     if (!ready || !draft.trim()) return;
-    const e = await sealMessage(huntId, ready.priv, ready.members, draft, ready.deadline);
+    const e = await sealMessage(huntId, ready.priv, ready.members, draft, ready.deadline, {
+      name: myName,
+    });
     const mine = await openMessage(huntId, ready.priv, ready.members, e);
     if (!mine) return;
     // Affiché tout de suite, avec son état d'envoi.
@@ -149,10 +159,16 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     }
   }
 
+  // Dernier pseudo de chaque membre (un pseudo peut changer ; la marque #XXXX, non).
+  const names = new Map<string, string>();
+  for (const m of messages) if (m.name) names.set(m.author, m.name);
   const who = (author: string) => {
-    if (author === ready?.creator) return t("chat.p2p.creator");
     const others = ready?.members.filter((m) => m !== ready.creator) ?? [];
-    return t("chat.p2p.member", { n: others.indexOf(author) + 1 });
+    const fallback =
+      author === ready?.creator
+        ? t("chat.p2p.creator")
+        : t("chat.p2p.member", { n: others.indexOf(author) + 1 });
+    return names.get(author) ?? fallback;
   };
   const when = (at: number) =>
     new Date(at).toDateString() === new Date().toDateString()
@@ -201,8 +217,14 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
                   className={`flex flex-col ${mine ? "items-end" : "items-start"} ${grouped ? "" : "pt-2"}`}
                 >
                   {!grouped && !mine && (
-                    <span className="mb-0.5 px-1 text-xs font-medium text-muted-foreground">
-                      {who(m.author)}
+                    <span className="mb-0.5 flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">{who(m.author)}</span>
+                      <span className="font-mono">{memberTag(m.author)}</span>
+                      {m.author === ready.creator && names.has(m.author) && (
+                        <span className="rounded border px-1 text-[10px] uppercase tracking-wide">
+                          {t("chat.p2p.creator")}
+                        </span>
+                      )}
                     </span>
                   )}
                   <p
@@ -235,6 +257,46 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
             })}
           </ol>
 
+          {editingName ? (
+            <form
+              className="space-y-1"
+              onSubmit={(ev) => {
+                ev.preventDefault();
+                setMyName(setChatName(huntId, myName));
+                setEditingName(false);
+              }}
+            >
+              <label htmlFor="chat-name" className="text-xs font-medium">
+                {t("chat.p2p.nameLabel")}
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  id="chat-name"
+                  value={myName}
+                  onChange={(ev) => setMyName(ev.target.value)}
+                  maxLength={30}
+                  autoFocus
+                  className="h-8"
+                />
+                <Button type="submit" size="sm">
+                  {t("chat.p2p.save")}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">{t("chat.p2p.nameHint")}</p>
+            </form>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              {t("chat.p2p.as")} <span className="font-medium text-foreground">{myName}</span>{" "}
+              <span className="font-mono">{me && memberTag(me)}</span> ·{" "}
+              <button
+                type="button"
+                className="underline underline-offset-2"
+                onClick={() => setEditingName(true)}
+              >
+                {t("chat.p2p.rename")}
+              </button>
+            </p>
+          )}
           <form
             className="flex items-end gap-2"
             onSubmit={(ev) => {

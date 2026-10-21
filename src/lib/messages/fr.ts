@@ -221,6 +221,12 @@ export const fr = {
   "data.group.inbox": "Activité",
   "data.group.inbox.text":
     "Les nouveautés de tes chasses (cloche de l'en-tête), et leur dernier état connu.",
+  "chat.p2p.as": "Tu écris en tant que",
+  "chat.p2p.rename": "Modifier",
+  "chat.p2p.nameLabel": "Ton pseudo dans ce chat",
+  "chat.p2p.nameHint":
+    "Visible seulement par les membres, et seulement dans ce chat. Évite ton vrai nom.",
+  "chat.p2p.save": "OK",
   "chat.p2p.loading": "Connexion au chat…",
   "chat.p2p.noKey":
     "Ce navigateur n'a pas de clé de chat pour cette chasse. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé la chasse) : ouvre le chat depuis celui-ci.",
