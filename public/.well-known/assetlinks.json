@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.huntited.chat",
+      "sha256_cert_fingerprints": [
+        "1E:E8:16:30:27:72:61:DA:31:38:24:CA:C5:0F:69:F4:74:7E:69:C2:75:96:8E:73:3A:FB:E4:5D:6A:D6:E2:BD"
+      ]
+    }
+  }
+]
