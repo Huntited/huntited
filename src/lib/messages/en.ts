@@ -320,6 +320,16 @@ export const en: Messages = {
   "chat.p2p.bitchat.shared": "My bitchat nickname: {nick}",
   "chat.p2p.bitchat.warning":
     "In bitchat, the #bluetooth channel is public: everyone nearby reads it. Write nothing sensitive there; write privately to the nicknames above instead.",
+  "chat.app.title": "Open in the Huntited Chat app (Android)",
+  "chat.app.lead":
+    "The Huntited Chat app opens this same room on your phone. Soon it will make it work without internet, over Bluetooth.",
+  "chat.app.open": "Open in the app",
+  "chat.app.showQr": "Show the QR code",
+  "chat.app.warning":
+    "This QR code holds your chat key: only scan it with your own phone, never show it to anyone.",
+  "chat.app.qrLabel": "QR code to open this room in the app",
+  "chat.app.copy": "Copy the link",
+  "chat.app.install": "Install Huntited Chat",
   "chat.p2p.loading": "Connecting to the chat…",
   "chat.p2p.noKey":
     "This browser has no chat key for this hunt. It is created on the device you committed (or created the hunt) from: open the chat there.",

@@ -329,6 +329,16 @@ export const fr = {
   "chat.p2p.bitchat.shared": "Mon pseudo bitchat : {nick}",
   "chat.p2p.bitchat.warning":
     "Dans bitchat, le canal #bluetooth est public : tout le monde à proximité le lit. N'y écris rien de sensible ; écris plutôt en privé aux pseudos ci-dessus.",
+  "chat.app.title": "Ouvrir dans l'app Huntited Chat (Android)",
+  "chat.app.lead":
+    "L'app Huntited Chat ouvre ce même salon sur ton téléphone. Bientôt, elle le fera fonctionner sans internet, par Bluetooth.",
+  "chat.app.open": "Ouvrir dans l'app",
+  "chat.app.showQr": "Afficher le QR code",
+  "chat.app.warning":
+    "Ce QR code contient ta clé de chat : scanne-le seulement avec ton propre téléphone, ne le montre à personne.",
+  "chat.app.qrLabel": "QR code pour ouvrir ce salon dans l'app",
+  "chat.app.copy": "Copier le lien",
+  "chat.app.install": "Installer Huntited Chat",
   "chat.p2p.loading": "Connexion au chat…",
   "chat.p2p.noKey":
     "Ce navigateur n'a pas de clé de chat pour cette chasse. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé la chasse) : ouvre le chat depuis celui-ci.",

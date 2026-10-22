@@ -42,6 +42,21 @@ export function getChatKey(huntId: string): string | null {
   return typeof k === "string" && /^[0-9a-f]{64}$/.test(k) ? k : null;
 }
 
+/**
+ * Enregistre une clé de chat reçue par lien (app Huntited Chat, salon ouvert
+ * depuis le site) : ce navigateur devient le même membre.
+ */
+export function importChatKey(huntId: string, priv: string): boolean {
+  if (!/^[0-9a-f]{24}$/.test(huntId) || !/^[0-9a-f]{64}$/.test(priv)) return false;
+  try {
+    chatPublicKey(priv); // clé valide ?
+    localStorage.setItem(KEYS_STORAGE, JSON.stringify({ ...readKeys(), [huntId]: priv }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Chasses pour lesquelles ce navigateur a une clé (créées ou rejointes ici). */
 export const chatKeyHunts = (): string[] =>
   Object.keys(readKeys()).filter((id) => /^[0-9a-f]{24}$/.test(id));

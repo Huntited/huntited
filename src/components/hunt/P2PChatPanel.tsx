@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { APP_PAGE, isAndroid, qrSvg, roomIntent, roomLink } from "@/lib/app-link";
 import { Textarea } from "@/components/ui/textarea";
 import {
   chatNotifySupported,
@@ -354,6 +355,8 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
               }),
             })}
           </p>
+          {/* Dans l'app elle-même, inutile de proposer de l'ouvrir. */}
+          {!inApp() && <OpenInApp huntId={huntId} priv={ready.priv} />}
           <PlanB
             contacts={[...bitchatOf].map(([author, nick]) => ({
               who: author === me ? t("chat.p2p.you") : who(author),
@@ -410,6 +413,67 @@ function NotifyToggle({
         <span className="w-full text-xs text-muted-foreground">{t("chat.p2p.notifyHint")}</span>
       )}
     </>
+  );
+}
+
+/** Page affichée dans l'app Huntited Chat (WebView), qui expose ce pont. */
+const inApp = () => typeof window !== "undefined" && "HuntitedApp" in window;
+
+/**
+ * Ouvrir ce salon dans l'app Huntited Chat (Android) : lien direct sur
+ * téléphone, QR code depuis un ordinateur. Le lien contient la clé de chat :
+ * affiché seulement à la demande, avec un avertissement.
+ */
+function OpenInApp({ huntId, priv }: { huntId: string; priv: string }) {
+  const { t } = useI18n();
+  const [shown, setShown] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const link = roomLink(huntId, priv);
+  return (
+    <details className="rounded-md border p-3">
+      <summary className="cursor-pointer font-medium">{t("chat.app.title")}</summary>
+      <div className="mt-2 space-y-2 text-xs text-muted-foreground">
+        <p>{t("chat.app.lead")}</p>
+        {isAndroid() && (
+          <Button asChild size="sm">
+            <a href={roomIntent(huntId, priv)}>{t("chat.app.open")}</a>
+          </Button>
+        )}
+        {!shown ? (
+          <Button size="sm" variant="outline" onClick={() => setShown(true)}>
+            {t("chat.app.showQr")}
+          </Button>
+        ) : (
+          <>
+            <p className="font-medium text-destructive">{t("chat.app.warning")}</p>
+            <div
+              className="size-48 rounded-md bg-white p-2"
+              role="img"
+              aria-label={t("chat.app.qrLabel")}
+              // QR généré localement (qrcode-generator), aucune donnée envoyée.
+              dangerouslySetInnerHTML={{ __html: qrSvg(link) }}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => void navigator.clipboard.writeText(link).then(() => setCopied(true))}
+            >
+              {copied ? t("chatLogin.copied") : t("chat.app.copy")}
+            </Button>
+          </>
+        )}
+        <p>
+          <a
+            href={APP_PAGE}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline underline-offset-2"
+          >
+            {t("chat.app.install")} ↗
+          </a>
+        </p>
+      </div>
+    </details>
   );
 }
 

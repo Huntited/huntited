@@ -20,6 +20,7 @@ import { Route as MyHuntsRouteImport } from './routes/my-hunts'
 import { Route as PassRouteImport } from './routes/pass'
 import { Route as PublishRouteImport } from './routes/publish'
 import { Route as HuntIdRouteImport } from './routes/hunt.$id'
+import { Route as RoomHuntKeyRouteImport } from './routes/room.$hunt.$key'
 import { Route as PlaceHuntKeyInboxRouteImport } from './routes/place.$hunt.$key.$inbox'
 
 const IndexRoute = IndexRouteImport.update({
@@ -77,6 +78,11 @@ const HuntIdRoute = HuntIdRouteImport.update({
   path: '/hunt/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoomHuntKeyRoute = RoomHuntKeyRouteImport.update({
+  id: '/room/$hunt/$key',
+  path: '/room/$hunt/$key',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlaceHuntKeyInboxRoute = PlaceHuntKeyInboxRouteImport.update({
   id: '/place/$hunt/$key/$inbox',
   path: '/place/$hunt/$key/$inbox',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/pass': typeof PassRoute
   '/publish': typeof PublishRoute
   '/hunt/$id': typeof HuntIdRoute
+  '/room/$hunt/$key': typeof RoomHuntKeyRoute
   '/place/$hunt/$key/$inbox': typeof PlaceHuntKeyInboxRoute
 }
 export interface FileRoutesByTo {
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/pass': typeof PassRoute
   '/publish': typeof PublishRoute
   '/hunt/$id': typeof HuntIdRoute
+  '/room/$hunt/$key': typeof RoomHuntKeyRoute
   '/place/$hunt/$key/$inbox': typeof PlaceHuntKeyInboxRoute
 }
 export interface FileRoutesById {
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/pass': typeof PassRoute
   '/publish': typeof PublishRoute
   '/hunt/$id': typeof HuntIdRoute
+  '/room/$hunt/$key': typeof RoomHuntKeyRoute
   '/place/$hunt/$key/$inbox': typeof PlaceHuntKeyInboxRoute
 }
 export interface FileRouteTypes {
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/pass'
     | '/publish'
     | '/hunt/$id'
+    | '/room/$hunt/$key'
     | '/place/$hunt/$key/$inbox'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/pass'
     | '/publish'
     | '/hunt/$id'
+    | '/room/$hunt/$key'
     | '/place/$hunt/$key/$inbox'
   id:
     | '__root__'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/pass'
     | '/publish'
     | '/hunt/$id'
+    | '/room/$hunt/$key'
     | '/place/$hunt/$key/$inbox'
   fileRoutesById: FileRoutesById
 }
@@ -183,6 +195,7 @@ export interface RootRouteChildren {
   PassRoute: typeof PassRoute
   PublishRoute: typeof PublishRoute
   HuntIdRoute: typeof HuntIdRoute
+  RoomHuntKeyRoute: typeof RoomHuntKeyRoute
   PlaceHuntKeyInboxRoute: typeof PlaceHuntKeyInboxRoute
 }
 
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HuntIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/room/$hunt/$key': {
+      id: '/room/$hunt/$key'
+      path: '/room/$hunt/$key'
+      fullPath: '/room/$hunt/$key'
+      preLoaderRoute: typeof RoomHuntKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/place/$hunt/$key/$inbox': {
       id: '/place/$hunt/$key/$inbox'
       path: '/place/$hunt/$key/$inbox'
@@ -287,6 +307,7 @@ const rootRouteChildren: RootRouteChildren = {
   PassRoute: PassRoute,
   PublishRoute: PublishRoute,
   HuntIdRoute: HuntIdRoute,
+  RoomHuntKeyRoute: RoomHuntKeyRoute,
   PlaceHuntKeyInboxRoute: PlaceHuntKeyInboxRoute,
 }
 export const routeTree = rootRouteImport
