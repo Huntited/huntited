@@ -249,6 +249,14 @@ function Index() {
               </summary>
               <p className="mt-2 pl-5 text-sm leading-relaxed text-muted-foreground">
                 {t(`${q}.a` as MessageKey)}
+                {q === "home.faq.wallet" && (
+                  <>
+                    {" "}
+                    <Link to="/kaspa" className="font-medium underline underline-offset-2">
+                      {t("home.faq.wallet.link")}
+                    </Link>
+                  </>
+                )}
               </p>
             </details>
           ))}

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as CreateReviewRouteImport } from './routes/create-review'
+import { Route as KaspaRouteImport } from './routes/kaspa'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as MyDataRouteImport } from './routes/my-data'
 import { Route as MyHuntsRouteImport } from './routes/my-hunts'
@@ -32,6 +33,11 @@ const CreateRoute = CreateRouteImport.update({
 const CreateReviewRoute = CreateReviewRouteImport.update({
   id: '/create-review',
   path: '/create-review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KaspaRoute = KaspaRouteImport.update({
+  id: '/kaspa',
+  path: '/kaspa',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalRoute = LegalRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
+  '/kaspa': typeof KaspaRoute
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
+  '/kaspa': typeof KaspaRoute
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
+  '/kaspa': typeof KaspaRoute
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/create'
     | '/create-review'
+    | '/kaspa'
     | '/legal'
     | '/my-data'
     | '/my-hunts'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/create'
     | '/create-review'
+    | '/kaspa'
     | '/legal'
     | '/my-data'
     | '/my-hunts'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/create'
     | '/create-review'
+    | '/kaspa'
     | '/legal'
     | '/my-data'
     | '/my-hunts'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
   CreateReviewRoute: typeof CreateReviewRoute
+  KaspaRoute: typeof KaspaRoute
   LegalRoute: typeof LegalRoute
   MyDataRoute: typeof MyDataRoute
   MyHuntsRoute: typeof MyHuntsRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/create-review'
       fullPath: '/create-review'
       preLoaderRoute: typeof CreateReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kaspa': {
+      id: '/kaspa'
+      path: '/kaspa'
+      fullPath: '/kaspa'
+      preLoaderRoute: typeof KaspaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal': {
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
   CreateReviewRoute: CreateReviewRoute,
+  KaspaRoute: KaspaRoute,
   LegalRoute: LegalRoute,
   MyDataRoute: MyDataRoute,
   MyHuntsRoute: MyHuntsRoute,

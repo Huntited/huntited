@@ -427,6 +427,11 @@ export const fr = {
   "footer.legalShort": "Conditions et vie privée",
   "footer.versions": "Versions",
   "footer.nav": "Liens utiles",
+  "kaspa.title": "Débuter avec Kaspa",
+  "kaspa.lead":
+    "Ce qu'il faut pour utiliser Huntited : un wallet, quelques KAS, et deux ou trois bons réflexes.",
+  "footer.kaspa": "Débuter avec Kaspa",
+  "home.faq.wallet.link": "Débuter avec Kaspa",
   "footer.data": "Tes données",
   "guide.title": "Avant de connecter ton wallet",
   "guide.lead":

@@ -420,6 +420,10 @@ export const en: Messages = {
   "footer.legalShort": "Terms and privacy",
   "footer.versions": "Versions",
   "footer.nav": "Useful links",
+  "kaspa.title": "Getting started with Kaspa",
+  "kaspa.lead": "What you need to use Huntited: a wallet, a few KAS, and a couple of good habits.",
+  "footer.kaspa": "Getting started with Kaspa",
+  "home.faq.wallet.link": "Getting started with Kaspa",
   "footer.data": "Your data",
   "guide.title": "Before connecting your wallet",
   "guide.lead":

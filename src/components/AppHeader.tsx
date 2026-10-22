@@ -201,6 +201,9 @@ export function AppFooter() {
           <Link to="/legal" className={link}>
             {t("footer.legalShort")}
           </Link>
+          <Link to="/kaspa" className={link}>
+            {t("footer.kaspa")}
+          </Link>
           <Link to="/my-data" className={link}>
             {t("footer.data")}
           </Link>
