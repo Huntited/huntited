@@ -270,6 +270,16 @@ function HuntDetailPage() {
 
         {/* Être prévenu·e du résultat, sans compte ni wallet */}
         {status === "active" && <NotifyButton huntId={hunt.id} />}
+        {/* Pass de groupe : une association offre des places (mode chaîne). */}
+        {commitsOpen && getDataMode() === "chain" && (
+          <Link
+            to="/group"
+            search={{ hunt: hunt.id }}
+            className="mt-3 inline-block text-sm text-muted-foreground underline underline-offset-2"
+          >
+            {t("group.offer")}
+          </Link>
+        )}
       </section>
 
       {/* Encadré du créateur : mobiliser pendant que la chasse est ouverte */}

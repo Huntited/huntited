@@ -197,6 +197,20 @@ export async function getChainHunt(id: string, now = Date.now()): Promise<ChainH
   return { ...viewOf(ledger, h, now), ...(hidden ? { hidden: hidden.reason } : {}) };
 }
 
+/** Pass de groupe : état de chaque place (inscrite pour cette chasse, déjà utilisée). */
+export async function getChainPlaces(
+  hunt: string,
+  keys: string[],
+): Promise<Record<string, { registered: boolean; used: boolean }>> {
+  const ledger = await synced();
+  return Object.fromEntries(
+    keys.map((k) => {
+      const p = ledger.place(k);
+      return [k, { registered: p?.hunt === hunt, used: p?.hunt === hunt && p.used }];
+    }),
+  );
+}
+
 /** Chasses masquées par la modération (page « Versions et modération »). */
 export async function getChainHidden(): Promise<LedgerHidden[]> {
   return (await synced()).hiddenHunts();

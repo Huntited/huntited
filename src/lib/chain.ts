@@ -51,8 +51,21 @@ export interface ChainReleaseMessage {
 export type ChainModerationMessage =
   { t: "hide"; hunt: string; reason: string } | { t: "unhide"; hunt: string };
 
+/** Pass de groupe : places inscrites, engagements signés par les places (par lot). */
+export type ChainGroupMessage =
+  | { t: "places"; hunt: string; keys: string[] }
+  | {
+      t: "gcommit";
+      hunt: string;
+      entries: { place: string; threshold?: number; chat?: string; sig: string }[];
+    };
+
 export type ChainMessage =
-  ChainHuntMessage | ChainCommitMessage | ChainReleaseMessage | ChainModerationMessage;
+  | ChainHuntMessage
+  | ChainCommitMessage
+  | ChainReleaseMessage
+  | ChainModerationMessage
+  | ChainGroupMessage;
 
 /** « HNT1 » + JSON, en hexadécimal (format attendu par Kastle). */
 export function encodePayload(m: ChainMessage): string {

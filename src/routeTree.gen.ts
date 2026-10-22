@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as CreateReviewRouteImport } from './routes/create-review'
+import { Route as GroupRouteImport } from './routes/group'
 import { Route as KaspaRouteImport } from './routes/kaspa'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as MyDataRouteImport } from './routes/my-data'
@@ -19,6 +20,7 @@ import { Route as MyHuntsRouteImport } from './routes/my-hunts'
 import { Route as PassRouteImport } from './routes/pass'
 import { Route as PublishRouteImport } from './routes/publish'
 import { Route as HuntIdRouteImport } from './routes/hunt.$id'
+import { Route as PlaceHuntKeyInboxRouteImport } from './routes/place.$hunt.$key.$inbox'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,6 +35,11 @@ const CreateRoute = CreateRouteImport.update({
 const CreateReviewRoute = CreateReviewRouteImport.update({
   id: '/create-review',
   path: '/create-review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupRoute = GroupRouteImport.update({
+  id: '/group',
+  path: '/group',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KaspaRoute = KaspaRouteImport.update({
@@ -70,11 +77,17 @@ const HuntIdRoute = HuntIdRouteImport.update({
   path: '/hunt/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlaceHuntKeyInboxRoute = PlaceHuntKeyInboxRouteImport.update({
+  id: '/place/$hunt/$key/$inbox',
+  path: '/place/$hunt/$key/$inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
+  '/group': typeof GroupRoute
   '/kaspa': typeof KaspaRoute
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
@@ -82,11 +95,13 @@ export interface FileRoutesByFullPath {
   '/pass': typeof PassRoute
   '/publish': typeof PublishRoute
   '/hunt/$id': typeof HuntIdRoute
+  '/place/$hunt/$key/$inbox': typeof PlaceHuntKeyInboxRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
+  '/group': typeof GroupRoute
   '/kaspa': typeof KaspaRoute
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
@@ -94,12 +109,14 @@ export interface FileRoutesByTo {
   '/pass': typeof PassRoute
   '/publish': typeof PublishRoute
   '/hunt/$id': typeof HuntIdRoute
+  '/place/$hunt/$key/$inbox': typeof PlaceHuntKeyInboxRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/create-review': typeof CreateReviewRoute
+  '/group': typeof GroupRoute
   '/kaspa': typeof KaspaRoute
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
@@ -107,6 +124,7 @@ export interface FileRoutesById {
   '/pass': typeof PassRoute
   '/publish': typeof PublishRoute
   '/hunt/$id': typeof HuntIdRoute
+  '/place/$hunt/$key/$inbox': typeof PlaceHuntKeyInboxRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/create'
     | '/create-review'
+    | '/group'
     | '/kaspa'
     | '/legal'
     | '/my-data'
@@ -121,11 +140,13 @@ export interface FileRouteTypes {
     | '/pass'
     | '/publish'
     | '/hunt/$id'
+    | '/place/$hunt/$key/$inbox'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/create'
     | '/create-review'
+    | '/group'
     | '/kaspa'
     | '/legal'
     | '/my-data'
@@ -133,11 +154,13 @@ export interface FileRouteTypes {
     | '/pass'
     | '/publish'
     | '/hunt/$id'
+    | '/place/$hunt/$key/$inbox'
   id:
     | '__root__'
     | '/'
     | '/create'
     | '/create-review'
+    | '/group'
     | '/kaspa'
     | '/legal'
     | '/my-data'
@@ -145,12 +168,14 @@ export interface FileRouteTypes {
     | '/pass'
     | '/publish'
     | '/hunt/$id'
+    | '/place/$hunt/$key/$inbox'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
   CreateReviewRoute: typeof CreateReviewRoute
+  GroupRoute: typeof GroupRoute
   KaspaRoute: typeof KaspaRoute
   LegalRoute: typeof LegalRoute
   MyDataRoute: typeof MyDataRoute
@@ -158,6 +183,7 @@ export interface RootRouteChildren {
   PassRoute: typeof PassRoute
   PublishRoute: typeof PublishRoute
   HuntIdRoute: typeof HuntIdRoute
+  PlaceHuntKeyInboxRoute: typeof PlaceHuntKeyInboxRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -181,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/create-review'
       fullPath: '/create-review'
       preLoaderRoute: typeof CreateReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/group': {
+      id: '/group'
+      path: '/group'
+      fullPath: '/group'
+      preLoaderRoute: typeof GroupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kaspa': {
@@ -232,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HuntIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/place/$hunt/$key/$inbox': {
+      id: '/place/$hunt/$key/$inbox'
+      path: '/place/$hunt/$key/$inbox'
+      fullPath: '/place/$hunt/$key/$inbox'
+      preLoaderRoute: typeof PlaceHuntKeyInboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -239,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
   CreateReviewRoute: CreateReviewRoute,
+  GroupRoute: GroupRoute,
   KaspaRoute: KaspaRoute,
   LegalRoute: LegalRoute,
   MyDataRoute: MyDataRoute,
@@ -246,6 +287,7 @@ const rootRouteChildren: RootRouteChildren = {
   PassRoute: PassRoute,
   PublishRoute: PublishRoute,
   HuntIdRoute: HuntIdRoute,
+  PlaceHuntKeyInboxRoute: PlaceHuntKeyInboxRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

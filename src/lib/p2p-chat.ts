@@ -207,9 +207,43 @@ async function aesDecrypt(key: Uint8Array, data: Uint8Array): Promise<Uint8Array
 }
 
 /** Secret partagé entre deux membres (même valeur des deux côtés), propre à la chasse. */
-function pairKey(priv: string, otherPub: string, huntId: string): Uint8Array {
+function sharedKey(priv: string, otherPub: string, info: string): Uint8Array {
   const point = secp256k1.getSharedSecret(hexToBytes(priv), hexToBytes(`02${otherPub}`));
-  return hkdf(sha256, point.slice(1, 33), undefined, utf8ToBytes(`huntited-chat-v1:${huntId}`), 32);
+  return hkdf(sha256, point.slice(1, 33), undefined, utf8ToBytes(info), 32);
+}
+
+function pairKey(priv: string, otherPub: string, huntId: string): Uint8Array {
+  return sharedKey(priv, otherPub, `huntited-chat-v1:${huntId}`);
+}
+
+/** Chiffre pour une autre clé (secret partagé, propre au contexte) ; base64. */
+export async function sealFor(
+  priv: string,
+  otherPub: string,
+  context: string,
+  data: Uint8Array,
+): Promise<string> {
+  return b64(await aesEncrypt(sharedKey(priv, otherPub, context), data));
+}
+
+/** Déchiffre ce que `otherPub` a chiffré pour `priv` dans ce contexte. */
+export async function openFrom(
+  priv: string,
+  otherPub: string,
+  context: string,
+  sealed: string,
+): Promise<Uint8Array> {
+  return aesDecrypt(sharedKey(priv, otherPub, context), unb64(sealed));
+}
+
+/** Signe un événement Nostr avec une clé (identifiant calculé). */
+export function signEvent(
+  unsigned: Omit<NostrEvent, "id" | "sig" | "pubkey">,
+  priv: string,
+): NostrEvent {
+  const e = { ...unsigned, pubkey: chatPublicKey(priv) };
+  const id = eventId(e);
+  return { ...e, id, sig: bytesToHex(schnorr.sign(hexToBytes(id), hexToBytes(priv))) };
 }
 
 const slot = (pub: string) => pub.slice(0, 16);
