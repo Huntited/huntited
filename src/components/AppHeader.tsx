@@ -9,6 +9,7 @@ import { useI18n, type Locale, type MessageKey } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { useWallet } from "@/lib/useWallet";
 import { NotificationBell } from "@/components/NotificationBell";
+import { isInApp } from "@/lib/app-link";
 import { getDataMode } from "@/lib/hunt-repository";
 
 const NAV: { to: "/" | "/create" | "/my-hunts" | "/pass"; label: MessageKey }[] = [
@@ -60,7 +61,8 @@ export function AppHeader() {
           {/* Activité de tes chasses (sur la chaîne) : messages, résultats. */}
           {getDataMode() === "chain" && <NotificationBell />}
           <ThemeToggle />
-          {isConnected && address ? (
+          {/* Dans l'app Huntited Chat, pas d'extension Kastle : pas de wallet. */}
+          {isInApp() ? null : isConnected && address ? (
             <>
               <code className="hidden text-xs text-muted-foreground md:inline">
                 {shortAddress(address)}

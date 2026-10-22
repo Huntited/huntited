@@ -28,6 +28,9 @@ export function roomIntent(hunt: string, key: string): string {
   );
 }
 
+/** Page affichée dans l'app Huntited Chat (WebView, pont « HuntitedApp »). */
+export const isInApp = () => typeof window !== "undefined" && "HuntitedApp" in window;
+
 export const isAndroid = () =>
   typeof navigator !== "undefined" && /Android/i.test(navigator.userAgent);
 

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { APP_PAGE, isAndroid, qrSvg, roomIntent, roomLink } from "@/lib/app-link";
+import { APP_PAGE, isAndroid, isInApp, qrSvg, roomIntent, roomLink } from "@/lib/app-link";
 import { Textarea } from "@/components/ui/textarea";
 import {
   chatNotifySupported,
@@ -356,7 +356,7 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
             })}
           </p>
           {/* Dans l'app elle-même, inutile de proposer de l'ouvrir. */}
-          {!inApp() && <OpenInApp huntId={huntId} priv={ready.priv} />}
+          {!isInApp() && <OpenInApp huntId={huntId} priv={ready.priv} />}
           <PlanB
             contacts={[...bitchatOf].map(([author, nick]) => ({
               who: author === me ? t("chat.p2p.you") : who(author),
@@ -415,9 +415,6 @@ function NotifyToggle({
     </>
   );
 }
-
-/** Page affichée dans l'app Huntited Chat (WebView), qui expose ce pont. */
-const inApp = () => typeof window !== "undefined" && "HuntitedApp" in window;
 
 /**
  * Ouvrir ce salon dans l'app Huntited Chat (Android) : lien direct sur
