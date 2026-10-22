@@ -43,3 +43,17 @@ le chat ne passe par aucun serveur Huntited.
 - **Effacement** : l'expiration est une demande ; un relais peut garder les
   messages (toujours chiffrés).
 - Une clé invalide inscrite sur la chaîne est ignorée (ce membre ne lit pas).
+
+## Plan B sans réseau (bitchat)
+
+Un site web ne peut pas relayer de messages par Bluetooth ou Wi-Fi direct.
+Le chat propose donc un « Plan B » : installer l'application
+[bitchat](https://github.com/permissionlesstech/bitchat) (mesh Bluetooth,
+domaine public pour iOS/macOS) avant le jour J, et partager son pseudo
+bitchat dans le chat chiffré (champ `bitchat` du message, comme le pseudo).
+Les membres peuvent alors s'écrire en privé dans bitchat si internet coupe.
+Le canal `#bluetooth` de bitchat est public : rien de sensible.
+
+Plus tard : une application Huntited pour téléphone reprenant le transport
+Bluetooth de bitchat et ajoutant notre chat (mêmes clés, mêmes membres, même
+format Nostr). Licence Android à vérifier (GPL-3.0 annoncée).

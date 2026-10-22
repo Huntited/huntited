@@ -139,18 +139,29 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     }
   }
 
-  async function send() {
-    if (!ready || !draft.trim()) return;
-    const e = await sealMessage(huntId, ready.priv, ready.members, draft, ready.deadline, {
+  async function post(text: string, extra: { bitchat?: string } = {}) {
+    if (!ready || !text.trim()) return false;
+    const e = await sealMessage(huntId, ready.priv, ready.members, text, ready.deadline, {
       name: myName,
+      ...extra,
     });
     const mine = await openMessage(huntId, ready.priv, ready.members, e);
-    if (!mine) return;
+    if (!mine) return false;
     // Affiché tout de suite, avec son état d'envoi.
     setMessages((all) => upsert(all, { ...mine, status: "sending", event: e }));
-    setDraft("");
     await deliver(e);
+    return true;
   }
+
+  async function send() {
+    const text = draft;
+    setDraft("");
+    if (!(await post(text))) setDraft(text);
+  }
+
+  // Plan B sans réseau : pseudos bitchat partagés par les membres (dernier connu).
+  const bitchatOf = new Map<string, string>();
+  for (const m of messages) if (m.bitchat) bitchatOf.set(m.author, m.bitchat);
 
   function onKeyDown(ev: KeyboardEvent<HTMLTextAreaElement>) {
     if (ev.key === "Enter" && !ev.shiftKey && !ev.nativeEvent.isComposing) {
@@ -343,6 +354,14 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
               }),
             })}
           </p>
+          <PlanB
+            contacts={[...bitchatOf].map(([author, nick]) => ({
+              who: author === me ? t("chat.p2p.you") : who(author),
+              tag: memberTag(author),
+              nick,
+            }))}
+            onShare={(nick) => post(t("chat.p2p.bitchat.shared", { nick }), { bitchat: nick })}
+          />
         </>
       )}
     </section>
@@ -391,6 +410,84 @@ function NotifyToggle({
         <span className="w-full text-xs text-muted-foreground">{t("chat.p2p.notifyHint")}</span>
       )}
     </>
+  );
+}
+
+/**
+ * Plan B si le réseau coupe le jour J : bitchat (Bluetooth, de téléphone à
+ * téléphone). Chacun partage son pseudo bitchat dans ce chat chiffré, pour
+ * pouvoir s'écrire en privé sans internet (docs/chat.md).
+ */
+function PlanB({
+  contacts,
+  onShare,
+}: {
+  contacts: { who: string; tag: string; nick: string }[];
+  onShare: (nick: string) => Promise<boolean>;
+}) {
+  const { t } = useI18n();
+  const [nick, setNick] = useState("");
+  const [busy, setBusy] = useState(false);
+  return (
+    <details className="rounded-md border p-3">
+      <summary className="cursor-pointer font-medium">{t("chat.p2p.bitchat.title")}</summary>
+      <div className="mt-2 space-y-2 text-xs text-muted-foreground">
+        <p>{t("chat.p2p.bitchat.lead")}</p>
+        <p className="flex flex-wrap gap-x-4">
+          <a
+            href="https://apps.apple.com/us/app/bitchat-mesh/id6748219622"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline underline-offset-2"
+          >
+            bitchat (iPhone) ↗
+          </a>
+          <a
+            href="https://play.google.com/store/apps/details?id=com.bitchat.droid"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline underline-offset-2"
+          >
+            bitchat (Android) ↗
+          </a>
+        </p>
+        <form
+          className="flex gap-2"
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            if (!nick.trim()) return;
+            setBusy(true);
+            void onShare(nick.trim()).finally(() => {
+              setBusy(false);
+              setNick("");
+            });
+          }}
+        >
+          <Input
+            value={nick}
+            onChange={(ev) => setNick(ev.target.value)}
+            maxLength={30}
+            placeholder={t("chat.p2p.bitchat.placeholder")}
+            aria-label={t("chat.p2p.bitchat.placeholder")}
+            className="h-8"
+          />
+          <Button type="submit" size="sm" variant="outline" disabled={busy || !nick.trim()}>
+            {t("chat.p2p.bitchat.share")}
+          </Button>
+        </form>
+        {contacts.length > 0 && (
+          <ul className="space-y-0.5">
+            {contacts.map((c) => (
+              <li key={c.tag}>
+                {c.who} <span className="font-mono">{c.tag}</span> :{" "}
+                <span className="font-medium text-foreground">{c.nick}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p>{t("chat.p2p.bitchat.warning")}</p>
+      </div>
+    </details>
   );
 }
 

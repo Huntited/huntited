@@ -223,6 +223,8 @@ export interface ChatMessage {
   at: number;
   /** Pseudo choisi par l'auteur pour cette chasse (chiffré, comme le texte). */
   name?: string;
+  /** Pseudo bitchat partagé avec les membres (plan B sans réseau, chiffré). */
+  bitchat?: string;
 }
 
 const MAX_NAME = 30;
@@ -252,16 +254,24 @@ export async function sealMessage(
   members: string[],
   text: string,
   deadline: number,
-  { now = Date.now(), name }: { now?: number; name?: string } = {},
+  { now = Date.now(), name, bitchat }: { now?: number; name?: string; bitchat?: string } = {},
 ): Promise<NostrEvent> {
   const clean = text.trim().slice(0, MAX_TEXT);
   if (!clean) throw new Error("empty_message");
   const pubkey = chatPublicKey(priv);
   const contentKey = crypto.getRandomValues(new Uint8Array(32));
   const pseudo = cleanName(name);
+  const mesh = cleanName(bitchat);
   const body = await aesEncrypt(
     contentKey,
-    utf8ToBytes(JSON.stringify({ text: clean, at: now, ...(pseudo ? { name: pseudo } : {}) })),
+    utf8ToBytes(
+      JSON.stringify({
+        text: clean,
+        at: now,
+        ...(pseudo ? { name: pseudo } : {}),
+        ...(mesh ? { bitchat: mesh } : {}),
+      }),
+    ),
   );
   const keys: Record<string, string> = {};
   for (const m of new Set([...members, pubkey])) {
@@ -309,21 +319,24 @@ export async function openMessage(
     const wrapped = keys[slot(chatPublicKey(priv))];
     if (v !== 1 || !wrapped) return null;
     const contentKey = await aesDecrypt(pairKey(priv, e.pubkey, huntId), unb64(wrapped));
-    const { text, at, name } = JSON.parse(
+    const { text, at, name, bitchat } = JSON.parse(
       new TextDecoder().decode(await aesDecrypt(contentKey, unb64(body))),
     ) as {
       text: unknown;
       at: unknown;
       name: unknown;
+      bitchat: unknown;
     };
     if (typeof text !== "string" || typeof at !== "number") return null;
     const pseudo = cleanName(name);
+    const mesh = cleanName(bitchat);
     return {
       id: e.id,
       author: e.pubkey,
       text: text.slice(0, MAX_TEXT),
       at,
       ...(pseudo ? { name: pseudo } : {}),
+      ...(mesh ? { bitchat: mesh } : {}),
     };
   } catch {
     return null;

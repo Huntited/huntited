@@ -270,6 +270,14 @@ export const en: Messages = {
   "sim.fee.commit":
     "Only real cost: {fee} (test) to write your commitment on the blockchain (not returned).",
   "sim.simulated": "For now, deposits are simulated: no KAS is locked.",
+  "chat.p2p.bitchat.title": "Plan B if the network goes down (bitchat)",
+  "chat.p2p.bitchat.lead":
+    "On the day, the internet may fail (crowds, dead zones, shutdowns). The bitchat app then lets you write over Bluetooth, phone to phone, with no network. Install it beforehand, then share your bitchat nickname here: only members will see it.",
+  "chat.p2p.bitchat.placeholder": "Your bitchat nickname",
+  "chat.p2p.bitchat.share": "Share with members",
+  "chat.p2p.bitchat.shared": "My bitchat nickname: {nick}",
+  "chat.p2p.bitchat.warning":
+    "In bitchat, the #bluetooth channel is public: everyone nearby reads it. Write nothing sensitive there; write privately to the nicknames above instead.",
   "chat.p2p.loading": "Connecting to the chat…",
   "chat.p2p.noKey":
     "This browser has no chat key for this hunt. It is created on the device you committed (or created the hunt) from: open the chat there.",

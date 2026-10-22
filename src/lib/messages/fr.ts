@@ -278,6 +278,14 @@ export const fr = {
   "sim.fee.commit":
     "Seul coût réel : {fee} de test pour inscrire ton engagement sur la blockchain (non rendus).",
   "sim.simulated": "Pour l'instant, caution et dépôts sont simulés : aucun KAS n'est bloqué.",
+  "chat.p2p.bitchat.title": "Plan B si le réseau coupe (bitchat)",
+  "chat.p2p.bitchat.lead":
+    "Le jour J, internet peut tomber (foule, zone blanche, coupure). L'application bitchat permet alors de s'écrire par Bluetooth, de téléphone à téléphone, sans réseau. Installe-la avant, puis partage ici ton pseudo bitchat : seuls les membres le verront.",
+  "chat.p2p.bitchat.placeholder": "Ton pseudo bitchat",
+  "chat.p2p.bitchat.share": "Partager avec les membres",
+  "chat.p2p.bitchat.shared": "Mon pseudo bitchat : {nick}",
+  "chat.p2p.bitchat.warning":
+    "Dans bitchat, le canal #bluetooth est public : tout le monde à proximité le lit. N'y écris rien de sensible ; écris plutôt en privé aux pseudos ci-dessus.",
   "chat.p2p.loading": "Connexion au chat…",
   "chat.p2p.noKey":
     "Ce navigateur n'a pas de clé de chat pour cette chasse. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé la chasse) : ouvre le chat depuis celui-ci.",
