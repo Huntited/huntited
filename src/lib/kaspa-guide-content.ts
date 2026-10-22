@@ -40,7 +40,7 @@ const FR: GuideSection[] = [
     paragraphs: [
       "Quand Huntited passera sur le réseau principal, il faudra de vrais KAS. Trois façons courantes d'en obtenir : une plateforme d'échange (qui demande en général une pièce d'identité), un achat de personne à personne, ou un envoi d'un proche qui en a déjà.",
       "Le prix du KAS varie beaucoup. Huntited ne donne aucun conseil d'investissement : procure-toi seulement ce dont tu as besoin pour tes engagements.",
-      "Membre d'une association ? Elle peut t'offrir ta place avec le pass de groupe : tu t'engages sans wallet ni KAS.",
+      "Membre d'un syndicat, d'une association ou d'un collectif ? Avec le pass d'organisation, elle t'ouvre ses chasses : tu t'engages sans wallet ni KAS.",
     ],
   },
   {
@@ -90,7 +90,7 @@ const EN: GuideSection[] = [
     paragraphs: [
       "When Huntited moves to the main network, you'll need real KAS. Three common ways to get some: an exchange (usually asking for an ID), a person-to-person purchase, or a transfer from someone who already has some.",
       "The KAS price varies a lot. Huntited gives no investment advice: only get what you need for your commitments.",
-      "Member of an association? It can offer you your place with the group pass: you commit with no wallet or KAS.",
+      "Member of a union, an association or a collective? With the organisation pass, it opens its hunts to you: you commit with no wallet or KAS.",
     ],
   },
   {

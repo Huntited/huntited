@@ -4,9 +4,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { REGISTRY_ADDRESS } from "../chain";
 import { signArchive } from "./archive-signature";
-import { getChainHunt, listChainHunts, resetBrowserIndex } from "./browser-index";
+import {
+  getChainHunt,
+  getChainMemberHunts,
+  listChainHunts,
+  resetBrowserIndex,
+} from "./browser-index";
 import { ARCHIVE_FORMAT } from "./indexer";
 import { encodeMessage } from "./protocol";
+import { memberPlaceKey } from "../org-pass";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -102,5 +108,33 @@ describe("modération", () => {
     });
     expect(await listChainHunts()).toEqual([]);
     expect((await getChainHunt("ab".repeat(12)))?.hidden).toBe("illegal");
+  });
+});
+
+describe("pass d'organisation", () => {
+  it("l'adhérent retrouve les chasses où son organisation lui a ouvert une place", async () => {
+    const secret = bytesToHex(schnorr.utils.randomSecretKey());
+    const hunt = "ab".repeat(12);
+    const place = bytesToHex(schnorr.getPublicKey(hexToBytes(memberPlaceKey(secret, hunt))));
+    const a = archiveWithHunt("Grève du 12");
+    const places = {
+      txId: "ee".repeat(32),
+      score: 20,
+      time: Date.now(),
+      sender: "kaspatest:syndicat",
+      payload: bytesToHex(encodeMessage({ t: "places", hunt, keys: [place] })),
+    };
+    serve({ "./registry-snapshot.json": { ...a, entries: [...a.entries, places] } });
+    const mine = await getChainMemberHunts((h) =>
+      bytesToHex(schnorr.getPublicKey(hexToBytes(memberPlaceKey(secret, h)))),
+    );
+    expect(mine.map((m) => [m.view.title, m.used])).toEqual([["Grève du 12", false]]);
+    // Un autre adhérent (autre secret) n'y a pas de place.
+    const other = bytesToHex(schnorr.utils.randomSecretKey());
+    expect(
+      await getChainMemberHunts((h) =>
+        bytesToHex(schnorr.getPublicKey(hexToBytes(memberPlaceKey(other, h)))),
+      ),
+    ).toEqual([]);
   });
 });

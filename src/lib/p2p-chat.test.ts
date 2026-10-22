@@ -17,6 +17,12 @@ import {
 
 const HUNT = "ab".repeat(12);
 const DEADLINE = Date.UTC(2026, 11, 1);
+/** Modifie le texte chiffré lui-même (pas une clé destinée à un autre membre). */
+const tamperBody = (content: string) => {
+  const c = JSON.parse(content) as { body: string };
+  const flipped = c.body[20] === "A" ? "B" : "A";
+  return JSON.stringify({ ...c, body: c.body.slice(0, 20) + flipped + c.body.slice(21) });
+};
 const newKey = () => bytesToHex(schnorr.utils.randomSecretKey());
 
 describe("chat chiffré entre membres", () => {
@@ -43,7 +49,7 @@ describe("chat chiffré entre membres", () => {
   it("ignore un message modifié ou destiné à une autre chasse", async () => {
     const e = await sealMessage(HUNT, alice, members, "bonjour", DEADLINE);
     expect(
-      await openMessage(HUNT, bob, members, { ...e, content: e.content.replace("A", "B") }),
+      await openMessage(HUNT, bob, members, { ...e, content: tamperBody(e.content) }),
     ).toBeNull();
     expect(await openMessage("cd".repeat(12), bob, members, e)).toBeNull();
     const other = await sealMessage("cd".repeat(12), alice, members, "ailleurs", DEADLINE);

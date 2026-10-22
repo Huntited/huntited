@@ -94,7 +94,7 @@ export const en: Messages = {
     "Cost: 0.2 test KAS to register up to 100 places, then 0.2 KAS per batch of up to 40 commitments. Places stay in this browser: download the backup.",
   "group.invalid": "Give the hunt's link and a number of places.",
   "group.badBackup": "Unreadable backup.",
-  "group.restore": "Restore a group backup",
+  "group.restore": "Restore an organisation backup",
   "group.status": "{total} places · {registered} registered · {used} used",
   "group.register": "Register {n} places on the blockchain",
   "group.batch": "Write the batch ({n} commitments)",
@@ -107,10 +107,40 @@ export const en: Messages = {
   "group.backup": "Download the backup",
   "group.backupNote": "without it, losing this browser means losing access to the places.",
   "group.sent": "Sent. The status updates in about a minute.",
-  "group.offer": "An association? Offer places to your members",
-  "data.group.group": "Group pass",
+  "group.offer": "A union, an association? Open this hunt to your members",
+  "data.group.group": "Organisation pass",
   "data.group.group.text":
-    "The places you offer (association) or the place you were offered. Secret: whoever has these keys can use the places.",
+    "Your organisation and its members' links, or the place you were offered. Secret: whoever has these keys can use the places.",
+  "org.title": "Organisation pass",
+  "org.lead":
+    "For a union, an association or a collective: each member gets a personal link, once and for all. Then you open hunts to your members: they commit with no wallet or KAS, and the blockchain only sees the organisation. Their commitments can't be linked from one hunt to another.",
+  "org.step1":
+    "Create the organisation and its members, then send each one their personal link (privately).",
+  "org.step2":
+    "For each hunt: paste its link here, open it to your members and register their places on the blockchain.",
+  "org.step3": "Come back to write the received commitments, in batches, before the deadline.",
+  "org.name": "Organisation name",
+  "org.nameNote": "Only for you: it's never published.",
+  "org.count": "Number of members",
+  "org.create": "Create the organisation",
+  "org.members": "{n} member(s)",
+  "org.links": "Member links ({n})",
+  "org.linksNote":
+    "One link per member, valid for every hunt you'll open to them. It's a ticket: send it to one person only, privately.",
+  "org.addCount": "Number of members to add",
+  "org.add": "Add",
+  "org.openHunt": "Open a hunt to your members (hunt link)",
+  "org.open": "Open",
+  "org.backupNote":
+    "keep it safe: without it, losing this browser means losing access to the organisation.",
+  "member.kicker": "Organisation pass",
+  "member.title": "Hunts opened by your organisation",
+  "member.lead":
+    "Your organisation (union, association, collective) opens these hunts to you: you commit with no wallet or KAS. On the blockchain, only the organisation appears, never your name or wallet. This link is personal: don't share it.",
+  "member.none": "No hunt open yet. Keep this link: upcoming hunts will show up here.",
+  "member.join": "Commit",
+  "member.joined": "Written ✓ — see the hunt",
+  "member.keep": "Bookmark this page: it's your pass for all your organisation's hunts.",
   "hunt.explain":
     "Nobody goes alone here: your commitment only counts if at least {threshold} people commit before the deadline. Otherwise, your deposit is returned.",
   "hunt.explain.link": "How does it work?",

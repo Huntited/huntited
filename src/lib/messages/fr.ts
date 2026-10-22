@@ -94,7 +94,7 @@ export const fr = {
     "Coût : 0,2 KAS de test pour inscrire jusqu'à 100 places, puis 0,2 KAS par lot de 40 engagements au plus. Les places restent dans ce navigateur : télécharge la sauvegarde.",
   "group.invalid": "Indique le lien de la chasse et un nombre de places.",
   "group.badBackup": "Sauvegarde illisible.",
-  "group.restore": "Restaurer une sauvegarde de groupe",
+  "group.restore": "Restaurer une sauvegarde d'organisation",
   "group.status": "{total} places · {registered} inscrites · {used} utilisées",
   "group.register": "Inscrire {n} places sur la blockchain",
   "group.batch": "Inscrire le lot ({n} engagements)",
@@ -107,10 +107,42 @@ export const fr = {
   "group.backup": "Télécharger la sauvegarde",
   "group.backupNote": "sans elle, perdre ce navigateur fait perdre l'accès aux places.",
   "group.sent": "Envoyé. L'état se met à jour dans une minute environ.",
-  "group.offer": "Une association ? Offre des places à tes membres",
-  "data.group.group": "Pass de groupe",
+  "group.offer": "Un syndicat, une association ? Ouvre cette chasse à tes adhérents",
+  "data.group.group": "Pass d'organisation",
   "data.group.group.text":
-    "Les places que tu offres (association) ou la place qu'on t'a offerte. Secret : qui a ces clés peut utiliser les places.",
+    "Ton organisation et les liens de ses adhérents, ou la place qu'on t'a offerte. Secret : qui a ces clés peut utiliser les places.",
+  "org.title": "Pass d'organisation",
+  "org.lead":
+    "Pour un syndicat, une association ou un collectif : chaque adhérent reçoit un lien personnel, une fois pour toutes. Ensuite, tu ouvres des chasses à tes adhérents : ils s'engagent sans wallet ni KAS, et la blockchain ne voit que l'organisation. D'une chasse à l'autre, on ne peut pas relier leurs engagements.",
+  "org.step1":
+    "Crée l'organisation et ses adhérents, puis envoie à chacun son lien personnel (par un canal privé).",
+  "org.step2":
+    "Pour chaque chasse : colle son lien ici, ouvre-la à tes adhérents et inscris leurs places sur la blockchain.",
+  "org.step3": "Reviens inscrire les engagements reçus, par lots, avant la date limite.",
+  "org.name": "Nom de l'organisation",
+  "org.nameNote": "Seulement pour toi : il n'est jamais publié.",
+  "org.count": "Nombre d'adhérents",
+  "org.create": "Créer l'organisation",
+  "org.members": "{n} adhérent(s)",
+  "org.links": "Liens des adhérents ({n})",
+  "org.linksNote":
+    "Un lien par adhérent, valable pour toutes les chasses que tu leur ouvriras. C'est un billet : envoie-le à une seule personne, par un canal privé.",
+  "org.addCount": "Nombre d'adhérents à ajouter",
+  "org.add": "Ajouter",
+  "org.openHunt": "Ouvrir une chasse à tes adhérents (lien de la chasse)",
+  "org.open": "Ouvrir",
+  "org.backupNote":
+    "garde-la en lieu sûr : sans elle, perdre ce navigateur fait perdre l'accès à l'organisation.",
+  "member.kicker": "Pass d'organisation",
+  "member.title": "Les chasses ouvertes par ton organisation",
+  "member.lead":
+    "Ton organisation (syndicat, association, collectif) t'ouvre ces chasses : tu t'engages sans wallet ni KAS. Sur la blockchain, seule l'organisation apparaît, jamais ton nom ni ton wallet. Ce lien est personnel : ne le partage pas.",
+  "member.none":
+    "Aucune chasse ouverte pour l'instant. Garde ce lien : les prochaines chasses apparaîtront ici.",
+  "member.join": "M'engager",
+  "member.joined": "Inscrit ✓ — voir la chasse",
+  "member.keep":
+    "Ajoute cette page à tes favoris : c'est ton pass pour toutes les chasses de ton organisation.",
   "hunt.explain":
     "Ici, personne n'y va seul·e : ton engagement ne compte que si au moins {threshold} personnes s'engagent avant la date limite. Sinon, ton dépôt t'est rendu.",
   "hunt.explain.link": "Comment ça marche ?",

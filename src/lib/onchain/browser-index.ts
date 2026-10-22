@@ -211,6 +211,22 @@ export async function getChainPlaces(
   );
 }
 
+/**
+ * Pass d'organisation : chasses où l'adhérent a une place (clé dérivée de son
+ * secret pour chaque chasse), avec l'état de la place.
+ */
+export async function getChainMemberHunts(
+  placeFor: (huntId: string) => string,
+  now = Date.now(),
+): Promise<{ view: ChainHuntView; used: boolean }[]> {
+  const ledger = await synced();
+  return ledger.allHunts().flatMap((h) => {
+    if (ledger.hidden(h.id)) return [];
+    const p = ledger.place(placeFor(h.id));
+    return p?.hunt === h.id ? [{ view: viewOf(ledger, h, now), used: p.used }] : [];
+  });
+}
+
 /** Chasses masquées par la modération (page « Versions et modération »). */
 export async function getChainHidden(): Promise<LedgerHidden[]> {
   return (await synced()).hiddenHunts();

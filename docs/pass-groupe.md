@@ -1,4 +1,20 @@
-# Pass de groupe (places offertes)
+# Pass d'organisation (syndicats, associations, collectifs)
+
+Page `#/group`. L'organisation crée ses adhérents une fois : chacun reçoit un
+**lien personnel permanent** (`#/member/<boîte>/<secret>`). Pour chaque chasse,
+elle colle le lien de la chasse et l'**ouvre à ses adhérents** : la place de
+chaque adhérent est une clé **dérivée de son secret et de la chasse**
+(`memberPlaceKey`, HKDF), donc ses engagements ne peuvent pas être reliés
+d'une chasse à l'autre sur la blockchain. L'organisation inscrit les places de
+tous ses adhérents (message `places`, 100 par transaction), puis les
+engagements reçus par lots (`gcommit`), exactement comme ci-dessous.
+L'adhérent ouvre toujours le même lien : il y voit les chasses que son
+organisation lui a ouvertes (`getChainMemberHunts`) et s'engage sans wallet.
+
+Code : `src/lib/org-pass.ts`, `src/routes/group.tsx`,
+`src/routes/member.$inbox.$secret.tsx`.
+
+# Pass de groupe (mécanisme commun)
 
 Pour une association ou un collectif : offrir des places à ses membres, qui
 s'engagent **sans wallet ni KAS**. Sur la blockchain, c'est l'association qui
