@@ -20,7 +20,8 @@
 import { createHash } from "node:crypto";
 
 import { schnorr } from "@noble/curves/secp256k1.js";
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex, hexToBytes, utf8ToBytes } from "@noble/hashes/utils.js";
 import { z } from "zod";
 
 import { proofSchema, textToField } from "../services/semaphore.js";
@@ -157,6 +158,36 @@ export const unhideMessage = z.object({
   hunt: huntIdSchema,
 });
 
+/**
+ * Pass de groupe (docs/pass-groupe.md) : une association inscrit des clés de
+ * places pour une chasse, puis inscrit par lots les engagements que les
+ * membres ont signés avec ces clés. La chaîne voit l'association, jamais le
+ * membre.
+ */
+export const MAX_PLACES_PER_MESSAGE = 100;
+export const MAX_GROUP_COMMITS_PER_MESSAGE = 40;
+
+export const placesMessage = z.object({
+  t: z.literal("places"),
+  hunt: huntIdSchema,
+  /** Clés publiques des places (x seul, hex). */
+  keys: z.array(hex(64)).min(1).max(MAX_PLACES_PER_MESSAGE),
+});
+
+export const groupCommitEntry = z.object({
+  place: hex(64),
+  threshold: z.number().int().positive().optional(),
+  chat: hex(64).optional(),
+  /** Signature de la place sur placeDigest(chasse, entrée). */
+  sig: hex(128),
+});
+
+export const groupCommitMessage = z.object({
+  t: z.literal("gcommit"),
+  hunt: huntIdSchema,
+  entries: z.array(groupCommitEntry).min(1).max(MAX_GROUP_COMMITS_PER_MESSAGE),
+});
+
 export const messageSchema = z.discriminatedUnion("t", [
   inviteMessage,
   passMessage,
@@ -165,6 +196,8 @@ export const messageSchema = z.discriminatedUnion("t", [
   releaseMessage,
   hideMessage,
   unhideMessage,
+  placesMessage,
+  groupCommitMessage,
 ]);
 
 export type InviteMessage = z.infer<typeof inviteMessage>;
@@ -175,6 +208,9 @@ export type ReleaseMessage = z.infer<typeof releaseMessage>;
 export type HideMessage = z.infer<typeof hideMessage>;
 export type UnhideMessage = z.infer<typeof unhideMessage>;
 export type HideReason = (typeof HIDE_REASONS)[number];
+export type PlacesMessage = z.infer<typeof placesMessage>;
+export type GroupCommitEntry = z.infer<typeof groupCommitEntry>;
+export type GroupCommitMessage = z.infer<typeof groupCommitMessage>;
 export type Message = z.infer<typeof messageSchema>;
 
 // --- Encodage ------------------------------------------------------------------
@@ -242,6 +278,26 @@ export const invitationKey = (code: string) => bytesToHex(schnorr.getPublicKey(h
 
 export const signRedeem = (code: string, commitment: string) =>
   bytesToHex(schnorr.sign(redeemDigest(commitment), hexToBytes(code)));
+
+/** Ce que signe une place : la chasse, le seuil personnel et la clé de chat. */
+export const placeDigest = (
+  hunt: string,
+  e: { threshold?: number | undefined; chat?: string | undefined },
+) => sha256(utf8ToBytes(`huntited:place-commit|${hunt}|${e.threshold ?? ""}|${e.chat ?? ""}`));
+
+export const signPlaceCommit = (
+  placePriv: string,
+  hunt: string,
+  e: { threshold?: number | undefined; chat?: string | undefined },
+) => bytesToHex(schnorr.sign(placeDigest(hunt, e), hexToBytes(placePriv)));
+
+export function verifyPlaceCommit(hunt: string, e: GroupCommitEntry): boolean {
+  try {
+    return schnorr.verify(hexToBytes(e.sig), placeDigest(hunt, e), hexToBytes(e.place));
+  } catch {
+    return false;
+  }
+}
 
 export function verifyRedeem(m: PassMessage): boolean {
   try {

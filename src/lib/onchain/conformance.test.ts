@@ -5,7 +5,17 @@ import { describe, expect, it } from "vitest";
 
 import { Ledger as ServerLedger } from "../../../backend/src/chain/ledger";
 import { Ledger as BrowserLedger, type ChainEvent } from "./ledger";
-import { encodeMessage, type Genesis, type Message } from "./protocol";
+import { schnorr } from "@noble/curves/secp256k1.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { bytesToHex, hexToBytes, utf8ToBytes } from "@noble/hashes/utils.js";
+
+import { encodeMessage, signPlaceCommit, type Genesis, type Message } from "./protocol";
+
+/** Clés de places de pass de groupe, reproductibles. */
+const PLACE_KEYS = Array.from({ length: 8 }, (_, i) =>
+  bytesToHex(sha256(utf8ToBytes(`place-${i}`))),
+);
+const PLACE_PUBS = PLACE_KEYS.map((k) => bytesToHex(schnorr.getPublicKey(hexToBytes(k))));
 
 const GENESIS: Genesis = {
   invitationKeys: [],
@@ -70,6 +80,32 @@ function scenario(seed: number): ChainEvent[] {
           ? { t: "hide", hunt: pick(ids), reason: pick(["spam", "illegal"]) }
           : { t: "unhide", hunt: pick(ids) },
       );
+    } else if (kind < 0.945) {
+      // Pass de groupe : inscription de places, puis engagements signés par lot.
+      const hunt = pick(ids);
+      if (r() < 0.4) {
+        payload = encodeMessage({
+          t: "places",
+          hunt,
+          keys: PLACE_PUBS.filter(() => r() < 0.5)
+            .slice(0, 4)
+            .concat(pick(PLACE_PUBS)),
+        });
+      } else {
+        const entries = PLACE_KEYS.filter(() => r() < 0.4).map((k, j) => {
+          const e = r() < 0.5 ? { threshold: 2 + Math.floor(r() * 4) } : {};
+          const sig = signPlaceCommit(k, r() < 0.85 ? hunt : pick(ids), e);
+          return { place: PLACE_PUBS[PLACE_KEYS.indexOf(k)]!, ...e, sig, j };
+        });
+        payload = encodeMessage({
+          t: "gcommit",
+          hunt,
+          entries: (entries.length
+            ? entries
+            : [{ place: PLACE_PUBS[0]!, sig: "0".repeat(128), j: 0 }]
+          ).map(({ j: _j, ...e }) => e),
+        });
+      }
     } else if (kind < 0.95) {
       payload = new TextEncoder().encode(pick(["hello", 'HNT1{"t":"x"}', "HNT1{broken"]));
     } else {

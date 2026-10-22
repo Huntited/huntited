@@ -20,6 +20,7 @@ import {
   inviteScope,
   monthOf,
   scopeField,
+  verifyPlaceCommit,
   verifyRedeem,
   type CommitMessage,
   type Genesis,
@@ -28,7 +29,9 @@ import {
   type PassMessage,
   type ProofInput,
   type ReleaseMessage,
+  type GroupCommitMessage,
   type HideMessage,
+  type PlacesMessage,
   type HideReason,
   type UnhideMessage,
 } from "./protocol";
@@ -42,9 +45,23 @@ export interface ChainEvent {
 
 export const byAddress = (address: string) => `a:${address}`;
 export const byPass = (nullifier: string) => `p:${nullifier}`;
+/** Engagement par une place de pass de groupe. */
+export const byPlace = (place: string) => `g:${place}`;
 
 export type ApplyResult =
-  | { ok: true; type: "invite" | "pass" | "hunt" | "commit" | "release" | "hide" | "unhide" }
+  | {
+      ok: true;
+      type:
+        | "invite"
+        | "pass"
+        | "hunt"
+        | "commit"
+        | "release"
+        | "hide"
+        | "unhide"
+        | "places"
+        | "gcommit";
+    }
   | { ok: false; reason: string };
 
 export type ProofVerifier = (proof: ProofInput) => Promise<boolean>;
@@ -110,6 +127,8 @@ export class Ledger {
   private readonly hunts = new Map<string, LedgerHunt>();
   private readonly releaseList: LedgerRelease[] = [];
   private readonly hiddenList = new Map<string, LedgerHidden>();
+  /** Pass de groupe : place → chasse et association qui l'a inscrite. */
+  private readonly placeList = new Map<string, { hunt: string; sponsor: string }>();
   private readonly seen = new Set<string>();
 
   constructor(
@@ -134,6 +153,14 @@ export class Ledger {
   /** Masquage d'une chasse (modération), s'il y en a un. */
   hidden(huntId: string): LedgerHidden | undefined {
     return this.hiddenList.get(huntId);
+  }
+
+  /** Place de pass de groupe : chasse, association, et si elle a servi. */
+  place(key: string): { hunt: string; sponsor: string; used: boolean } | undefined {
+    const p = this.placeList.get(key);
+    if (!p) return undefined;
+    const used = !!this.hunts.get(p.hunt)?.commits.some((c) => c.who === byPlace(key));
+    return { ...p, used };
   }
 
   hiddenHunts(): LedgerHidden[] {
@@ -189,6 +216,10 @@ export class Ledger {
         return this.applyHide(m, e);
       case "unhide":
         return this.applyUnhide(m, e);
+      case "places":
+        return this.applyPlaces(m, e);
+      case "gcommit":
+        return this.applyGroupCommit(m, e);
     }
   }
 
@@ -309,17 +340,58 @@ export class Ledger {
     if (m.proof && !(await this.proofOk(m.proof, huntScope(h.id), t))) {
       return { ok: false, reason: "invalid_proof" };
     }
+    this.addCommit(h, who, t, e, m.chat);
+    return { ok: true, type: "commit" };
+  }
+
+  private addCommit(h: LedgerHunt, who: string, t: number, e: ChainEvent, chat?: string): void {
     h.commits.push({
       who,
       personalThreshold: t,
       at: e.time,
       txId: e.txId,
-      ...(m.chat ? { chat: m.chat } : {}),
+      ...(chat ? { chat } : {}),
     });
     if (h.activatedAt === undefined && this.retainedGroup(h).retainedThreshold !== null) {
       h.activatedAt = e.time;
       h.activationRank = h.commits.length;
     }
-    return { ok: true, type: "commit" };
+  }
+
+  /** Pass de groupe : l'association inscrit des places pour une chasse ouverte. */
+  private applyPlaces(m: PlacesMessage, e: ChainEvent): ApplyResult {
+    const h = this.hunts.get(m.hunt);
+    if (!h) return { ok: false, reason: "unknown_hunt" };
+    if (e.time > h.deadline) return { ok: false, reason: "closed" };
+    let added = 0;
+    for (const key of m.keys) {
+      if (this.placeList.has(key)) continue;
+      this.placeList.set(key, { hunt: h.id, sponsor: e.sender });
+      added++;
+    }
+    return added ? { ok: true, type: "places" } : { ok: false, reason: "places_exist" };
+  }
+
+  /**
+   * Pass de groupe : engagements signés par des places de la chasse, inscrits
+   * par lot (par l'association ou n'importe qui). Chaque entrée invalide est
+   * ignorée seule.
+   */
+  private applyGroupCommit(m: GroupCommitMessage, e: ChainEvent): ApplyResult {
+    const h = this.hunts.get(m.hunt);
+    if (!h) return { ok: false, reason: "unknown_hunt" };
+    if (e.time > h.deadline) return { ok: false, reason: "closed" };
+    let applied = 0;
+    for (const entry of m.entries) {
+      if (this.placeList.get(entry.place)?.hunt !== h.id) continue;
+      const t = entry.threshold ?? h.threshold;
+      if (!Number.isSafeInteger(t) || t < h.threshold || t > MAX_PERSONAL_THRESHOLD) continue;
+      const who = byPlace(entry.place);
+      if (h.commits.some((c) => c.who === who)) continue;
+      if (!verifyPlaceCommit(h.id, entry)) continue;
+      this.addCommit(h, who, t, e, entry.chat);
+      applied++;
+    }
+    return applied ? { ok: true, type: "gcommit" } : { ok: false, reason: "no_valid_entry" };
   }
 }

@@ -4,13 +4,14 @@
 import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
+import { schnorr } from "@noble/curves/secp256k1.js";
 import { Group } from "@semaphore-protocol/group";
 import { Identity } from "@semaphore-protocol/identity";
 import { generateProof } from "@semaphore-protocol/proof";
 import { describe, expect, it } from "vitest";
 
 import { PROOF_DEPTH } from "../services/semaphore.js";
-import { byAddress, byPass, Ledger, type ChainEvent } from "./ledger.js";
+import { byAddress, byPass, byPlace, Ledger, type ChainEvent } from "./ledger.js";
 import {
   createScope,
   decodeMessage,
@@ -21,6 +22,7 @@ import {
   inviteDigest,
   inviteScope,
   monthOf,
+  signPlaceCommit,
   signRedeem,
   type Genesis,
   type HuntMessage,
@@ -197,6 +199,80 @@ describe("grand livre : versions du site", () => {
     expect(ledger.releases()).toEqual([
       { version: "1.0.0", manifest: "a".repeat(64), at: T0, txId: "tx2" },
     ]);
+  });
+});
+
+describe("grand livre : pass de groupe", () => {
+  const placeKey = () => randomBytes(32).toString("hex");
+  const pub = (k: string) =>
+    Buffer.from(schnorr.getPublicKey(Buffer.from(k, "hex"))).toString("hex");
+
+  it("l'association inscrit des places ; les membres s'engagent par lot, sans wallet", async () => {
+    const { ledger, publish } = setup();
+    const content = huntContent({ threshold: 2 });
+    await publish({ t: "hunt", ...content }, T0, "kaspatest:createur");
+    const [k1, k2, k3, autre] = [placeKey(), placeKey(), placeKey(), placeKey()];
+    expect(
+      await publish(
+        { t: "places", hunt: content.id, keys: [pub(k1), pub(k2), pub(k3)] },
+        T0 + 1,
+        "kaspatest:asso",
+      ),
+    ).toEqual({ ok: true, type: "places" });
+    // Déjà inscrites : rien de nouveau.
+    expect(
+      await publish({ t: "places", hunt: content.id, keys: [pub(k1)] }, T0 + 2, "kaspatest:autre"),
+    ).toEqual({ ok: false, reason: "places_exist" });
+    expect(ledger.place(pub(k1))).toEqual({
+      hunt: content.id,
+      sponsor: "kaspatest:asso",
+      used: false,
+    });
+
+    const entry = (
+      k: string,
+      e: { threshold?: number; chat?: string } = {},
+      hunt = content.id,
+    ) => ({
+      place: pub(k),
+      ...e,
+      sig: signPlaceCommit(k, hunt, e),
+    });
+    const chat = "cc".repeat(32);
+    expect(
+      await publish(
+        {
+          t: "gcommit",
+          hunt: content.id,
+          entries: [
+            entry(k1, { chat }),
+            entry(k2, { threshold: 2 }),
+            entry(autre), // place non inscrite : ignorée
+            { ...entry(k3), sig: entry(k3, {}, "ff".repeat(12)).sig }, // signée pour une autre chasse
+          ],
+        },
+        T0 + 3,
+        "kaspatest:asso",
+      ),
+    ).toEqual({ ok: true, type: "gcommit" });
+    const h = ledger.hunt(content.id)!;
+    expect(h.commits.map((c) => c.who)).toEqual([byPlace(pub(k1)), byPlace(pub(k2))]);
+    expect(h.commits[0]!.chat).toBe(chat);
+    expect(h.commits[1]!.personalThreshold).toBe(2);
+    expect(ledger.place(pub(k1))!.used).toBe(true);
+    // Seuil 2 atteint par les deux places : chasse déclenchée.
+    expect(h.activatedAt).toBe(T0 + 3);
+    // Une place ne sert qu'une fois ; une signature modifiée ne passe pas.
+    expect(
+      await publish(
+        { t: "gcommit", hunt: content.id, entries: [entry(k1), { ...entry(k3), threshold: 9 }] },
+        T0 + 4,
+      ),
+    ).toEqual({ ok: false, reason: "no_valid_entry" });
+    // Après la date limite : fermé.
+    expect(
+      await publish({ t: "gcommit", hunt: content.id, entries: [entry(k3)] }, content.deadline + 1),
+    ).toEqual({ ok: false, reason: "closed" });
   });
 });
 
