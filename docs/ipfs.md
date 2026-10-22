@@ -15,7 +15,7 @@ venir » ; l'aperçu des liens sur X est générique.
 2. Ajouter le dossier à IPFS (récupère un identifiant, le CID) :
    - avec Kubo : `ipfs add -r --cid-version 1 dist-static` ;
    - ou par un service d'épinglage (Filebase, Pinata, 4EVERLAND…) : envoyer
-     le dossier. Avec Filebase : `npx ipfs-car pack dist-static --no-wrap
+     le dossier. Avec Filebase : `npx ipfs-car pack dist-static --no-wrap --hidden
      --output site.car`, puis envoyer `site.car` dans un bucket avec la
      métadonnée `import: car` (API S3) ; Filebase renvoie le même CID.
 3. **Épingler chez plusieurs services** (le site reste disponible si l'un
