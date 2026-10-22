@@ -1,6 +1,7 @@
 // Connexion minimale à des relais Nostr (NIP-01), pour le chat chiffré.
 // Plusieurs relais à la fois : un message est envoyé à tous, et lu sur tous
 // (doublons écartés). Les relais ne voient que des messages chiffrés.
+import { withMesh } from "./mesh-bridge";
 import type { NostrEvent } from "./p2p-chat";
 
 /** Relais publics par défaut (VITE_NOSTR_RELAYS pour les remplacer, séparés par des virgules). */
@@ -41,10 +42,15 @@ const OPEN = 1;
 const PUBLISH_TIMEOUT_MS = 10_000;
 const RECONNECT_MS = 5_000;
 
+/** Groupe de relais ; dans l'app Huntited Chat, le mesh Bluetooth s'y ajoute (mesh-bridge). */
 export function createRelayPool(
   urls: string[],
   open: SocketFactory = (url) => new WebSocket(url) as unknown as Socket,
 ): RelayPool {
+  return withMesh(createSocketPool(urls, open));
+}
+
+function createSocketPool(urls: string[], open: SocketFactory): RelayPool {
   const subs = new Map<string, { filter: NostrFilter; onEvent: (e: NostrEvent) => void }>();
   const okWaiters = new Map<string, (accepted: boolean) => void>();
   const seen = new Set<string>();

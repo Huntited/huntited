@@ -373,6 +373,10 @@ export const en: Messages = {
   "chat.p2p.member": "Member {n}",
   "chat.p2p.ends":
     "The chat closes on {date}; its messages are then erased from the relays that allow it.",
+  "chat.p2p.mesh.on":
+    "Bluetooth on: without internet, messages hop from phone to phone between nearby Huntited Chat apps.",
+  "chat.p2p.mesh.off":
+    "To chat without internet, open Huntited Chat once from its icon and allow Bluetooth.",
   "chat.p2p.ended": "The chat is closed (24 h after the deadline).",
   "chat.p2p.unavailable": "Chat unavailable for now.",
   "chat.demo": "(Demo: simulated chat, no real room)",

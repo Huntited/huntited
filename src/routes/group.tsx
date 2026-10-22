@@ -350,7 +350,14 @@ function HuntBatch({ group: g }: { group: Group }) {
                 void send({
                   t: "gcommit",
                   hunt: g.hunt,
-                  entries: pending.slice(0, MAX_GROUP_COMMITS_PER_MESSAGE),
+                  entries: pending
+                    .slice(0, MAX_GROUP_COMMITS_PER_MESSAGE)
+                    .map(({ place, sig, threshold, chat }) => ({
+                      place,
+                      sig,
+                      ...(threshold === undefined ? {} : { threshold }),
+                      ...(chat === undefined ? {} : { chat }),
+                    })),
                 })
               }
             >

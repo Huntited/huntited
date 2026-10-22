@@ -67,10 +67,7 @@ function CreatorSimulator({ cautionKas, threshold, onThresholdChange }: Props) {
   const stops = [...new Set([min, ...STOPS.filter((v) => v >= min)])].sort((a, b) => a - b);
   const valid = Number.isInteger(threshold) && threshold >= min ? threshold : min;
   // Cran le plus proche (en dessous) du seuil saisi.
-  const index = Math.max(
-    0,
-    stops.findLastIndex((v) => v <= valid),
-  );
+  const index = Math.max(0, stops.filter((v) => v <= valid).length - 1);
   const last = stops.length - 1;
   const at = (i: number) => `calc(8px + (100% - 16px) * ${i / last})`;
 

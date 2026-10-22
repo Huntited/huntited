@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { APP_PAGE, isAndroid, isInApp, qrSvg, roomIntent, roomLink } from "@/lib/app-link";
+import { meshAvailable } from "@/lib/mesh-bridge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   chatNotifySupported,
@@ -133,7 +134,11 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
       if (!pool.current) throw new Error("no_relays");
       await pool.current.publish(e);
       setMessages((all) =>
-        all.map((m) => (m.id === e.id ? { ...m, status: undefined, event: undefined } : m)),
+        all.map((m) => {
+          if (m.id !== e.id) return m;
+          const { status: _s, event: _e, ...sent } = m;
+          return sent;
+        }),
       );
     } catch {
       setMessages((all) => all.map((m) => (m.id === e.id ? { ...m, status: "failed" } : m)));
@@ -355,6 +360,11 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
               }),
             })}
           </p>
+          {isInApp() && (
+            <p className="text-xs text-muted-foreground">
+              {t(meshAvailable() ? "chat.p2p.mesh.on" : "chat.p2p.mesh.off")}
+            </p>
+          )}
           {/* Dans l'app elle-même, inutile de proposer de l'ouvrir. */}
           {!isInApp() && <OpenInApp huntId={huntId} priv={ready.priv} />}
           <PlanB
