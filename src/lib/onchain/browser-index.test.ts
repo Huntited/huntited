@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { REGISTRY_ADDRESS } from "../chain";
 import { signArchive } from "./archive-signature";
-import { listChainHunts, resetBrowserIndex } from "./browser-index";
+import { getChainHunt, listChainHunts, resetBrowserIndex } from "./browser-index";
 import { ARCHIVE_FORMAT } from "./indexer";
 import { encodeMessage } from "./protocol";
 
@@ -71,5 +71,36 @@ describe("index du navigateur et archives", () => {
   it("accepte sans signature l'archive livrée avec le site (couverte par l'ancrage)", async () => {
     serve({ "./registry-snapshot.json": archiveWithHunt("Livrée avec le site") });
     expect((await listChainHunts()).map((h) => h.title)).toEqual(["Livrée avec le site"]);
+  });
+});
+
+describe("modération", () => {
+  it("une chasse masquée par la clé de publication disparaît de la liste ; sa page dit pourquoi", async () => {
+    vi.stubEnv("VITE_RELEASE_PUBLISHERS", "kaspatest:publication");
+    const a = archiveWithHunt("Chasse illégale");
+    const hide = (sender: string, txId: string) => ({
+      txId,
+      score: 20,
+      time: Date.now(),
+      sender,
+      payload: bytesToHex(encodeMessage({ t: "hide", hunt: "ab".repeat(12), reason: "illegal" })),
+    });
+    // Un masquage par une autre adresse ne compte pas.
+    serve({
+      "./registry-snapshot.json": {
+        ...a,
+        entries: [...a.entries, hide("kaspatest:alice", "ee".repeat(32))],
+      },
+    });
+    expect((await listChainHunts()).map((h) => h.title)).toEqual(["Chasse illégale"]);
+    resetBrowserIndex();
+    serve({
+      "./registry-snapshot.json": {
+        ...a,
+        entries: [...a.entries, hide("kaspatest:publication", "ff".repeat(32))],
+      },
+    });
+    expect(await listChainHunts()).toEqual([]);
+    expect((await getChainHunt("ab".repeat(12)))?.hidden).toBe("illegal");
   });
 });

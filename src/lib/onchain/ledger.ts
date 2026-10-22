@@ -28,6 +28,9 @@ import {
   type PassMessage,
   type ProofInput,
   type ReleaseMessage,
+  type HideMessage,
+  type HideReason,
+  type UnhideMessage,
 } from "./protocol";
 
 export interface ChainEvent {
@@ -41,7 +44,7 @@ export const byAddress = (address: string) => `a:${address}`;
 export const byPass = (nullifier: string) => `p:${nullifier}`;
 
 export type ApplyResult =
-  | { ok: true; type: "invite" | "pass" | "hunt" | "commit" | "release" }
+  | { ok: true; type: "invite" | "pass" | "hunt" | "commit" | "release" | "hide" | "unhide" }
   | { ok: false; reason: string };
 
 export type ProofVerifier = (proof: ProofInput) => Promise<boolean>;
@@ -79,6 +82,14 @@ export interface LedgerHunt extends Omit<HuntMessage, "t" | "proof"> {
 
 export type LedgerStatus = "active" | "activated" | "expired";
 
+/** Chasse masquée sur le site par la clé de publication (modération). */
+export interface LedgerHidden {
+  hunt: string;
+  reason: HideReason;
+  at: number;
+  txId: string;
+}
+
 export interface LedgerRelease {
   version: string;
   manifest: string;
@@ -98,6 +109,7 @@ export class Ledger {
   private readonly usedSlots = new Set<string>();
   private readonly hunts = new Map<string, LedgerHunt>();
   private readonly releaseList: LedgerRelease[] = [];
+  private readonly hiddenList = new Map<string, LedgerHidden>();
   private readonly seen = new Set<string>();
 
   constructor(
@@ -117,6 +129,15 @@ export class Ledger {
 
   allHunts(): LedgerHunt[] {
     return [...this.hunts.values()];
+  }
+
+  /** Masquage d'une chasse (modération), s'il y en a un. */
+  hidden(huntId: string): LedgerHidden | undefined {
+    return this.hiddenList.get(huntId);
+  }
+
+  hiddenHunts(): LedgerHidden[] {
+    return [...this.hiddenList.values()];
   }
 
   releases(): LedgerRelease[] {
@@ -164,7 +185,27 @@ export class Ledger {
         return this.applyCommit(m, e);
       case "release":
         return this.applyRelease(m, e);
+      case "hide":
+        return this.applyHide(m, e);
+      case "unhide":
+        return this.applyUnhide(m, e);
     }
+  }
+
+  private applyHide(m: HideMessage, e: ChainEvent): ApplyResult {
+    if (!this.genesis.releaseAddresses.includes(e.sender)) {
+      return { ok: false, reason: "not_publisher" };
+    }
+    this.hiddenList.set(m.hunt, { hunt: m.hunt, reason: m.reason, at: e.time, txId: e.txId });
+    return { ok: true, type: "hide" };
+  }
+
+  private applyUnhide(m: UnhideMessage, e: ChainEvent): ApplyResult {
+    if (!this.genesis.releaseAddresses.includes(e.sender)) {
+      return { ok: false, reason: "not_publisher" };
+    }
+    if (!this.hiddenList.delete(m.hunt)) return { ok: false, reason: "not_hidden" };
+    return { ok: true, type: "unhide" };
   }
 
   private applyRelease(m: ReleaseMessage, e: ChainEvent): ApplyResult {

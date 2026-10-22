@@ -103,12 +103,40 @@ export const releaseMessage = z.object({
     .optional(),
 });
 
+/** Raisons de masquage d'une chasse (conditions d'utilisation, « Usages interdits »). */
+export const HIDE_REASONS = [
+  "illegal",
+  "violence",
+  "harassment",
+  "personal-data",
+  "deception",
+  "spam",
+] as const;
+
+/**
+ * Modération (docs/moderation.md) : la clé de publication (huntited.kas)
+ * masque ou réaffiche une chasse sur le site. La chasse reste sur la chaîne ;
+ * le masquage, lui aussi public, est visible de tous.
+ */
+export const hideMessage = z.object({
+  t: z.literal("hide"),
+  hunt: huntIdSchema,
+  reason: z.enum(HIDE_REASONS),
+});
+
+export const unhideMessage = z.object({
+  t: z.literal("unhide"),
+  hunt: huntIdSchema,
+});
+
 export const messageSchema = z.discriminatedUnion("t", [
   inviteMessage,
   passMessage,
   huntMessage,
   commitMessage,
   releaseMessage,
+  hideMessage,
+  unhideMessage,
 ]);
 
 export type InviteMessage = z.infer<typeof inviteMessage>;
@@ -116,6 +144,9 @@ export type PassMessage = z.infer<typeof passMessage>;
 export type HuntMessage = z.infer<typeof huntMessage>;
 export type CommitMessage = z.infer<typeof commitMessage>;
 export type ReleaseMessage = z.infer<typeof releaseMessage>;
+export type HideMessage = z.infer<typeof hideMessage>;
+export type UnhideMessage = z.infer<typeof unhideMessage>;
+export type HideReason = (typeof HIDE_REASONS)[number];
 export type Message = z.infer<typeof messageSchema>;
 
 export function encodeMessage(m: Message): Uint8Array {

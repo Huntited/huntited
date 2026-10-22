@@ -26,6 +26,8 @@ export interface UseHuntResult {
   pending: boolean;
   /** Mode chaîne : date limite passée, résultat encore en vérification. */
   outcomePending: boolean;
+  /** Masquée par la modération : raison (mode chaîne). */
+  hidden: string | null;
   refresh: () => void;
 }
 
@@ -54,6 +56,7 @@ export function useHunt(huntId: string): UseHuntResult {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [outcomePending, setOutcomePending] = useState(false);
+  const [hidden, setHidden] = useState<string | null>(null);
   const [version, setVersion] = useState(0); // incrémenté pour forcer un refresh
 
   useEffect(() => {
@@ -64,6 +67,7 @@ export function useHunt(huntId: string): UseHuntResult {
         setError(null);
         setPending(view?.pending ?? false);
         setOutcomePending(view?.outcomePending ?? false);
+        setHidden(view?.hidden ?? null);
         setHunt(view?.hunt);
         setCommitCount(view?.commitCount ?? 0);
         setStatus(view?.status ?? "active");
@@ -110,6 +114,7 @@ export function useHunt(huntId: string): UseHuntResult {
     error,
     pending,
     outcomePending,
+    hidden,
     refresh,
   };
 }

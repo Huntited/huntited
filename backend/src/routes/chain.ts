@@ -66,12 +66,21 @@ export function chainRouter(deps: {
     }),
   );
 
-  router.get("/hunts", (_req, res) => res.json(indexer.ledger.allHunts().map(view)));
+  // Chasses masquées par la modération : absentes (docs/moderation.md).
+  router.get("/hunts", (_req, res) =>
+    res.json(
+      indexer.ledger
+        .allHunts()
+        .filter((h) => !indexer.ledger.hidden(h.id))
+        .map(view),
+    ),
+  );
 
   router.get("/hunts/:id", (req, res) => {
     const id = huntIdSchema.safeParse(req.params["id"]);
     const h = id.success ? indexer.ledger.hunt(id.data) : undefined;
     if (!h) return res.status(404).json({ error: "Chasse introuvable." });
+    if (indexer.ledger.hidden(h.id)) return res.status(410).json({ error: "Chasse masquée." });
     return res.json(view(h));
   });
 

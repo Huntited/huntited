@@ -63,6 +63,13 @@ function scenario(seed: number): ChainEvent[] {
         version: `1.${Math.floor(r() * 3)}.0`,
         manifest: "c".repeat(64),
       });
+    } else if (kind < 0.94) {
+      // Modération : acceptée seulement depuis l'adresse de publication (p0).
+      payload = encodeMessage(
+        r() < 0.7
+          ? { t: "hide", hunt: pick(ids), reason: pick(["spam", "illegal"]) }
+          : { t: "unhide", hunt: pick(ids) },
+      );
     } else if (kind < 0.95) {
       payload = new TextEncoder().encode(pick(["hello", 'HNT1{"t":"x"}', "HNT1{broken"]));
     } else {
@@ -93,6 +100,7 @@ describe("conformité navigateur / serveur", () => {
     for (const [a, b] of reasons) expect(b).toBe(a);
     expect(browser.allHunts()).toEqual(server.allHunts());
     expect(browser.releases()).toEqual(server.releases());
+    expect(browser.hiddenHunts()).toEqual(server.hiddenHunts());
     const now = Date.UTC(2026, 9, 12);
     for (const h of server.allHunts()) {
       expect(browser.status(browser.hunt(h.id)!, now)).toEqual(server.status(h, now));

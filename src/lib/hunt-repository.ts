@@ -81,6 +81,8 @@ export interface HuntView {
   pending?: boolean;
   /** Mode chaîne : date limite passée, résultat encore en vérification. */
   outcomePending?: boolean;
+  /** Mode chaîne : masquée par la modération (raison). */
+  hidden?: string;
 }
 
 export class HuntActionError extends Error {}
@@ -129,6 +131,7 @@ function localView(base: Hunt, now = Date.now()): HuntView {
 // --- Mode API -----------------------------------------------------------------
 
 interface PublicHunt {
+  hidden?: string;
   id: string;
   title: string;
   description: string;
@@ -179,6 +182,7 @@ function apiView(p: PublicHunt): HuntView {
     ...(p.activationRank !== undefined ? { activationRank: p.activationRank } : {}),
     ...(p.outcome ? { outcome: p.outcome } : {}),
     ...(p.outcomePending ? { outcomePending: true } : {}),
+    ...(p.hidden ? { hidden: p.hidden } : {}),
   };
 }
 

@@ -47,7 +47,12 @@ export interface ChainReleaseMessage {
   cid?: string;
 }
 
-export type ChainMessage = ChainHuntMessage | ChainCommitMessage | ChainReleaseMessage;
+/** Modération : masquer ou réafficher une chasse (seule la clé de publication compte). */
+export type ChainModerationMessage =
+  { t: "hide"; hunt: string; reason: string } | { t: "unhide"; hunt: string };
+
+export type ChainMessage =
+  ChainHuntMessage | ChainCommitMessage | ChainReleaseMessage | ChainModerationMessage;
 
 /** « HNT1 » + JSON, en hexadécimal (format attendu par Kastle). */
 export function encodePayload(m: ChainMessage): string {

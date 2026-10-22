@@ -200,6 +200,34 @@ describe("grand livre : versions du site", () => {
   });
 });
 
+describe("grand livre : modération", () => {
+  it("seule l'adresse de publication masque ou réaffiche une chasse", async () => {
+    const { ledger, publish } = setup();
+    const id = "ab".repeat(12);
+    const hide = { t: "hide", hunt: id, reason: "spam" } as const;
+    expect(await publish(hide, T0, "kaspatest:imposteur")).toEqual({
+      ok: false,
+      reason: "not_publisher",
+    });
+    expect(ledger.hidden(id)).toBeUndefined();
+    expect(await publish(hide, T0, "kaspatest:publication")).toEqual({ ok: true, type: "hide" });
+    expect(ledger.hidden(id)).toMatchObject({ hunt: id, reason: "spam", at: T0 });
+    expect(await publish({ t: "unhide", hunt: id }, T0 + 1, "kaspatest:imposteur")).toEqual({
+      ok: false,
+      reason: "not_publisher",
+    });
+    expect(await publish({ t: "unhide", hunt: id }, T0 + 1, "kaspatest:publication")).toEqual({
+      ok: true,
+      type: "unhide",
+    });
+    expect(ledger.hiddenHunts()).toEqual([]);
+    expect(await publish({ t: "unhide", hunt: id }, T0 + 2, "kaspatest:publication")).toEqual({
+      ok: false,
+      reason: "not_hidden",
+    });
+  });
+});
+
 describe("grand livre : pass (en réserve)", () => {
   it(
     "anonymat complet : invitations, chasse et engagements par preuves",

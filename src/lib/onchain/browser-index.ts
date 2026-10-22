@@ -6,8 +6,8 @@ import { REGISTRY_ADDRESS } from "../chain";
 import { minHuntThreshold } from "../validation";
 import { OFFICIAL_ARCHIVE_SIGNER, archiveSignedBy } from "./archive-signature";
 import { ChainIndexer, parseArchive, restSource } from "./indexer";
-import { Ledger, type LedgerHunt, type LedgerRelease } from "./ledger";
-import { DEFAULT_GENESIS } from "./protocol";
+import { Ledger, type LedgerHidden, type LedgerHunt, type LedgerRelease } from "./ledger";
+import { DEFAULT_GENESIS, type HideReason } from "./protocol";
 import { OFFICIAL_PUBLISHER } from "./publisher";
 
 /** Délai avant d'annoncer un échec (retard possible de l'API publique). */
@@ -76,6 +76,8 @@ export interface ChainHuntView {
   activatedAt?: string;
   settledAt?: string;
   outcomePending?: boolean;
+  /** Masquée sur le site par la clé de publication (modération), avec la raison. */
+  hidden?: HideReason;
 }
 
 export function viewOf(ledger: Ledger, h: LedgerHunt, t: number): ChainHuntView {
@@ -180,13 +182,24 @@ async function synced(): Promise<Ledger> {
 
 export async function listChainHunts(now = Date.now()): Promise<ChainHuntView[]> {
   const ledger = await synced();
-  return ledger.allHunts().map((h) => viewOf(ledger, h, now));
+  // Chasses masquées (modération) : absentes des listes.
+  return ledger
+    .allHunts()
+    .filter((h) => !ledger.hidden(h.id))
+    .map((h) => viewOf(ledger, h, now));
 }
 
 export async function getChainHunt(id: string, now = Date.now()): Promise<ChainHuntView | null> {
   const ledger = await synced();
   const h = ledger.hunt(id);
-  return h ? viewOf(ledger, h, now) : null;
+  if (!h) return null;
+  const hidden = ledger.hidden(id);
+  return { ...viewOf(ledger, h, now), ...(hidden ? { hidden: hidden.reason } : {}) };
+}
+
+/** Chasses masquées par la modération (page « Versions et modération »). */
+export async function getChainHidden(): Promise<LedgerHidden[]> {
+  return (await synced()).hiddenHunts();
 }
 
 /**

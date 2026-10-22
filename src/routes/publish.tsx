@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
+import { ModerationPanel } from "@/components/ModerationPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +19,7 @@ import { useWallet } from "@/lib/useWallet";
 import { WalletError } from "@/lib/wallet";
 
 export const Route = createFileRoute("/publish")({
-  head: () => ({ meta: [{ title: "Versions — Huntited" }] }),
+  head: () => ({ meta: [{ title: "Versions et modération — Huntited" }] }),
   component: PublishPage,
 });
 
@@ -168,6 +169,7 @@ function PublishPage() {
           )}
         </section>
       )}
+      <ModerationPanel isPublisher={isPublisher} />
     </div>
   );
 }

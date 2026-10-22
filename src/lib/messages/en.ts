@@ -48,6 +48,27 @@ export const en: Messages = {
   "home.title": "Act together, never alone",
   "home.lead":
     "You'd like to act, but not alone. Here you commit without waiting for others to show up, and the action only happens if enough people join.",
+  "hunt.hidden.title": "Hidden hunt",
+  "hunt.hidden.text":
+    "Huntited hid this hunt ({reason}). It remains written on the blockchain, which nobody can change, but the site no longer shows it.",
+  "hunt.hidden.rules": "See prohibited uses",
+  "hide.reason.illegal": "illegal action",
+  "hide.reason.violence": "call for violence",
+  "hide.reason.harassment": "harassment or discrimination",
+  "hide.reason.personal-data": "personal data exposed",
+  "hide.reason.deception": "deception",
+  "hide.reason.spam": "spam",
+  "moderation.title": "Moderation",
+  "moderation.lead":
+    "Hunts breaching the prohibited uses can be hidden on the site by the key that owns huntited.kas. They remain on the blockchain; each hiding is public too, and listed here.",
+  "moderation.none": "No hidden hunts.",
+  "moderation.target": "Hunt link or identifier",
+  "moderation.reason": "Reason",
+  "moderation.hide": "Hide this hunt",
+  "moderation.unhide": "Show again",
+  "moderation.publicNote":
+    "Kastle will send 0.2 test KAS to the registry: the decision is public and final (it can be undone by showing the hunt again).",
+  "moderation.sent": "Decision sent. It will show up here in about a minute.",
   "hunt.explain":
     "Nobody goes alone here: your commitment only counts if at least {threshold} people commit before the deadline. Otherwise, your deposit is returned.",
   "hunt.explain.link": "How does it work?",

@@ -22,7 +22,7 @@ import { placeLabel } from "@/lib/online";
 import { hasBackend } from "@/lib/api-client";
 import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
 import { getDataMode, getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type MessageKey } from "@/lib/i18n";
 import { markRead } from "@/lib/inbox";
 import { commitRefundShort } from "@/lib/terms";
 import { useCommitment } from "@/lib/useCommitment";
@@ -60,6 +60,7 @@ function HuntDetailPage() {
     error,
     pending,
     outcomePending,
+    hidden,
     refresh,
   } = useHunt(id);
   // Wallet + engagement (un seul engagement par wallet et par chasse).
@@ -93,6 +94,24 @@ function HuntDetailPage() {
             <p className="mt-2 text-sm text-muted-foreground">{t("hunt.notFound.text")}</p>
           </>
         )}
+      </div>
+    );
+  }
+
+  if (hidden) {
+    // Modération : la chasse reste sur la blockchain, mais le site ne l'affiche plus.
+    return (
+      <div className="mx-auto max-w-xl px-4 py-10">
+        <Link to="/" className="text-sm text-muted-foreground hover:underline">
+          {t("common.back")}
+        </Link>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight">{t("hunt.hidden.title")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {t("hunt.hidden.text", { reason: t(`hide.reason.${hidden}` as MessageKey) })}
+        </p>
+        <Link to="/legal" hash="conditions" className="mt-3 inline-block text-sm underline">
+          {t("hunt.hidden.rules")}
+        </Link>
       </div>
     );
   }

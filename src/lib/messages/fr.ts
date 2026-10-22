@@ -47,6 +47,27 @@ export const fr = {
   "home.title": "Agir ensemble, sans y aller seul",
   "home.lead":
     "Tu voudrais agir, mais pas seul·e. Ici, tu t'engages sans attendre que les autres se montrent, et l'action n'a lieu que si assez de monde suit.",
+  "hunt.hidden.title": "Chasse masquée",
+  "hunt.hidden.text":
+    "Huntited a masqué cette chasse ({reason}). Elle reste inscrite sur la blockchain, que personne ne peut modifier, mais le site ne l'affiche plus.",
+  "hunt.hidden.rules": "Voir les usages interdits",
+  "hide.reason.illegal": "action illégale",
+  "hide.reason.violence": "appel à la violence",
+  "hide.reason.harassment": "harcèlement ou discrimination",
+  "hide.reason.personal-data": "données personnelles exposées",
+  "hide.reason.deception": "tromperie",
+  "hide.reason.spam": "spam",
+  "moderation.title": "Modération",
+  "moderation.lead":
+    "Les chasses contraires aux usages interdits peuvent être masquées sur le site par la clé qui possède huntited.kas. Elles restent sur la blockchain ; chaque masquage est lui aussi public, et listé ici.",
+  "moderation.none": "Aucune chasse masquée.",
+  "moderation.target": "Lien ou identifiant de la chasse",
+  "moderation.reason": "Raison",
+  "moderation.hide": "Masquer cette chasse",
+  "moderation.unhide": "Réafficher",
+  "moderation.publicNote":
+    "Kastle va envoyer 0,2 KAS de test au registre : la décision est publique et définitive (on peut la défaire en réaffichant).",
+  "moderation.sent": "Décision envoyée. Elle apparaîtra ici dans une minute environ.",
   "hunt.explain":
     "Ici, personne n'y va seul·e : ton engagement ne compte que si au moins {threshold} personnes s'engagent avant la date limite. Sinon, ton dépôt t'est rendu.",
   "hunt.explain.link": "Comment ça marche ?",

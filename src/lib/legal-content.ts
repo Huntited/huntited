@@ -52,7 +52,7 @@ const fr: LegalSection[] = [
         heading: "5. Usages interdits",
         paragraphs: [
           "Il est interdit d'utiliser Huntited pour organiser ou encourager des violences, des actes illégaux, du harcèlement, de la discrimination, ou pour exposer, ficher ou piéger des personnes ; ainsi que pour tromper les participants ou contourner les protections (multiplication de wallets, revente de pass).",
-          "Signalement : écris à [contact] en indiquant le lien de la chasse. Les chasses manifestement contraires à ces règles pourront être masquées sur le site (outil en préparation) ; elles restent inscrites sur la blockchain, que personne ne peut modifier.",
+          "Signalement : écris à [contact] en indiquant le lien de la chasse. Les chasses manifestement contraires à ces règles peuvent être masquées sur le site par la clé de huntited.kas (liste publique sur la page « Versions et modération ») ; elles restent inscrites sur la blockchain, que personne ne peut modifier.",
         ],
       },
       {
@@ -193,7 +193,7 @@ const en: LegalSection[] = [
         heading: "5. Prohibited uses",
         paragraphs: [
           "Huntited must not be used to organise or encourage violence, illegal acts, harassment or discrimination, or to expose, profile or entrap people; nor to deceive participants or bypass protections (multiple wallets, reselling passes).",
-          "Reporting: write to [contact] with the hunt's link. Hunts clearly breaching these rules will be hideable on the site (tool in preparation); they remain written on the blockchain, which nobody can change.",
+          "Reporting: write to [contact] with the hunt's link. Hunts clearly breaching these rules can be hidden on the site by the huntited.kas key (public list on the “Versions and moderation” page); they remain written on the blockchain, which nobody can change.",
         ],
       },
       {
