@@ -274,7 +274,32 @@ export interface ChatMessage {
   name?: string;
   /** Pseudo bitchat partagé avec les membres (plan B sans réseau, chiffré). */
   bitchat?: string;
+  /** Compteur de présence (docs/presence.md) : clé commune, seuil sur place. */
+  presence?: Presence;
+  /** Membres pour qui le message est chiffré (débuts de clés). */
+  readers?: string[];
 }
+
+export interface Presence {
+  /** Clé commune aux membres (hex, 32 octets). */
+  key: string;
+  /** Seuil sur place, fixé par le créateur. */
+  onsite?: number;
+}
+
+const MAX_ONSITE = 100_000;
+
+function cleanPresence(p: unknown): Presence | undefined {
+  if (!p || typeof p !== "object") return undefined;
+  const { key, onsite } = p as { key?: unknown; onsite?: unknown };
+  if (typeof key !== "string" || !/^[0-9a-f]{64}$/.test(key)) return undefined;
+  const ok =
+    typeof onsite === "number" && Number.isInteger(onsite) && onsite > 0 && onsite <= MAX_ONSITE;
+  return ok ? { key, onsite } : { key };
+}
+
+/** Le message a été chiffré pour ce membre. */
+export const readBy = (m: ChatMessage, pub: string) => m.readers?.includes(slot(pub)) ?? false;
 
 const MAX_NAME = 30;
 /** Caractères de contrôle et de mise en forme invisibles (sens d’écriture…), retirés des pseudos. */
@@ -303,10 +328,17 @@ export async function sealMessage(
   members: string[],
   text: string,
   deadline: number,
-  { now = Date.now(), name, bitchat }: { now?: number; name?: string; bitchat?: string } = {},
+  {
+    now = Date.now(),
+    name,
+    bitchat,
+    presence,
+  }: { now?: number; name?: string; bitchat?: string; presence?: Presence } = {},
 ): Promise<NostrEvent> {
   const clean = text.trim().slice(0, MAX_TEXT);
-  if (!clean) throw new Error("empty_message");
+  const shared = cleanPresence(presence);
+  // Un message peut ne porter que la clé de présence (il n'est pas affiché).
+  if (!clean && !shared) throw new Error("empty_message");
   const pubkey = chatPublicKey(priv);
   const contentKey = crypto.getRandomValues(new Uint8Array(32));
   const pseudo = cleanName(name);
@@ -319,6 +351,7 @@ export async function sealMessage(
         at: now,
         ...(pseudo ? { name: pseudo } : {}),
         ...(mesh ? { bitchat: mesh } : {}),
+        ...(shared ? { presence: shared } : {}),
       }),
     ),
   );
@@ -368,17 +401,19 @@ export async function openMessage(
     const wrapped = keys[slot(chatPublicKey(priv))];
     if (v !== 1 || !wrapped) return null;
     const contentKey = await aesDecrypt(pairKey(priv, e.pubkey, huntId), unb64(wrapped));
-    const { text, at, name, bitchat } = JSON.parse(
+    const { text, at, name, bitchat, presence } = JSON.parse(
       new TextDecoder().decode(await aesDecrypt(contentKey, unb64(body))),
     ) as {
       text: unknown;
       at: unknown;
       name: unknown;
       bitchat: unknown;
+      presence: unknown;
     };
     if (typeof text !== "string" || typeof at !== "number") return null;
     const pseudo = cleanName(name);
     const mesh = cleanName(bitchat);
+    const shared = cleanPresence(presence);
     return {
       id: e.id,
       author: e.pubkey,
@@ -386,6 +421,8 @@ export async function openMessage(
       at,
       ...(pseudo ? { name: pseudo } : {}),
       ...(mesh ? { bitchat: mesh } : {}),
+      ...(shared ? { presence: shared } : {}),
+      readers: Object.keys(keys),
     };
   } catch {
     return null;

@@ -389,6 +389,18 @@ export const fr = {
     "Bluetooth actif : sans internet, les messages passent de téléphone en téléphone entre les apps Huntited Chat proches.",
   "chat.p2p.mesh.off":
     "Pour discuter sans internet, ouvre une fois Huntited Chat depuis son icône et accepte le Bluetooth.",
+  "chat.p2p.presence.title": "Présence sur place",
+  "chat.p2p.presence.around": "Membres de la chasse autour de toi (toi compris) : {n}",
+  "chat.p2p.presence.app":
+    "Le jour J, ouvre ce salon dans l'app Huntited Chat : elle compte par Bluetooth les membres présents autour de toi, sans dire qui.",
+  "chat.p2p.presence.threshold": "Seuil sur place fixé par le créateur : {onsite} personnes.",
+  "chat.p2p.presence.progress": "Seuil sur place : {n} sur {onsite}",
+  "chat.p2p.presence.go": "C'est le moment : vous êtes {n} sur place.",
+  "chat.p2p.presence.set": "Seuil sur place (personnes)",
+  "chat.p2p.presence.define": "Définir",
+  "chat.p2p.presence.announce": "📍 Seuil sur place : on y va quand on est {n} sur place.",
+  "chat.p2p.presence.note":
+    "Compte approximatif : la portée Bluetooth est de 10 à 50 m par téléphone, et les signaux passent de téléphone en téléphone.",
   "chat.p2p.ended": "Le chat est fermé (24 h après la date limite).",
   "chat.p2p.unavailable": "Chat indisponible pour le moment.",
   "chat.demo": "(Démonstration : chat simulé, aucun salon réel)",

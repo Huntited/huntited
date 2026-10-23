@@ -377,6 +377,18 @@ export const en: Messages = {
     "Bluetooth on: without internet, messages hop from phone to phone between nearby Huntited Chat apps.",
   "chat.p2p.mesh.off":
     "To chat without internet, open Huntited Chat once from its icon and allow Bluetooth.",
+  "chat.p2p.presence.title": "On-site presence",
+  "chat.p2p.presence.around": "Hunt members around you (you included): {n}",
+  "chat.p2p.presence.app":
+    "On the day, open this room in the Huntited Chat app: it counts the members around you over Bluetooth, without saying who.",
+  "chat.p2p.presence.threshold": "On-site threshold set by the creator: {onsite} people.",
+  "chat.p2p.presence.progress": "On-site threshold: {n} of {onsite}",
+  "chat.p2p.presence.go": "It's time: you are {n} on site.",
+  "chat.p2p.presence.set": "On-site threshold (people)",
+  "chat.p2p.presence.define": "Set",
+  "chat.p2p.presence.announce": "📍 On-site threshold: we go when we are {n} on site.",
+  "chat.p2p.presence.note":
+    "Approximate count: Bluetooth reaches 10 to 50 m per phone, and signals hop from phone to phone.",
   "chat.p2p.ended": "The chat is closed (24 h after the deadline).",
   "chat.p2p.unavailable": "Chat unavailable for now.",
   "chat.demo": "(Demo: simulated chat, no real room)",

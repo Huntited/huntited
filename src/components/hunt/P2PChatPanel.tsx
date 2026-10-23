@@ -1,7 +1,7 @@
 // Chat chiffré d'une chasse sur la chaîne, sans serveur Huntited
 // (src/lib/p2p-chat.ts, docs/chat.md). Membres = clés de chat inscrites sur
 // la chaîne ; messages chiffrés, transmis par des relais Nostr publics.
-import { Bell, BellOff, Lock, SendHorizontal } from "lucide-react";
+import { Bell, BellOff, Lock, Radar, SendHorizontal } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,16 @@ import {
   setChatName,
   type ChatMessage,
   type NostrEvent,
+  type Presence,
 } from "@/lib/p2p-chat";
+import {
+  newPresenceKey,
+  presenceCount,
+  presenceMissing,
+  presenceState,
+  presenceSupported,
+  startPresence,
+} from "@/lib/presence";
 
 const MAX_TEXT = 2000;
 /** Messages d'une même personne à moins de 5 min : un seul nom affiché. */
@@ -117,10 +126,45 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [huntId, ready?.priv, ready?.members.join()]);
 
+  // Messages affichés (ceux qui ne portent que la clé de présence sont cachés).
+  const visible = messages.filter((m) => m.text);
+
   // Défile vers le bas à l'arrivée d'un message (si on était déjà en bas,
   // ou si c'est le sien).
-  const last = messages.at(-1);
+  const last = visible.at(-1);
   const me = ready ? chatPublicKey(ready.priv) : null;
+
+  // Compteur de présence (src/lib/presence.ts) : clé commune du salon.
+  const presence = ready ? presenceState(messages, ready.creator) : null;
+  const [around, setAround] = useState<number | null>(null);
+  // Pas encore de clé, une fois l'historique chargé : ce membre en crée une.
+  useEffect(() => {
+    if (!ready || presence) return;
+    const timer = setTimeout(() => void post("", { presence: { key: newPresenceKey() } }), 15_000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready?.priv, presence?.key]);
+  // Membres arrivés après : on leur renvoie la clé (une fois par visite).
+  const resent = useRef(false);
+  useEffect(() => {
+    if (!ready || !presence || !me || resent.current) return;
+    if (presenceMissing(presence, messages, ready.members, me).length === 0) return;
+    resent.current = true;
+    void post("", {
+      presence: { key: presence.key, ...(presence.onsite ? { onsite: presence.onsite } : {}) },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presence?.from.id, ready?.members.join()]);
+  // Dans l'app : signal « je suis là » et compte des membres autour.
+  useEffect(() => {
+    if (!ready || !presence || !presenceSupported()) return;
+    startPresence(huntId, title, presence, ready.priv, ready.deadline + CHAT_TTL_AFTER_DEADLINE_MS);
+    const tick = () => setAround(presenceCount(huntId));
+    tick();
+    const timer = setInterval(tick, 5_000);
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [huntId, ready?.priv, presence?.key, presence?.onsite]);
   useEffect(() => {
     const el = list.current;
     if (!el || !last) return;
@@ -145,8 +189,8 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     }
   }
 
-  async function post(text: string, extra: { bitchat?: string } = {}) {
-    if (!ready || !text.trim()) return false;
+  async function post(text: string, extra: { bitchat?: string; presence?: Presence } = {}) {
+    if (!ready || (!text.trim() && !extra.presence)) return false;
     const e = await sealMessage(huntId, ready.priv, ready.members, text, ready.deadline, {
       name: myName,
       ...extra,
@@ -219,14 +263,14 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
             aria-live="polite"
             aria-label={t("hunt.chat.title")}
           >
-            {messages.length === 0 && (
+            {visible.length === 0 && (
               <li className="flex h-full items-center justify-center text-muted-foreground">
                 {t("chat.p2p.empty")}
               </li>
             )}
-            {messages.map((m, i) => {
+            {visible.map((m, i) => {
               const mine = m.author === me;
-              const prev = messages[i - 1];
+              const prev = visible[i - 1];
               const grouped = prev?.author === m.author && m.at - prev.at < GROUP_MS;
               return (
                 <li
@@ -365,6 +409,16 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
               {t(meshAvailable() ? "chat.p2p.mesh.on" : "chat.p2p.mesh.off")}
             </p>
           )}
+          <PresenceBox
+            around={around}
+            onsite={presence?.onsite}
+            isCreator={me !== null && me === ready.creator}
+            onSetOnsite={(n) =>
+              post(t("chat.p2p.presence.announce", { n }), {
+                presence: { key: presence?.key ?? newPresenceKey(), onsite: n },
+              })
+            }
+          />
           {/* Dans l'app elle-même, inutile de proposer de l'ouvrir. */}
           {!isInApp() && <OpenInApp huntId={huntId} priv={ready.priv} />}
           <PlanB
@@ -378,6 +432,92 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
         </>
       )}
     </section>
+  );
+}
+
+/**
+ * Présence sur place (src/lib/presence.ts) : dans l'app, les membres de la
+ * chasse comptés autour de soi par Bluetooth, et le seuil sur place fixé par
+ * le créateur.
+ */
+function PresenceBox({
+  around,
+  onsite,
+  isCreator,
+  onSetOnsite,
+}: {
+  around: number | null;
+  onsite: number | undefined;
+  isCreator: boolean;
+  onSetOnsite: (n: number) => Promise<boolean>;
+}) {
+  const { t } = useI18n();
+  const [draft, setDraft] = useState("");
+  const reached = around !== null && onsite !== undefined && around >= onsite;
+
+  return (
+    <div className="space-y-2 rounded-md border p-3" aria-live="polite">
+      <p className="flex items-center gap-1.5 font-medium">
+        <Radar className="size-4 shrink-0" aria-hidden />
+        {t("chat.p2p.presence.title")}
+      </p>
+      {around !== null ? (
+        <p>{t("chat.p2p.presence.around", { n: around })}</p>
+      ) : (
+        <p className="text-xs text-muted-foreground">{t("chat.p2p.presence.app")}</p>
+      )}
+      {onsite !== undefined && (
+        <>
+          <p className="text-xs text-muted-foreground">
+            {around !== null
+              ? t("chat.p2p.presence.progress", { n: around, onsite })
+              : t("chat.p2p.presence.threshold", { onsite })}
+          </p>
+          {around !== null && (
+            <div className="h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className={`h-full ${reached ? "bg-green-600" : "bg-primary"}`}
+                style={{ width: `${Math.min(100, (around / onsite) * 100)}%` }}
+              />
+            </div>
+          )}
+          {reached && (
+            <p role="status" className="font-semibold text-green-700 dark:text-green-400">
+              {t("chat.p2p.presence.go", { n: around })}
+            </p>
+          )}
+        </>
+      )}
+      {isCreator && (
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            const n = Number(draft);
+            if (!Number.isInteger(n) || n < 2 || n > 100_000) return;
+            void onSetOnsite(n).then((ok) => ok && setDraft(""));
+          }}
+        >
+          <div className="space-y-1">
+            <label htmlFor="onsite" className="text-xs font-medium">
+              {t("chat.p2p.presence.set")}
+            </label>
+            <Input
+              id="onsite"
+              type="number"
+              min={2}
+              value={draft}
+              onChange={(ev) => setDraft(ev.target.value)}
+              className="h-8 w-28"
+            />
+          </div>
+          <Button type="submit" size="sm" variant="outline">
+            {t("chat.p2p.presence.define")}
+          </Button>
+        </form>
+      )}
+      <p className="text-[11px] text-muted-foreground">{t("chat.p2p.presence.note")}</p>
+    </div>
   );
 }
 
