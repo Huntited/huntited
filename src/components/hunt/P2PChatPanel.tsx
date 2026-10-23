@@ -1,7 +1,7 @@
 // Chat chiffré d'une chasse sur la chaîne, sans serveur Huntited
 // (src/lib/p2p-chat.ts, docs/chat.md). Membres = clés de chat inscrites sur
 // la chaîne ; messages chiffrés, transmis par des relais Nostr publics.
-import { Bell, BellOff, Lock, Radar, SendHorizontal } from "lucide-react";
+import { Bell, BellOff, Lock, Mic, Radar, Radio, SendHorizontal, Square, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { getChainChat } from "@/lib/onchain/browser-index";
 import {
   CHAT_KIND,
   CHAT_TTL_AFTER_DEADLINE_MS,
+  MAX_AUDIO_MS,
   chatPublicKey,
   chatTopic,
   getChatKey,
@@ -31,10 +32,18 @@ import {
   openMessage,
   sealMessage,
   setChatName,
+  type Audio,
   type ChatMessage,
   type NostrEvent,
   type Presence,
 } from "@/lib/p2p-chat";
+import {
+  audioSrc,
+  createPlayer,
+  startRecording,
+  voiceSupported,
+  type Recording,
+} from "@/lib/voice";
 import {
   newPresenceKey,
   presenceCount,
@@ -127,7 +136,7 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
   }, [huntId, ready?.priv, ready?.members.join()]);
 
   // Messages affichés (ceux qui ne portent que la clé de présence sont cachés).
-  const visible = messages.filter((m) => m.text);
+  const visible = messages.filter((m) => m.text || m.audio);
 
   // Défile vers le bas à l'arrivée d'un message (si on était déjà en bas,
   // ou si c'est le sien).
@@ -189,8 +198,11 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     }
   }
 
-  async function post(text: string, extra: { bitchat?: string; presence?: Presence } = {}) {
-    if (!ready || (!text.trim() && !extra.presence)) return false;
+  async function post(
+    text: string,
+    extra: { bitchat?: string; presence?: Presence; audio?: Audio } = {},
+  ) {
+    if (!ready || (!text.trim() && !extra.presence && !extra.audio)) return false;
     const e = await sealMessage(huntId, ready.priv, ready.members, text, ready.deadline, {
       name: myName,
       ...extra,
@@ -288,13 +300,34 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
                       )}
                     </span>
                   )}
-                  <p
-                    className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3 py-1.5 ${
-                      mine ? "bg-primary text-primary-foreground" : "bg-muted"
-                    } ${m.status === "sending" ? "opacity-60" : ""}`}
-                  >
-                    {m.text}
-                  </p>
+                  {m.audio && (
+                    <div
+                      className={`flex max-w-[85%] items-center gap-1.5 ${m.status === "sending" ? "opacity-60" : ""}`}
+                    >
+                      {m.audio.ptt && (
+                        <Radio
+                          className="size-4 shrink-0 text-muted-foreground"
+                          aria-label={t("chat.p2p.talkie.label")}
+                        />
+                      )}
+                      <audio
+                        controls
+                        preload="none"
+                        src={audioSrc(m.audio)}
+                        className="h-9 max-w-full"
+                        aria-label={t("chat.p2p.voice.label", { s: Math.round(m.audio.ms / 1000) })}
+                      />
+                    </div>
+                  )}
+                  {m.text && (
+                    <p
+                      className={`max-w-[85%] whitespace-pre-wrap break-words rounded-2xl px-3 py-1.5 ${
+                        mine ? "bg-primary text-primary-foreground" : "bg-muted"
+                      } ${m.status === "sending" ? "opacity-60" : ""}`}
+                    >
+                      {m.text}
+                    </p>
+                  )}
                   <span className="mt-0.5 px-1 text-[11px] text-muted-foreground">
                     {m.status === "sending" ? (
                       t("chat.p2p.sending")
@@ -375,16 +408,27 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
               rows={1}
               className="max-h-40 min-h-10 resize-none"
             />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!draft.trim()}
-              aria-label={t("chat.p2p.send")}
-              title={t("chat.p2p.send")}
-            >
-              <SendHorizontal aria-hidden />
-            </Button>
+            {!draft.trim() && voiceSupported() ? (
+              <VoiceButton onRecorded={(audio) => post("", { audio })} />
+            ) : (
+              <Button
+                type="submit"
+                size="icon"
+                disabled={!draft.trim()}
+                aria-label={t("chat.p2p.send")}
+                title={t("chat.p2p.send")}
+              >
+                <SendHorizontal aria-hidden />
+              </Button>
+            )}
           </form>
+          {isInApp() && voiceSupported() && (
+            <TalkieBox
+              messages={messages}
+              me={me}
+              onTalk={(audio) => post("", { audio: { ...audio, ptt: true } })}
+            />
+          )}
           <p className="flex justify-between gap-2 text-xs text-muted-foreground">
             <span className="hidden sm:inline">{t("chat.p2p.keyHint")}</span>
             {draft.length > MAX_TEXT - 200 && (
@@ -432,6 +476,208 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
         </>
       )}
     </section>
+  );
+}
+
+const TALK_MS = 15_000;
+const clock = (ms: number) => {
+  const s = Math.floor(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
+
+/** Message vocal : un appui pour enregistrer (30 s au plus), un autre pour envoyer. */
+function VoiceButton({ onRecorded }: { onRecorded: (a: Audio) => Promise<boolean> }) {
+  const { t } = useI18n();
+  const rec = useRef<Recording | null>(null);
+  const [recording, setRecording] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [denied, setDenied] = useState(false);
+  useEffect(() => {
+    if (!recording) return;
+    const timer = setInterval(() => setElapsed(rec.current?.elapsed() ?? 0), 250);
+    return () => clearInterval(timer);
+  }, [recording]);
+  useEffect(() => () => rec.current?.cancel(), []);
+
+  async function start() {
+    setDenied(false);
+    try {
+      rec.current = await startRecording(MAX_AUDIO_MS, () => void finish());
+      setElapsed(0);
+      setRecording(true);
+    } catch {
+      setDenied(true);
+    }
+  }
+  async function finish() {
+    const r = rec.current;
+    rec.current = null;
+    setRecording(false);
+    const audio = await r?.stop();
+    if (audio) await onRecorded(audio);
+  }
+  function cancel() {
+    rec.current?.cancel();
+    rec.current = null;
+    setRecording(false);
+  }
+
+  if (recording) {
+    return (
+      <div className="flex items-center gap-1">
+        <span
+          role="status"
+          className="flex items-center gap-1 text-xs tabular-nums text-destructive"
+        >
+          <span className="size-2 animate-pulse rounded-full bg-destructive" aria-hidden />
+          {clock(elapsed)}
+        </span>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          onClick={cancel}
+          aria-label={t("chat.p2p.voice.cancel")}
+          title={t("chat.p2p.voice.cancel")}
+        >
+          <X aria-hidden />
+        </Button>
+        <Button
+          type="button"
+          size="icon"
+          onClick={() => void finish()}
+          aria-label={t("chat.p2p.voice.send")}
+          title={t("chat.p2p.voice.send")}
+        >
+          <Square aria-hidden />
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <Button
+      type="button"
+      size="icon"
+      variant={denied ? "destructive" : "default"}
+      onClick={() => void start()}
+      aria-label={denied ? t("chat.p2p.voice.denied") : t("chat.p2p.voice.record")}
+      title={denied ? t("chat.p2p.voice.denied") : t("chat.p2p.voice.record")}
+    >
+      <Mic aria-hidden />
+    </Button>
+  );
+}
+
+/**
+ * Talkie-walkie (dans l'app) : maintenir pour parler (15 s au plus) ; le son
+ * part dès qu'on relâche, par Bluetooth et par les relais, et se joue tout
+ * de suite chez les membres qui écoutent.
+ */
+function TalkieBox({
+  messages,
+  me,
+  onTalk,
+}: {
+  messages: ChatMessage[];
+  me: string | null;
+  onTalk: (a: Audio) => Promise<boolean>;
+}) {
+  const { t } = useI18n();
+  const [on, setOn] = useState(false);
+  const [talking, setTalking] = useState(false);
+  const [denied, setDenied] = useState(false);
+  const played = useRef(new Set<string>());
+  const player = useRef<ReturnType<typeof createPlayer> | null>(null);
+  const rec = useRef<Recording | null>(null);
+  const released = useRef(true);
+
+  // Joue les nouveaux messages talkie-walkie des autres membres.
+  useEffect(() => {
+    if (!on) return;
+    player.current ??= createPlayer();
+    for (const m of messages) {
+      if (played.current.has(m.id)) continue;
+      played.current.add(m.id);
+      if (m.audio?.ptt && m.author !== me) player.current.play(m.audio);
+    }
+  }, [messages, on, me]);
+  useEffect(
+    () => () => {
+      player.current?.stop();
+      rec.current?.cancel();
+    },
+    [],
+  );
+
+  function toggle() {
+    if (on) {
+      player.current?.stop();
+      setOn(false);
+      return;
+    }
+    // Seulement ce qui arrive à partir de maintenant.
+    for (const m of messages) played.current.add(m.id);
+    setOn(true);
+  }
+  async function down() {
+    if (rec.current || talking) return;
+    released.current = false;
+    setDenied(false);
+    player.current?.stop();
+    try {
+      rec.current = await startRecording(TALK_MS, () => void up());
+      setTalking(true);
+      if (released.current) void up(); // relâché pendant l'ouverture du micro
+    } catch {
+      setDenied(true);
+    }
+  }
+  async function up() {
+    released.current = true;
+    const r = rec.current;
+    if (!r) return;
+    rec.current = null;
+    setTalking(false);
+    const audio = await r.stop();
+    if (audio) await onTalk(audio);
+  }
+
+  return (
+    <div className="space-y-2 rounded-md border p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 font-medium">
+          <Radio className="size-4 shrink-0" aria-hidden />
+          {t("chat.p2p.talkie.title")}
+        </p>
+        <Button size="sm" variant={on ? "secondary" : "outline"} aria-pressed={on} onClick={toggle}>
+          {on ? t("chat.p2p.talkie.listening") : t("chat.p2p.talkie.listen")}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">{t("chat.p2p.talkie.hint")}</p>
+      {on && (
+        <button
+          type="button"
+          onPointerDown={() => void down()}
+          onPointerUp={() => void up()}
+          onPointerCancel={() => void up()}
+          onKeyDown={(ev) => (ev.key === " " || ev.key === "Enter") && !ev.repeat && void down()}
+          onKeyUp={(ev) => (ev.key === " " || ev.key === "Enter") && void up()}
+          onContextMenu={(ev) => ev.preventDefault()}
+          className={`w-full touch-none select-none rounded-full py-6 text-base font-semibold ${
+            talking
+              ? "bg-destructive text-destructive-foreground"
+              : "bg-primary text-primary-foreground"
+          }`}
+        >
+          {talking ? t("chat.p2p.talkie.talking") : t("chat.p2p.talkie.hold")}
+        </button>
+      )}
+      {denied && (
+        <p role="alert" className="text-xs text-destructive">
+          {t("chat.p2p.voice.denied")}
+        </p>
+      )}
+    </div>
   );
 }
 

@@ -74,7 +74,8 @@ export function ActivityWatcher() {
           pool.subscribe({ kinds: [CHAT_KIND], "#h": [chatTopic(id)], since }, (e) => {
             if (e.pubkey === me || !shouldNotify(id)) return;
             void openMessage(id, priv, chat.members, e).then((m) => {
-              if (!m || cancelled) return;
+              // Les messages cachés (clé de présence) ne sont pas des nouveaux messages.
+              if (!m || cancelled || (!m.text && !m.audio)) return;
               addInboxItem({ huntId: id, kind: "message", title: chat.title, at: m.at });
               if (!(id in followedChats())) return;
               const loc = router.buildLocation({ to: "/hunt/$id", params: { id } });

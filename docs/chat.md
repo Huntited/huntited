@@ -57,3 +57,17 @@ Le canal `#bluetooth` de bitchat est public : rien de sensible.
 Plus tard : une application Huntited pour téléphone reprenant le transport
 Bluetooth de bitchat et ajoutant notre chat (mêmes clés, mêmes membres, même
 format Nostr). Licence Android à vérifier (GPL-3.0 annoncée).
+
+## Messages vocaux et talkie-walkie
+
+- Vocal : bouton micro à côté d'« Envoyer » (30 s au plus, Opus ~12 kbit/s,
+  environ 45 Ko). Le son est dans le message chiffré (`audio: { mime, data,
+  ms }`), comme le texte : relais et Bluetooth ne voient rien. Relu par une
+  adresse `data:` (CSP `media-src`).
+- Talkie-walkie (app Huntited Chat) : « Écouter », puis maintenir le bouton
+  pour parler (15 s au plus). Le message part au relâchement (`ptt: true`),
+  par Bluetooth et par les relais ; il se joue tout de suite chez les membres
+  à l'écoute, salon ouvert et écran allumé. Ce n'est pas un flux continu :
+  le son arrive après la fin de la prise de parole.
+- Le micro n'est accordé qu'au site livré avec l'app (WebView), et seulement
+  le micro.

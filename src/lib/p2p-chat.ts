@@ -278,6 +278,39 @@ export interface ChatMessage {
   presence?: Presence;
   /** Membres pour qui le message est chiffré (débuts de clés). */
   readers?: string[];
+  /** Message vocal (chiffré, comme le texte). */
+  audio?: Audio;
+}
+
+export interface Audio {
+  /** Format (audio/webm;codecs=opus, audio/mp4…). */
+  mime: string;
+  /** Son, en base64. */
+  data: string;
+  /** Durée, en millisecondes. */
+  ms: number;
+  /** Envoyé en mode talkie-walkie : joué tout de suite chez les membres à l'écoute. */
+  ptt?: boolean;
+}
+
+/** Vocal : 30 s à 12 kbit/s tiennent largement (les relais acceptent au moins 128 Ko). */
+export const MAX_AUDIO_MS = 30_000;
+const MAX_AUDIO_B64 = 80_000;
+
+function cleanAudio(a: unknown): Audio | undefined {
+  if (!a || typeof a !== "object") return undefined;
+  const { mime, data, ms, ptt } = a as Record<string, unknown>;
+  if (
+    typeof mime !== "string" ||
+    !/^audio\/(webm|ogg|mp4|mpeg|aac)(;[ =a-z0-9.,"-]*)?$/i.test(mime)
+  )
+    return undefined;
+  if (mime.length > 60) return undefined;
+  if (typeof data !== "string" || !data || data.length > MAX_AUDIO_B64) return undefined;
+  if (!/^[A-Za-z0-9+/]+=*$/.test(data)) return undefined;
+  if (typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0 || ms > MAX_AUDIO_MS + 2_000)
+    return undefined;
+  return { mime, data, ms: Math.round(ms), ...(ptt === true ? { ptt: true } : {}) };
 }
 
 export interface Presence {
@@ -333,12 +366,21 @@ export async function sealMessage(
     name,
     bitchat,
     presence,
-  }: { now?: number; name?: string; bitchat?: string; presence?: Presence } = {},
+    audio,
+  }: {
+    now?: number;
+    name?: string;
+    bitchat?: string;
+    presence?: Presence;
+    audio?: Audio;
+  } = {},
 ): Promise<NostrEvent> {
   const clean = text.trim().slice(0, MAX_TEXT);
   const shared = cleanPresence(presence);
-  // Un message peut ne porter que la clé de présence (il n'est pas affiché).
-  if (!clean && !shared) throw new Error("empty_message");
+  const voice = cleanAudio(audio);
+  if (audio && !voice) throw new Error("invalid_audio");
+  // Un message peut ne porter que la clé de présence (il n'est pas affiché) ou un vocal.
+  if (!clean && !shared && !voice) throw new Error("empty_message");
   const pubkey = chatPublicKey(priv);
   const contentKey = crypto.getRandomValues(new Uint8Array(32));
   const pseudo = cleanName(name);
@@ -352,6 +394,7 @@ export async function sealMessage(
         ...(pseudo ? { name: pseudo } : {}),
         ...(mesh ? { bitchat: mesh } : {}),
         ...(shared ? { presence: shared } : {}),
+        ...(voice ? { audio: voice } : {}),
       }),
     ),
   );
@@ -401,7 +444,7 @@ export async function openMessage(
     const wrapped = keys[slot(chatPublicKey(priv))];
     if (v !== 1 || !wrapped) return null;
     const contentKey = await aesDecrypt(pairKey(priv, e.pubkey, huntId), unb64(wrapped));
-    const { text, at, name, bitchat, presence } = JSON.parse(
+    const { text, at, name, bitchat, presence, audio } = JSON.parse(
       new TextDecoder().decode(await aesDecrypt(contentKey, unb64(body))),
     ) as {
       text: unknown;
@@ -409,11 +452,13 @@ export async function openMessage(
       name: unknown;
       bitchat: unknown;
       presence: unknown;
+      audio: unknown;
     };
     if (typeof text !== "string" || typeof at !== "number") return null;
     const pseudo = cleanName(name);
     const mesh = cleanName(bitchat);
     const shared = cleanPresence(presence);
+    const voice = cleanAudio(audio);
     return {
       id: e.id,
       author: e.pubkey,
@@ -422,6 +467,7 @@ export async function openMessage(
       ...(pseudo ? { name: pseudo } : {}),
       ...(mesh ? { bitchat: mesh } : {}),
       ...(shared ? { presence: shared } : {}),
+      ...(voice ? { audio: voice } : {}),
       readers: Object.keys(keys),
     };
   } catch {

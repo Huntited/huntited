@@ -79,6 +79,8 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
+  // Messages vocaux du salon (data: après déchiffrement).
+  "media-src 'self' data: blob:",
   `connect-src 'self' ${[...new Set(connect)].join(" ")}`,
   "worker-src 'self'",
   "object-src 'none'",

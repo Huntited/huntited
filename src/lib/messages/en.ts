@@ -377,6 +377,19 @@ export const en: Messages = {
     "Bluetooth on: without internet, messages hop from phone to phone between nearby Huntited Chat apps.",
   "chat.p2p.mesh.off":
     "To chat without internet, open Huntited Chat once from its icon and allow Bluetooth.",
+  "chat.p2p.voice.record": "Record a voice message",
+  "chat.p2p.voice.send": "Stop and send",
+  "chat.p2p.voice.cancel": "Cancel",
+  "chat.p2p.voice.denied": "Microphone blocked: allow it in settings to send voice messages.",
+  "chat.p2p.voice.label": "Voice message, {s} s",
+  "chat.p2p.talkie.title": "Walkie-talkie",
+  "chat.p2p.talkie.label": "Walkie-talkie",
+  "chat.p2p.talkie.listen": "Listen",
+  "chat.p2p.talkie.listening": "Listening",
+  "chat.p2p.talkie.hint":
+    "Hunt members only. Hold the button to talk (15 s max): your message leaves as soon as you release, over Bluetooth without internet, and plays right away for listening members (room open, screen on).",
+  "chat.p2p.talkie.hold": "Hold to talk",
+  "chat.p2p.talkie.talking": "Talking… release to send",
   "chat.p2p.presence.title": "On-site presence",
   "chat.p2p.presence.around": "Hunt members around you (you included): {n}",
   "chat.p2p.presence.app":

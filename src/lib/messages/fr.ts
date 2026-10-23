@@ -389,6 +389,19 @@ export const fr = {
     "Bluetooth actif : sans internet, les messages passent de téléphone en téléphone entre les apps Huntited Chat proches.",
   "chat.p2p.mesh.off":
     "Pour discuter sans internet, ouvre une fois Huntited Chat depuis son icône et accepte le Bluetooth.",
+  "chat.p2p.voice.record": "Enregistrer un message vocal",
+  "chat.p2p.voice.send": "Arrêter et envoyer",
+  "chat.p2p.voice.cancel": "Annuler",
+  "chat.p2p.voice.denied": "Micro refusé : autorise-le dans les réglages pour envoyer des vocaux.",
+  "chat.p2p.voice.label": "Message vocal de {s} s",
+  "chat.p2p.talkie.title": "Talkie-walkie",
+  "chat.p2p.talkie.label": "Talkie-walkie",
+  "chat.p2p.talkie.listen": "Écouter",
+  "chat.p2p.talkie.listening": "À l'écoute",
+  "chat.p2p.talkie.hint":
+    "Réservé aux membres de la chasse. Maintiens le bouton pour parler (15 s au plus) : ton message part dès que tu relâches, par Bluetooth sans internet, et se joue tout de suite chez les membres à l'écoute (salon ouvert, écran allumé).",
+  "chat.p2p.talkie.hold": "Maintenir pour parler",
+  "chat.p2p.talkie.talking": "Je parle… relâche pour envoyer",
   "chat.p2p.presence.title": "Présence sur place",
   "chat.p2p.presence.around": "Membres de la chasse autour de toi (toi compris) : {n}",
   "chat.p2p.presence.app":
