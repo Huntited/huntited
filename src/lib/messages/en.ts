@@ -377,6 +377,20 @@ export const en: Messages = {
     "Bluetooth on: without internet, messages hop from phone to phone between nearby Huntited Chat apps.",
   "chat.p2p.mesh.off":
     "To chat without internet, open Huntited Chat once from its icon and allow Bluetooth.",
+  "chat.p2p.ephemeral.label": "Disappearing messages:",
+  "chat.p2p.ephemeral.off": "until the room closes",
+  "chat.p2p.ephemeral.1h": "1 hour",
+  "chat.p2p.ephemeral.6h": "6 hours",
+  "chat.p2p.ephemeral.24h": "24 hours",
+  "chat.p2p.ephemeral.on": "Disappearing messages: each message vanishes {d} after sending.",
+  "chat.p2p.ephemeral.announce":
+    "⏳ Disappearing messages: each message vanishes {d} after sending.",
+  "chat.p2p.ephemeral.announceOff":
+    "⏳ Disappearing messages off: messages stay until the room closes.",
+  "chat.p2p.forget.button": "Forget this room on this device",
+  "chat.p2p.forget.confirm":
+    "Erase this room's key on this device? You won't be able to read or write here unless you reopen the room link.",
+  "chat.p2p.forget.done": "Room forgotten on this device: its key is erased.",
   "chat.p2p.voice.record": "Record a voice message",
   "chat.p2p.voice.send": "Stop and send",
   "chat.p2p.voice.cancel": "Cancel",

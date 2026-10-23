@@ -389,6 +389,20 @@ export const fr = {
     "Bluetooth actif : sans internet, les messages passent de téléphone en téléphone entre les apps Huntited Chat proches.",
   "chat.p2p.mesh.off":
     "Pour discuter sans internet, ouvre une fois Huntited Chat depuis son icône et accepte le Bluetooth.",
+  "chat.p2p.ephemeral.label": "Messages éphémères :",
+  "chat.p2p.ephemeral.off": "jusqu'à la fermeture du salon",
+  "chat.p2p.ephemeral.1h": "1 heure",
+  "chat.p2p.ephemeral.6h": "6 heures",
+  "chat.p2p.ephemeral.24h": "24 heures",
+  "chat.p2p.ephemeral.on": "Messages éphémères : chaque message disparaît {d} après l'envoi.",
+  "chat.p2p.ephemeral.announce":
+    "⏳ Messages éphémères : chaque message disparaît {d} après l'envoi.",
+  "chat.p2p.ephemeral.announceOff":
+    "⏳ Messages éphémères désactivés : les messages restent jusqu'à la fermeture du salon.",
+  "chat.p2p.forget.button": "Oublier ce salon sur cet appareil",
+  "chat.p2p.forget.confirm":
+    "Effacer la clé de ce salon sur cet appareil ? Tu ne pourras plus lire ni écrire ici, sauf en rouvrant le lien du salon.",
+  "chat.p2p.forget.done": "Salon oublié sur cet appareil : sa clé est effacée.",
   "chat.p2p.voice.record": "Enregistrer un message vocal",
   "chat.p2p.voice.send": "Arrêter et envoyer",
   "chat.p2p.voice.cancel": "Annuler",

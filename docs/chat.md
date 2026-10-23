@@ -71,3 +71,21 @@ format Nostr). Licence Android à vérifier (GPL-3.0 annoncée).
   le son arrive après la fin de la prise de parole.
 - Le micro n'est accordé qu'au site livré avec l'app (WebView), et seulement
   le micro.
+
+## Effacement
+
+- Fermeture : 24 h après la date limite, chaque message expire chez les
+  relais qui respectent NIP-40 (copies restantes : chiffrées).
+- Messages éphémères : le créateur choisit 1 h, 6 h ou 24 h (`room: { ttl }`
+  dans un message chiffré). Chaque message porte alors sa date de fin
+  (`exp`, et l'étiquette `expiration` pour les relais) et disparaît de
+  l'écran des membres à cette heure. La clé de présence et les réglages
+  restent jusqu'à la fermeture.
+- « Oublier ce salon sur cet appareil » : efface la clé et le pseudo de ce
+  salon, arrête le compteur de présence.
+- App Huntited Chat : « Effacer les salons » (accueil) et l'effacement
+  d'urgence de bitchat (3 appuis sur le logo du chat) effacent le stockage du
+  site (clés, pseudos), les chasses suivies et les messages reçus par
+  Bluetooth (`huntited/HuntitedWipe.kt`).
+- Limite : une capture d'écran par un membre reste possible ; un relais qui
+  ignore l'expiration garde une copie chiffrée.

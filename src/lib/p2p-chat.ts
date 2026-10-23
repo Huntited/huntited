@@ -156,6 +156,18 @@ export function setChatName(huntId: string, name: string): string {
 /** Marque fixe d'un membre (tirée de sa clé) : un pseudo ne peut pas en imiter un autre. */
 export const memberTag = (pub: string) => `#${pub.slice(0, 4).toUpperCase()}`;
 
+/** Oublie le salon d'une chasse sur cet appareil (clé et pseudo). */
+export function forgetChatKey(huntId: string): void {
+  try {
+    const { [huntId]: _k, ...keys } = readKeys();
+    localStorage.setItem(KEYS_STORAGE, JSON.stringify(keys));
+    const { [huntId]: _n, ...names } = readNames();
+    localStorage.setItem(NAMES_STORAGE, JSON.stringify(names));
+  } catch {
+    /* rien à faire */
+  }
+}
+
 /** Oublie les clés de chat de ce navigateur (page « Tes données »). */
 export function forgetChatKeys(): void {
   try {
@@ -280,7 +292,27 @@ export interface ChatMessage {
   readers?: string[];
   /** Message vocal (chiffré, comme le texte). */
   audio?: Audio;
+  /** Messages éphémères : le message disparaît à cette date (ms). */
+  exp?: number;
+  /** Réglage du salon, par le créateur : durée de vie des messages (ms, 0 = jusqu'à la fermeture). */
+  room?: RoomSettings;
 }
+
+export interface RoomSettings {
+  ttl: number;
+}
+
+/** Durées proposées pour les messages éphémères. */
+export const EPHEMERAL_TTLS = [0, 3_600_000, 6 * 3_600_000, 24 * 3_600_000];
+
+function cleanRoom(r: unknown): RoomSettings | undefined {
+  if (!r || typeof r !== "object") return undefined;
+  const { ttl } = r as { ttl?: unknown };
+  return typeof ttl === "number" && EPHEMERAL_TTLS.includes(ttl) ? { ttl } : undefined;
+}
+
+/** Message éphémère arrivé à expiration. */
+export const expired = (m: ChatMessage, now = Date.now()) => m.exp !== undefined && m.exp <= now;
 
 export interface Audio {
   /** Format (audio/webm;codecs=opus, audio/mp4…). */
@@ -367,20 +399,28 @@ export async function sealMessage(
     bitchat,
     presence,
     audio,
+    ttl = 0,
+    room,
   }: {
     now?: number;
     name?: string;
     bitchat?: string;
     presence?: Presence;
     audio?: Audio;
+    /** Messages éphémères : durée de vie de ce message (ms, 0 = jusqu'à la fermeture). */
+    ttl?: number;
+    room?: RoomSettings;
   } = {},
 ): Promise<NostrEvent> {
   const clean = text.trim().slice(0, MAX_TEXT);
   const shared = cleanPresence(presence);
   const voice = cleanAudio(audio);
+  const settings = cleanRoom(room);
   if (audio && !voice) throw new Error("invalid_audio");
   // Un message peut ne porter que la clé de présence (il n'est pas affiché) ou un vocal.
-  if (!clean && !shared && !voice) throw new Error("empty_message");
+  if (!clean && !shared && !voice && !settings) throw new Error("empty_message");
+  const closes = deadline + CHAT_TTL_AFTER_DEADLINE_MS;
+  const exp = ttl > 0 ? Math.min(now + ttl, closes) : undefined;
   const pubkey = chatPublicKey(priv);
   const contentKey = crypto.getRandomValues(new Uint8Array(32));
   const pseudo = cleanName(name);
@@ -395,6 +435,8 @@ export async function sealMessage(
         ...(mesh ? { bitchat: mesh } : {}),
         ...(shared ? { presence: shared } : {}),
         ...(voice ? { audio: voice } : {}),
+        ...(settings ? { room: settings } : {}),
+        ...(exp !== undefined ? { exp } : {}),
       }),
     ),
   );
@@ -414,8 +456,9 @@ export async function sealMessage(
     kind: CHAT_KIND,
     tags: [
       ["h", chatTopic(huntId)],
-      // Les relais qui le respectent effacent le message à la fermeture du chat (NIP-40).
-      ["expiration", String(Math.floor((deadline + CHAT_TTL_AFTER_DEADLINE_MS) / 1000))],
+      // Les relais qui le respectent effacent le message à la fermeture du chat,
+      // ou plus tôt pour un message éphémère (NIP-40).
+      ["expiration", String(Math.floor((exp ?? closes) / 1000))],
     ],
     content: JSON.stringify({ v: 1, body: b64(body), keys }),
   };
@@ -444,7 +487,7 @@ export async function openMessage(
     const wrapped = keys[slot(chatPublicKey(priv))];
     if (v !== 1 || !wrapped) return null;
     const contentKey = await aesDecrypt(pairKey(priv, e.pubkey, huntId), unb64(wrapped));
-    const { text, at, name, bitchat, presence, audio } = JSON.parse(
+    const { text, at, name, bitchat, presence, audio, room, exp } = JSON.parse(
       new TextDecoder().decode(await aesDecrypt(contentKey, unb64(body))),
     ) as {
       text: unknown;
@@ -453,13 +496,18 @@ export async function openMessage(
       bitchat: unknown;
       presence: unknown;
       audio: unknown;
+      room: unknown;
+      exp: unknown;
     };
     if (typeof text !== "string" || typeof at !== "number") return null;
     const pseudo = cleanName(name);
     const mesh = cleanName(bitchat);
     const shared = cleanPresence(presence);
     const voice = cleanAudio(audio);
+    const settings = cleanRoom(room);
     return {
+      ...(typeof exp === "number" && Number.isFinite(exp) ? { exp } : {}),
+      ...(settings ? { room: settings } : {}),
       id: e.id,
       author: e.pubkey,
       text: text.slice(0, MAX_TEXT),

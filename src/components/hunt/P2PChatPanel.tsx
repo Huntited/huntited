@@ -1,7 +1,18 @@
 // Chat chiffré d'une chasse sur la chaîne, sans serveur Huntited
 // (src/lib/p2p-chat.ts, docs/chat.md). Membres = clés de chat inscrites sur
 // la chaîne ; messages chiffrés, transmis par des relais Nostr publics.
-import { Bell, BellOff, Lock, Mic, Radar, Radio, SendHorizontal, Square, X } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  Lock,
+  Mic,
+  Radar,
+  Radio,
+  SendHorizontal,
+  Square,
+  Timer,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -23,9 +34,12 @@ import { getChainChat } from "@/lib/onchain/browser-index";
 import {
   CHAT_KIND,
   CHAT_TTL_AFTER_DEADLINE_MS,
+  EPHEMERAL_TTLS,
   MAX_AUDIO_MS,
   chatPublicKey,
   chatTopic,
+  expired,
+  forgetChatKey,
   getChatKey,
   getChatName,
   memberTag,
@@ -36,6 +50,7 @@ import {
   type ChatMessage,
   type NostrEvent,
   type Presence,
+  type RoomSettings,
 } from "@/lib/p2p-chat";
 import {
   audioSrc,
@@ -51,6 +66,7 @@ import {
   presenceState,
   presenceSupported,
   startPresence,
+  stopPresence,
 } from "@/lib/presence";
 
 const MAX_TEXT = 2000;
@@ -135,8 +151,21 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [huntId, ready?.priv, ready?.members.join()]);
 
-  // Messages affichés (ceux qui ne portent que la clé de présence sont cachés).
-  const visible = messages.filter((m) => m.text || m.audio);
+  // Messages éphémères : réglage du créateur (son dernier message qui en porte un).
+  const roomTtl =
+    messages.filter((m) => m.room && m.author === ready?.creator).at(-1)?.room?.ttl ?? 0;
+  // Horloge pour faire disparaître les messages éphémères à l'heure.
+  const [now, setNow] = useState(() => Date.now());
+  const hasExp = messages.some((m) => m.exp !== undefined);
+  useEffect(() => {
+    if (!hasExp) return;
+    const timer = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(timer);
+  }, [hasExp]);
+
+  // Messages affichés (ceux qui ne portent que la clé de présence sont cachés,
+  // les éphémères disparaissent à expiration).
+  const visible = messages.filter((m) => (m.text || m.audio) && !expired(m, now));
 
   // Défile vers le bas à l'arrivée d'un message (si on était déjà en bas,
   // ou si c'est le sien).
@@ -200,11 +229,13 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
 
   async function post(
     text: string,
-    extra: { bitchat?: string; presence?: Presence; audio?: Audio } = {},
+    extra: { bitchat?: string; presence?: Presence; audio?: Audio; room?: RoomSettings } = {},
   ) {
-    if (!ready || (!text.trim() && !extra.presence && !extra.audio)) return false;
+    if (!ready || (!text.trim() && !extra.presence && !extra.audio && !extra.room)) return false;
     const e = await sealMessage(huntId, ready.priv, ready.members, text, ready.deadline, {
       name: myName,
+      // Clé de présence et réglages : gardés jusqu'à la fermeture du salon.
+      ttl: extra.presence || extra.room ? 0 : roomTtl,
       ...extra,
     });
     const mine = await openMessage(huntId, ready.priv, ready.members, e);
@@ -453,6 +484,18 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
               {t(meshAvailable() ? "chat.p2p.mesh.on" : "chat.p2p.mesh.off")}
             </p>
           )}
+          <EphemeralSetting
+            ttl={roomTtl}
+            isCreator={me !== null && me === ready.creator}
+            onChange={(ttl) =>
+              post(
+                ttl
+                  ? t("chat.p2p.ephemeral.announce", { d: t(ttlKey(ttl)) })
+                  : t("chat.p2p.ephemeral.announceOff"),
+                { room: { ttl } },
+              )
+            }
+          />
           <PresenceBox
             around={around}
             onsite={presence?.onsite}
@@ -473,9 +516,77 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
             }))}
             onShare={(nick) => post(t("chat.p2p.bitchat.shared", { nick }), { bitchat: nick })}
           />
+          <p className="text-xs">
+            <button
+              type="button"
+              className="text-muted-foreground underline underline-offset-2"
+              onClick={() => {
+                if (!window.confirm(t("chat.p2p.forget.confirm"))) return;
+                forgetChatKey(huntId);
+                stopPresence(huntId);
+                setMessages([]);
+                setPhase({ kind: "info", key: "chat.p2p.forget.done" });
+              }}
+            >
+              {t("chat.p2p.forget.button")}
+            </button>
+          </p>
         </>
       )}
     </section>
+  );
+}
+
+const ttlKey = (ttl: number): MessageKey =>
+  ttl >= 24 * 3_600_000
+    ? "chat.p2p.ephemeral.24h"
+    : ttl >= 6 * 3_600_000
+      ? "chat.p2p.ephemeral.6h"
+      : ttl > 0
+        ? "chat.p2p.ephemeral.1h"
+        : "chat.p2p.ephemeral.off";
+
+/**
+ * Messages éphémères : le créateur choisit combien de temps chaque message
+ * reste (1 h, 6 h, 24 h) ; sinon, jusqu'à la fermeture du salon.
+ */
+function EphemeralSetting({
+  ttl,
+  isCreator,
+  onChange,
+}: {
+  ttl: number;
+  isCreator: boolean;
+  onChange: (ttl: number) => Promise<boolean>;
+}) {
+  const { t } = useI18n();
+  if (!isCreator) {
+    return ttl > 0 ? (
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Timer className="size-3.5 shrink-0" aria-hidden />
+        {t("chat.p2p.ephemeral.on", { d: t(ttlKey(ttl)) })}
+      </p>
+    ) : null;
+  }
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs">
+      <Timer className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+      <label htmlFor="ephemeral" className="text-muted-foreground">
+        {t("chat.p2p.ephemeral.label")}
+      </label>
+      <select
+        id="ephemeral"
+        value={ttl}
+        onChange={(ev) => void onChange(Number(ev.target.value))}
+        className="h-8 rounded-md border bg-background px-2"
+      >
+        {EPHEMERAL_TTLS.map((d) => (
+          <option key={d} value={d}>
+            {t(ttlKey(d))}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
 

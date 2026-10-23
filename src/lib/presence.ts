@@ -67,6 +67,7 @@ interface PresenceApp {
     until: number,
   ) => boolean;
   presenceCount?: (hunt: string) => number;
+  presenceStop?: (hunt: string) => void;
 }
 
 function app(): PresenceApp | null {
@@ -99,6 +100,15 @@ export function startPresence(
     );
   } catch {
     return false;
+  }
+}
+
+/** Arrête le signal et le comptage pour cette chasse (salon oublié). */
+export function stopPresence(hunt: string): void {
+  try {
+    app()?.presenceStop?.(hunt);
+  } catch {
+    /* app plus ancienne */
   }
 }
 
