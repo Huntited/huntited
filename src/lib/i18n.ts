@@ -19,6 +19,14 @@ let current: Locale | null = null;
 const listeners = new Set<(l: Locale) => void>();
 
 function detect(): Locale {
+  // Dans l'app Huntited Chat : la langue choisie dans l'app, pour tout afficher pareil.
+  try {
+    const app = (window as unknown as { HuntitedApp?: { language?: () => string } }).HuntitedApp;
+    const inApp = app?.language?.();
+    if (inApp === "fr" || inApp === "en") return inApp;
+  } catch {
+    /* app plus ancienne */
+  }
   try {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved === "fr" || saved === "en") return saved;
