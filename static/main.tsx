@@ -2,7 +2,7 @@
 // mais rendue entièrement dans le navigateur (aucun serveur), avec une
 // navigation par « # » (/#/hunt/…) qui fonctionne sur n'importe quelle
 // passerelle IPFS, sans règle de réécriture.
-import "./theme";
+import { applyInitialTheme } from "./theme";
 import { QueryClient } from "@tanstack/react-query";
 import {
   createHashHistory,
@@ -15,6 +15,8 @@ import { createRoot } from "react-dom/client";
 
 import { routeTree } from "@/routeTree.gen";
 import { Route as RootRoute } from "@/routes/__root";
+
+applyInitialTheme();
 
 // Pas de document HTML à produire (il est dans index.html) : on garde
 // seulement les balises de tête (titre, description…), que React place
