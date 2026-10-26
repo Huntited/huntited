@@ -1,6 +1,7 @@
 // Conseils « compte dédié » (voir docs/registre-kaspa.md) :
 // - fenêtre affichée avant la première connexion de Kastle ;
 // - vérification, après connexion, que l'adresse n'a pas servi ailleurs.
+import { hasBuiltinWallet } from "./builtin-wallet";
 import { apiFetch, hasBackend } from "./api-client";
 import { getDataMode } from "./hunt-repository";
 import { getWalletMode } from "./wallet";
@@ -47,6 +48,8 @@ function write(key: string, value: string) {
 
 /** Avant la première connexion de Kastle : montrer les conseils. */
 export function needsGuide(): boolean {
+  // Wallet intégré, ou pas d'extension : pas de conseils Kastle.
+  if (hasBuiltinWallet() || typeof window === "undefined" || !("kastle" in window)) return false;
   return getWalletMode() === "kastle" && read(SEEN_KEY) === null;
 }
 

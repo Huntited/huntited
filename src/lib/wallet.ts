@@ -1,11 +1,13 @@
 // Wallet Kaspa, choisi selon VITE_WALLET_MODE :
 //   "mock"   → adresse factice générée localement (par défaut, tests)
-//   "kastle" → extension Kastle (window.kastle), testnet uniquement
+//   "kastle" → wallet intégré (src/lib/builtin-wallet.ts) s'il existe, sinon
+//              l'extension Kastle (window.kastle) ; testnet uniquement
 // L'interface exportée est identique dans les deux modes.
 // Connexion et signature de message ; en mode « chain », envoi de messages au
 // registre (0,2 KAS de test, réseau de test uniquement, avec accord dans
 // Kastle). Confidentialité : aucun log ; Huntited n'affiche jamais l'adresse.
 
+import { builtinAddress, builtinSend, hasBuiltinWallet } from "./builtin-wallet";
 import { getLocale, translate, type MessageKey } from "./i18n";
 
 /** Message d'erreur dans la langue active. */
@@ -29,10 +31,23 @@ export function getWalletMode(): WalletMode {
 export interface WalletState {
   isConnected: boolean;
   address: string | null;
+  /** Wallet intégré (src/lib/builtin-wallet.ts) plutôt que l'extension Kastle. */
+  kind?: "builtin";
 }
 
 /** Erreur affichable telle quelle à l'utilisateur. */
 export class WalletError extends Error {}
+
+/** Ni wallet intégré ni extension : il faut d'abord créer un wallet (page /wallet). */
+export class NeedWalletError extends WalletError {}
+
+/** Utilise le wallet intégré de cet appareil. */
+export function connectBuiltin(): string {
+  const address = builtinAddress("kaspatest");
+  if (!address) throw new NeedWalletError(msg("wallet.err.needWallet"));
+  setState({ isConnected: true, address, kind: "builtin" });
+  return address;
+}
 
 /** Sous-ensemble de l'API window.kastle utilisé ici (docs/kastle-api.md). */
 interface KastleProvider {
@@ -110,17 +125,19 @@ function bindKastle() {
   if (!kastle) return;
   kastleBound = true;
 
+  // Les événements Kastle ne concernent pas le wallet intégré.
+  const usingKastle = () => load().isConnected && load().kind !== "builtin";
   kastle.on("kas:account_changed", (address) => {
     kastleEvents += 1;
-    if (!load().isConnected) return;
+    if (!usingKastle()) return;
     setState(address ? { isConnected: true, address } : DISCONNECTED);
   });
   kastle.on("kas:network_changed", (network) => {
     kastleEvents += 1;
-    if (network !== KASTLE_NETWORK && load().isConnected) setState(DISCONNECTED);
+    if (network !== KASTLE_NETWORK && usingKastle()) setState(DISCONNECTED);
   });
 
-  if (load().isConnected) {
+  if (usingKastle()) {
     void Promise.all([kastle.getNetwork(), kastle.getAccount()])
       .then(([network, account]) => {
         setState(
@@ -185,7 +202,13 @@ async function connectKastle(): Promise<string> {
 
 /** Connecte le wallet et renvoie son adresse. */
 export async function connectWallet(): Promise<string> {
-  if (getWalletMode() === "kastle") return connectKastle();
+  if (getWalletMode() === "kastle") {
+    // Wallet intégré s'il existe (marche partout), sinon l'extension Kastle,
+    // sinon il faut en créer un.
+    if (hasBuiltinWallet()) return connectBuiltin();
+    if (getKastle()) return connectKastle();
+    throw new NeedWalletError(msg("wallet.err.needWallet"));
+  }
   await delay(500);
   const address = `kaspa:mock${randomHex(20)}`;
   setState({ isConnected: true, address });
@@ -194,7 +217,7 @@ export async function connectWallet(): Promise<string> {
 
 /** Déconnecte le wallet. */
 export function disconnectWallet(): void {
-  if (getWalletMode() === "kastle")
+  if (getWalletMode() === "kastle" && load().kind !== "builtin")
     void getKastle()
       ?.disconnect()
       .catch(() => undefined);
@@ -237,6 +260,13 @@ export async function sendToRegistry(
   if (!load().isConnected) throw new WalletError(msg("wallet.err.notConnected"));
   if (getWalletMode() !== "kastle") throw new WalletError(msg("wallet.err.needKastle"));
   if (!registryAddress.startsWith("kaspatest:")) throw new WalletError(msg("wallet.err.network"));
+  if (load().kind === "builtin") {
+    try {
+      return await builtinSend(registryAddress, sompi, payloadHex);
+    } catch (e) {
+      throw new WalletError(builtinErrorMessage(e));
+    }
+  }
   const kastle = requireKastle();
   if ((await kastle.getNetwork()) !== KASTLE_NETWORK) {
     throw new WalletError(msg("wallet.err.network"));
@@ -275,9 +305,19 @@ export function sendErrorMessage(e: unknown): string {
   return `${msg("wallet.err.sendFailed")} ${raw.slice(0, 160)}`;
 }
 
+/** Raison lisible d'un échec du wallet intégré. */
+export function builtinErrorMessage(e: unknown): string {
+  const raw = e instanceof Error ? e.message : "";
+  if (/insufficient_funds/.test(raw)) return msg("wallet.err.noFunds");
+  if (/no_node|node_unreachable|node_timeout/.test(raw)) return msg("wallet.err.node");
+  if (/no_wallet/.test(raw)) return msg("wallet.err.needWallet");
+  return `${msg("wallet.err.sendFailed")} ${raw.slice(0, 160)}`;
+}
+
 /** Signe un message (Kastle : signature réelle ; mock : aléatoire, non vérifiable). */
 export async function signMessage(message: string): Promise<string> {
   if (!load().isConnected) throw new WalletError(msg("wallet.err.notConnected"));
+  if (load().kind === "builtin") throw new WalletError(msg("wallet.err.needKastle"));
   if (getWalletMode() === "kastle") return requireKastle().signMessage(message);
   await delay(300);
   return `mocksig_${randomHex(32)}`;

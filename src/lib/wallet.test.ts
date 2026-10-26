@@ -42,9 +42,9 @@ afterEach(() => {
 });
 
 describe("wallet en mode Kastle", () => {
-  it("sans extension : erreur explicite, pas de connexion", async () => {
+  it("ni extension ni wallet intégré : il faut en créer un, pas de connexion", async () => {
     const w = await loadWallet();
-    await expect(w.connectWallet()).rejects.toThrow("Extension Kastle introuvable");
+    await expect(w.connectWallet()).rejects.toBeInstanceOf(w.NeedWalletError);
     expect(w.getWalletState().isConnected).toBe(false);
   });
 

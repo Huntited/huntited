@@ -20,7 +20,10 @@ export type DataGroupId =
 
 /** Ordre d'affichage et clés de chaque groupe. */
 const GROUPS: { id: DataGroupId; keys: string[] }[] = [
-  { id: "wallet", keys: ["wallet", "mock-wallet", "wallet-guide", "address-checked"] },
+  {
+    id: "wallet",
+    keys: ["wallet", "builtin-wallet", "mock-wallet", "wallet-guide", "address-checked"],
+  },
   { id: "pass", keys: ["pass", "pass-invite-slots"] },
   { id: "group", keys: ["orgs", "groups", "my-places"] },
   { id: "chat", keys: ["chat-keys", "chat-names"] },
@@ -45,7 +48,7 @@ const GROUPS: { id: DataGroupId; keys: string[] }[] = [
 ];
 
 /** Groupes dont le contenu n'est pas affiché à l'écran (secret). */
-export const SECRET_GROUPS: DataGroupId[] = ["pass", "group", "chat"];
+export const SECRET_GROUPS: DataGroupId[] = ["wallet", "pass", "group", "chat"];
 
 export interface DataGroup {
   id: DataGroupId;

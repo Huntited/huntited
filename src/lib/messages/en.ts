@@ -18,6 +18,50 @@ export const en: Messages = {
   "wallet.connect": "Connect wallet",
   "wallet.connecting": "Connecting…",
   "wallet.disconnect": "Disconnect",
+  "wallet.err.needWallet": "Create your wallet first (“My wallet” page).",
+  "wallet.err.node": "Kaspa network unreachable for now. Try again in a moment.",
+  "wallet.page.title": "My wallet",
+  "wallet.page.lead":
+    "A Kaspa wallet kept on this device, no extension needed: it works on computers, phones and in the Huntited Chat app.",
+  "wallet.page.testnet":
+    "Test network: these KAS are free and worthless. Never send real KAS to this wallet.",
+  "wallet.page.create": "Create my wallet",
+  "wallet.page.createNote":
+    "You'll get 12 words to write down on paper: they recover this wallet, here or in Kastle and Kaspium.",
+  "wallet.page.haveOne": "I already have a recovery phrase",
+  "wallet.page.importLabel": "Your recovery phrase (12 or 24 words)",
+  "wallet.page.importBad": "This phrase isn't valid: check the words and their order.",
+  "wallet.page.import": "Restore my wallet",
+  "wallet.page.backupTitle": "Write down these 12 words",
+  "wallet.page.backupLead":
+    "On paper, in order, kept somewhere safe. It's the only way to recover this wallet if you change device or erase your data. Never share them: Huntited will never ask for them.",
+  "wallet.page.backupNoted": "I've written down my 12 words",
+  "wallet.page.backupDone": "Continue",
+  "wallet.page.balance": "Balance",
+  "wallet.page.refresh": "Refresh",
+  "wallet.page.inUse": "This wallet is used for your commitments on Huntited.",
+  "wallet.page.seeHunts": "See hunts",
+  "wallet.page.use": "Use this wallet on Huntited",
+  "wallet.page.receive": "Receive KAS",
+  "wallet.page.qr": "Wallet address QR code",
+  "wallet.page.copy": "Copy address",
+  "wallet.page.faucet": "Get free test KAS",
+  "wallet.page.faucetNote":
+    "The address is copied and the test network faucet opens: paste it, confirm, and the KAS arrive in seconds.",
+  "wallet.page.buyTitle": "Buy KAS with euros",
+  "wallet.page.buy": "Buy KAS with euros",
+  "wallet.page.buyLater":
+    "Available when Huntited moves to the main network. For now, test KAS are free.",
+  "wallet.page.buyNote":
+    "Purchases go through an authorised payment service, which asks for ID and charges fees. Huntited never touches your money and gives no investment advice.",
+  "wallet.page.safety": "Backup and security",
+  "wallet.page.safetyNote":
+    "The recovery phrase is kept on this device. Erasing the site's data (or “Erase rooms” in the app) also removes this wallet: keep your 12 words.",
+  "wallet.page.show": "Show my recovery phrase",
+  "wallet.page.showConfirm": "Make sure nobody is looking at your screen. Show the phrase?",
+  "wallet.page.remove": "Remove this wallet from this device",
+  "wallet.page.removeConfirm":
+    "Without your 12 words, this wallet and its KAS will be lost. Remove it from this device?",
   "footer.tagline": "Everyone or no one. No account, no e-mail.",
   "footer.testnet": "Test network · no real KAS",
   "dev.reset": "Reset demo data",
@@ -573,9 +617,9 @@ export const en: Messages = {
     "Your commitments could be linked to your other activity. An account reserved for Huntited avoids that.",
   "guide.used.action": "Advice",
   "chain.commitNote":
-    "Test network. Kastle will ask you to send 0.2 test KAS to the Huntited registry: that's what records your commitment on the blockchain, publicly (your address is visible there). The 5 KAS deposit is still simulated for now.",
+    "Test network. Your wallet sends 0.2 test KAS to the Huntited registry (with Kastle, after you approve): that's what records your commitment on the blockchain, publicly (your address is visible there). The 5 KAS deposit is still simulated for now.",
   "chain.createNote":
-    "Test network. Kastle will ask you to send 0.2 test KAS to the Huntited registry: that's what records the hunt on the blockchain, permanently and publicly (your address is visible there). The deposit is still simulated for now.",
+    "Test network. Your wallet sends 0.2 test KAS to the Huntited registry (with Kastle, after you approve): that's what records the hunt on the blockchain, permanently and publicly (your address is visible there). The deposit is still simulated for now.",
   "hunt.cta.pending": "Being recorded…",
   "hunt.outcomePending":
     "Deadline passed: checking the result. The last commitments can take a few minutes to show up.",

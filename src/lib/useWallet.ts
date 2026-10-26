@@ -1,3 +1,4 @@
+import { useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 
 import { getLocale, translate } from "./i18n";
@@ -8,6 +9,7 @@ import { guideBeforeConnect, needsGuide } from "./wallet-guide";
 import {
   connectWallet as connect,
   disconnectWallet as disconnect,
+  NeedWalletError,
   subscribeWallet,
   WalletError,
   type WalletState,
@@ -33,6 +35,7 @@ export function useWallet(): UseWalletResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const router = useRouter();
   useEffect(() => subscribeWallet(setState), []);
 
   const connectWallet = useCallback(async () => {
@@ -43,6 +46,11 @@ export function useWallet(): UseWalletResult {
     try {
       await connect();
     } catch (e) {
+      // Pas encore de wallet : page « Mon wallet » pour en créer un.
+      if (e instanceof NeedWalletError) {
+        void router.navigate({ to: "/wallet" });
+        return;
+      }
       // Message neutre : aucune adresse ni détail technique affiché.
       const message =
         e instanceof WalletError ? e.message : translate(getLocale(), "wallet.err.generic");
@@ -51,7 +59,7 @@ export function useWallet(): UseWalletResult {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [router]);
 
   return { ...state, isLoading, error, connectWallet, disconnectWallet: disconnect };
 }

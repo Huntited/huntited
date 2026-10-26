@@ -72,6 +72,12 @@ const connect = [
     "wss://relay.damus.io,wss://nos.lol,wss://relay.primal.net",
   ),
   origin(liveArchive),
+  // Wallet intégré : resolvers et nœuds Kaspa publics (src/lib/kaspa/node.ts).
+  "https://*.kaspa.stream",
+  "wss://*.kaspa.stream",
+  "wss://*.kaspa.red",
+  "wss://*.kaspa.green",
+  "wss://*.kaspa.blue",
 ].filter(Boolean);
 const csp = [
   "default-src 'self'",

@@ -16,6 +16,8 @@ beforeEach(() => {
 
 describe("conseils « compte dédié »", () => {
   it("s'affichent avant la première connexion de Kastle, puis plus jamais", async () => {
+    expect(needsGuide()).toBe(false); // pas d'extension : rien à conseiller
+    (window as unknown as { kastle?: object }).kastle = {};
     expect(needsGuide()).toBe(true);
     const cancelled = guideBeforeConnect();
     closeGuide(false);
@@ -26,6 +28,7 @@ describe("conseils « compte dédié »", () => {
     closeGuide(true);
     expect(await go).toBe(true);
     expect(needsGuide()).toBe(false);
+    delete (window as unknown as { kastle?: object }).kastle;
   });
 
   it("jamais avec le wallet factice", () => {
