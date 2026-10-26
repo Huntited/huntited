@@ -5,6 +5,13 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   builtinAddress,
   builtinPhrase,
+  builtinProtection,
+  isLocked,
+  lockBuiltin,
+  protectBuiltin,
+  setUnlockHandler,
+  unlockBuiltin,
+  unlockWaitSeconds,
   createBuiltinWallet,
   hasBuiltinWallet,
   importBuiltinWallet,
@@ -29,23 +36,106 @@ const PHRASE =
 const TESTNET = "kaspatest:qqd6e65yefepe9wk0m9vuxdufxd80sphy67gwwd0vdaumzdt4tc9ssxd5s7gn";
 const MAINNET = "kaspa:qqd6e65yefepe9wk0m9vuxdufxd80sphy67gwwd0vdaumzdt4tc9s3qt0lqeh";
 
-afterEach(() => removeBuiltinWallet());
+afterEach(() => {
+  removeBuiltinWallet();
+  setUnlockHandler(null);
+  delete (window as unknown as { HuntitedApp?: unknown }).HuntitedApp;
+});
+
+describe("protection du wallet", () => {
+  const protect = (code: string | null, bio = false, wipeAfter = 0) =>
+    protectBuiltin({ code, codeKind: "pin", bio, lockAfterMs: 0, wipeAfter });
+
+  it("code : la phrase est chiffrée, l'adresse reste lisible, le bon code déverrouille", async () => {
+    importBuiltinWallet(PHRASE);
+    await protect("123456");
+    expect(localStorage.getItem("huntited:builtin-wallet")).not.toContain("abandon");
+    expect(builtinProtection()).toMatchObject({ code: "pin", bio: false });
+    lockBuiltin();
+    expect(isLocked()).toBe(true);
+    expect(builtinAddress("kaspatest")).toBe(TESTNET);
+    await expect(builtinPhrase()).rejects.toThrow("locked"); // pas de fenêtre de déverrouillage
+    expect(await unlockBuiltin("000000")).toBe("bad");
+    expect(await unlockBuiltin("123456")).toBe("ok");
+    expect(await builtinPhrase()).toBe(PHRASE);
+    expect(isLocked()).toBe(true); // « à chaque opération » : reverrouillé après usage
+  }, 30_000);
+
+  it("demande le déverrouillage à l'écran quand il faut la clé", async () => {
+    importBuiltinWallet(PHRASE);
+    await protect("123456");
+    lockBuiltin();
+    setUnlockHandler(async () => (await unlockBuiltin("123456")) === "ok");
+    expect(await builtinPhrase()).toBe(PHRASE);
+  }, 30_000);
+
+  it("après 5 codes faux, il faut attendre ; option : effacement après 10", async () => {
+    importBuiltinWallet(PHRASE);
+    await protect("123456", false, 10);
+    lockBuiltin();
+    for (let i = 0; i < 5; i++) expect(await unlockBuiltin("999999")).toBe("bad");
+    expect(unlockWaitSeconds()).toBeGreaterThan(0);
+    expect(await unlockBuiltin("123456")).toBe("wait");
+    // On saute l'attente pour arriver aux 10 erreurs.
+    for (let i = 0; i < 5; i++) {
+      const s = JSON.parse(localStorage.getItem("huntited:builtin-wallet")!);
+      localStorage.setItem("huntited:builtin-wallet", JSON.stringify({ ...s, waitUntil: 0 }));
+      await unlockBuiltin("999999");
+    }
+    expect(hasBuiltinWallet()).toBe(false);
+  }, 120_000);
+
+  it("empreinte (app) : chiffrée par l'app, déverrouillée après confirmation", async () => {
+    // Fausse app : « chiffre » par un XOR, répond comme l'app (window.__huntitedBio).
+    const reply = (id: string, ok: boolean, r: string) =>
+      setTimeout(() =>
+        (
+          window as unknown as { __huntitedBio: (a: string, b: boolean, c: string) => void }
+        ).__huntitedBio(id, ok, r),
+      );
+    let refuse = false;
+    const xor = (d: string) =>
+      btoa(String.fromCharCode(...[...atob(d)].map((c) => c.charCodeAt(0) ^ 0x55)));
+    (window as unknown as { HuntitedApp: unknown }).HuntitedApp = {
+      bioAvailable: () => true,
+      bioEncrypt: (id: string, d: string) => reply(id, true, xor(d)),
+      bioDecrypt: (id: string, d: string) => reply(id, !refuse, refuse ? "cancelled" : xor(d)),
+    };
+    importBuiltinWallet(PHRASE);
+    await protect("123456", true);
+    expect(builtinProtection()).toMatchObject({ code: "pin", bio: true });
+    lockBuiltin();
+    refuse = true;
+    expect(await unlockBuiltin("123456")).toBe("cancelled");
+    refuse = false;
+    expect(await unlockBuiltin("123456")).toBe("ok");
+  }, 30_000);
+
+  it("retirer la protection remet la phrase en clair", async () => {
+    importBuiltinWallet(PHRASE);
+    await protect("123456");
+    await unlockBuiltin("123456");
+    await protect(null);
+    expect(isLocked()).toBe(false);
+    expect(builtinProtection()).toMatchObject({ code: null, bio: false });
+  }, 30_000);
+});
 
 describe("wallet intégré", () => {
-  it("retrouve le même compte que Kastle et Kaspium avec la même phrase", () => {
+  it("retrouve le même compte que Kastle et Kaspium avec la même phrase", async () => {
     expect(importBuiltinWallet(`  ${PHRASE.toUpperCase()} `)).toBe(true);
     expect(builtinAddress("kaspatest")).toBe(TESTNET);
     expect(builtinAddress("kaspa")).toBe(MAINNET);
-    expect(builtinPhrase()).toBe(PHRASE);
+    expect(await builtinPhrase()).toBe(PHRASE);
   });
 
-  it("crée une phrase de 12 mots, refuse une phrase fausse, se retire", () => {
+  it("crée une phrase de 12 mots, refuse une phrase fausse, se retire", async () => {
     expect(hasBuiltinWallet()).toBe(false);
     const phrase = createBuiltinWallet();
     expect(phrase.split(" ")).toHaveLength(12);
     expect(hasBuiltinWallet()).toBe(true);
     expect(importBuiltinWallet("abandon abandon abandon")).toBe(false);
-    expect(builtinPhrase()).toBe(phrase); // une phrase fausse ne remplace rien
+    expect(await builtinPhrase()).toBe(phrase); // une phrase fausse ne remplace rien
     removeBuiltinWallet();
     expect(hasBuiltinWallet()).toBe(false);
     expect(builtinAddress("kaspatest")).toBeNull();

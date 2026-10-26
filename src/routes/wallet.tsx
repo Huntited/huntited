@@ -1,23 +1,33 @@
 // « Mon wallet » : wallet Kaspa intégré (src/lib/builtin-wallet.ts, docs/wallet.md).
 // Créer ou retrouver un wallet, recevoir des KAS (adresse, QR code, KAS de test
-// gratuits, achat en euros), l'utiliser sur Huntited, sauvegarder sa phrase.
+// gratuits, achat en euros), l'utiliser sur Huntited, le protéger (code,
+// empreinte), sauvegarder sa phrase.
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Fingerprint, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { qrSvg } from "@/lib/app-link";
 import {
+  bioProtectionAvailable,
   builtinAddress,
   builtinBalance,
   builtinPhrase,
+  builtinProtection,
   createBuiltinWallet,
   hasBuiltinWallet,
   importBuiltinWallet,
+  isLocked,
+  lockBuiltin,
+  protectBuiltin,
   removeBuiltinWallet,
+  type CodeKind,
+  type Protection,
 } from "@/lib/builtin-wallet";
 import { REGISTRY_ADDRESS } from "@/lib/chain";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type MessageKey } from "@/lib/i18n";
 import { connectBuiltin, disconnectWallet, getWalletState } from "@/lib/wallet";
 
 export const Route = createFileRoute("/wallet")({
@@ -171,6 +181,235 @@ function Backup({ phrase, onDone }: { phrase: string; onDone: () => void }) {
   );
 }
 
+const LOCK_CHOICES: { ms: number; key: MessageKey }[] = [
+  { ms: 0, key: "wallet.lock.each" },
+  { ms: 5 * 60_000, key: "wallet.lock.5min" },
+  { ms: 30 * 60_000, key: "wallet.lock.30min" },
+  { ms: -1, key: "wallet.lock.page" },
+];
+
+/**
+ * Protection du wallet : code (chiffres ou mot de passe), empreinte ou visage
+ * (app), ou les deux ; quand reverrouiller ; effacement après trop d'erreurs.
+ */
+function ProtectionSection() {
+  const { t } = useI18n();
+  const [current, setCurrent] = useState<Protection | null>(null);
+  const [useCode, setUseCode] = useState(false);
+  const [kind, setKind] = useState<CodeKind>("pin");
+  const [code, setCode] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [bio, setBio] = useState(false);
+  const [lockAfter, setLockAfter] = useState(5 * 60_000);
+  const [wipe, setWipe] = useState(false);
+  const [message, setMessage] = useState<{ key: MessageKey; error: boolean } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [bioOk, setBioOk] = useState(false);
+
+  const load = () => {
+    const p = builtinProtection();
+    setCurrent(p);
+    setUseCode(p?.code != null);
+    setKind(p?.code ?? "pin");
+    setBio(p?.bio ?? false);
+    setLockAfter(p && (p.code || p.bio) ? p.lockAfterMs : 5 * 60_000);
+    setWipe((p?.wipeAfter ?? 0) > 0);
+  };
+  useEffect(() => {
+    load();
+    setBioOk(bioProtectionAvailable());
+  }, []);
+
+  const protectedNow = current != null && (current.code != null || current.bio);
+  const minLen = kind === "pin" ? 6 : 8;
+  const codeValid =
+    !useCode ||
+    (code.length >= minLen && code === confirm && (kind === "password" || /^\d+$/.test(code)));
+
+  async function save() {
+    setMessage(null);
+    if (!codeValid) return setMessage({ key: "wallet.lock.invalid", error: true });
+    setBusy(true);
+    try {
+      await protectBuiltin({
+        code: useCode ? code : null,
+        codeKind: kind,
+        bio,
+        lockAfterMs: lockAfter,
+        wipeAfter: wipe ? 10 : 0,
+      });
+      setCode("");
+      setConfirm("");
+      load();
+      setMessage({
+        key: useCode || bio ? "wallet.lock.saved" : "wallet.lock.removed",
+        error: false,
+      });
+    } catch {
+      setMessage({ key: "wallet.lock.failed", error: true });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2 className="flex items-center gap-1.5 font-semibold">
+          <ShieldCheck className="size-4" aria-hidden />
+          {t("wallet.lock.title")}
+        </h2>
+        {protectedNow && !isLocked() && (
+          <button
+            type="button"
+            className="text-xs underline"
+            onClick={() => {
+              lockBuiltin();
+              setMessage({ key: "wallet.lock.locked", error: false });
+            }}
+          >
+            {t("wallet.lock.lockNow")}
+          </button>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {t(
+          !protectedNow
+            ? "wallet.lock.none"
+            : current?.code && current.bio
+              ? "wallet.lock.isBoth"
+              : current?.bio
+                ? "wallet.lock.isBio"
+                : "wallet.lock.isCode",
+        )}
+      </p>
+
+      <form
+        className="space-y-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!busy) void save();
+        }}
+      >
+        <fieldset className="space-y-2">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={useCode}
+              onChange={(e) => setUseCode(e.target.checked)}
+            />
+            <span>{t("wallet.lock.useCode")}</span>
+          </label>
+          {useCode && (
+            <div className="space-y-2 pl-6">
+              <div className="flex flex-wrap gap-3 text-xs">
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="kind"
+                    checked={kind === "pin"}
+                    onChange={() => setKind("pin")}
+                  />
+                  {t("wallet.lock.kindPin")}
+                </label>
+                <label className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="kind"
+                    checked={kind === "password"}
+                    onChange={() => setKind("password")}
+                  />
+                  {t("wallet.lock.kindPassword")}
+                </label>
+              </div>
+              <Input
+                type="password"
+                inputMode={kind === "pin" ? "numeric" : "text"}
+                autoComplete="new-password"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder={t(kind === "pin" ? "wallet.lock.pin" : "wallet.lock.password")}
+                aria-label={t(kind === "pin" ? "wallet.lock.pin" : "wallet.lock.password")}
+              />
+              <Input
+                type="password"
+                inputMode={kind === "pin" ? "numeric" : "text"}
+                autoComplete="new-password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder={t("wallet.lock.confirm")}
+                aria-label={t("wallet.lock.confirm")}
+              />
+              <p className="text-xs text-muted-foreground">
+                {t(kind === "pin" ? "wallet.lock.pinHint" : "wallet.lock.passwordHint")}
+              </p>
+              <label className="flex items-start gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={wipe}
+                  onChange={(e) => setWipe(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>{t("wallet.lock.wipe")}</span>
+              </label>
+            </div>
+          )}
+          <label className={`flex items-center gap-2 ${bioOk ? "" : "opacity-60"}`}>
+            <input
+              type="checkbox"
+              checked={bio}
+              disabled={!bioOk}
+              onChange={(e) => setBio(e.target.checked)}
+            />
+            <span className="flex items-center gap-1">
+              <Fingerprint className="size-4" aria-hidden />
+              {t("wallet.lock.useBio")}
+            </span>
+          </label>
+          {!bioOk && (
+            <p className="pl-6 text-xs text-muted-foreground">{t("wallet.lock.bioApp")}</p>
+          )}
+        </fieldset>
+
+        {(useCode || bio) && (
+          <div className="space-y-1">
+            <label htmlFor="lock-after" className="text-xs font-medium">
+              {t("wallet.lock.when")}
+            </label>
+            <select
+              id="lock-after"
+              value={lockAfter}
+              onChange={(e) => setLockAfter(Number(e.target.value))}
+              className="h-9 w-full rounded-md border bg-background px-2"
+            >
+              {LOCK_CHOICES.map((c) => (
+                <option key={c.ms} value={c.ms}>
+                  {t(c.key)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {useCode && kind === "pin" && (
+          <p className="text-xs text-muted-foreground">{t("wallet.lock.pinWarning")}</p>
+        )}
+        {message && (
+          <p
+            role={message.error ? "alert" : "status"}
+            className={`text-xs ${message.error ? "text-destructive" : "text-muted-foreground"}`}
+          >
+            {t(message.key)}
+          </p>
+        )}
+        <Button type="submit" size="sm" disabled={busy || !codeValid}>
+          {busy ? t("wallet.unlock.busy") : t("wallet.lock.save")}
+        </Button>
+      </form>
+    </section>
+  );
+}
+
 /** Le wallet : adresse, solde, recevoir, utiliser, sauvegarder, retirer. */
 function MyWallet({ onRemoved }: { onRemoved: () => void }) {
   const { t } = useI18n();
@@ -178,7 +417,7 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
   const [balance, setBalance] = useState<bigint | null>(null);
   const [balanceError, setBalanceError] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showPhrase, setShowPhrase] = useState(false);
+  const [shownPhrase, setShownPhrase] = useState<string | null>(null);
   const [inUse, setInUse] = useState(false);
 
   const refresh = () => {
@@ -283,16 +522,23 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
         </div>
       </section>
 
+      <ProtectionSection />
+
       <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
         <h2 className="font-semibold">{t("wallet.page.safety")}</h2>
         <p className="text-xs text-muted-foreground">{t("wallet.page.safetyNote")}</p>
-        {showPhrase ? (
-          <p className="rounded border bg-muted p-2 font-mono text-xs">{builtinPhrase()}</p>
+        {shownPhrase ? (
+          <p className="rounded border bg-muted p-2 font-mono text-xs">{shownPhrase}</p>
         ) : (
           <Button
             variant="outline"
             size="sm"
-            onClick={() => window.confirm(t("wallet.page.showConfirm")) && setShowPhrase(true)}
+            onClick={() => {
+              if (!window.confirm(t("wallet.page.showConfirm"))) return;
+              void builtinPhrase()
+                .then(setShownPhrase)
+                .catch(() => undefined);
+            }}
           >
             {t("wallet.page.show")}
           </Button>

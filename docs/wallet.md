@@ -16,6 +16,26 @@ ordinateur, sur téléphone et dans l'app Huntited Chat. Page « Mon wallet »
   groupe « wallet » de « Tes données », affiché comme secret). Effacer les
   données du site ou « Effacer les salons » dans l'app retire aussi le wallet.
 
+## Protection
+
+Au choix, sur la page « Mon wallet » (`protectBuiltin`) :
+
+- **Code** : chiffres (6 ou plus) ou mot de passe (8 ou plus). La phrase est
+  chiffrée en AES-GCM avec une clé tirée du code (PBKDF2-SHA256, 600 000
+  tours). Après 5 codes faux, attente de 30 s doublée à chaque erreur
+  (1 h au plus). Option : effacer le wallet après 10 codes faux.
+- **Empreinte ou visage** (app Huntited Chat, Android 11+,
+  `huntited/HuntitedBio.kt`) : l'app chiffre avec une clé AES gardée par
+  la puce sécurisée (Android Keystore), utilisable seulement juste après une
+  empreinte ou un visage reconnus. Ajouter une empreinte au téléphone
+  invalide la clé : il faut alors la phrase de 12 mots. L'effacement
+  d'urgence supprime la clé.
+- **Les deux** : chiffré par le code, puis par l'empreinte.
+- **Reverrouillage** : à chaque opération, après 5 ou 30 minutes, ou à la
+  fermeture de la page. L'adresse et le solde restent visibles verrouillé.
+- Une opération qui a besoin de la clé (engagement, phrase, changement de
+  protection) ouvre la fenêtre de déverrouillage (`WalletUnlock`).
+
 ## Envoi
 
 - `src/lib/kaspa/tx.ts` : choix des UTXO, monnaie, masse (calcul, transitoire,
@@ -48,5 +68,7 @@ l'extension Kastle, sinon la page « Mon wallet » pour en créer un.
 ## Limites
 
 - Réseau de test seulement : à faire auditer avant de vrais KAS.
-- La phrase n'est pas chiffrée par un code : quiconque a accès au navigateur
-  déverrouillé peut l'afficher. Piste : code ou empreinte (app).
+- Sans protection, la phrase est en clair dans le navigateur.
+- Un code à chiffres arrête quelqu'un qui prend le téléphone, pas une copie
+  des données du navigateur (essais hors ligne). Mot de passe ou empreinte :
+  plus solides.

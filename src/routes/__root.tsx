@@ -34,6 +34,7 @@ function SkipLink() {
 }
 import { Toaster } from "@/components/ui/sonner";
 import { WalletGuide } from "@/components/WalletGuide";
+import { WalletUnlock } from "@/components/WalletUnlock";
 
 function NotFoundComponent() {
   const { t } = useI18n();
@@ -151,6 +152,7 @@ function RootComponent() {
       <DevResetButton />
       <Toaster />
       <WalletGuide />
+      <WalletUnlock />
       {/* Chasses sur la chaîne : activité (cloche) et notifications, sans serveur. */}
       {getDataMode() === "chain" && <ActivityWatcher />}
     </QueryClientProvider>
