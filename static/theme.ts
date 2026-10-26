@@ -2,7 +2,10 @@
 // serveur). Fichier séparé plutôt que script dans index.html : certaines
 // passerelles IPFS interdisent les scripts écrits dans la page (CSP).
 try {
-  const t = localStorage.getItem("huntited:theme");
+  // Dans l'app Huntited Chat : le thème de l'app (clair, sombre, ou celui du téléphone).
+  const app = (window as unknown as { HuntitedApp?: { theme?: () => string } }).HuntitedApp;
+  const inApp = app?.theme?.();
+  const t = inApp === "dark" || inApp === "light" ? inApp : localStorage.getItem("huntited:theme");
   const dark = t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
   if (dark) document.documentElement.classList.add("dark");
 } catch {

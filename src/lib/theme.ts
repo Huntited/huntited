@@ -18,6 +18,14 @@ function current(): ThemeChoice {
 
 export function setTheme(theme: ThemeChoice): void {
   document.documentElement.classList.toggle("dark", theme === "dark");
+  // Dans l'app Huntited Chat : le choix vaut aussi pour l'app.
+  try {
+    const app = (window as unknown as { HuntitedApp?: { setTheme?: (t: string) => void } })
+      .HuntitedApp;
+    app?.setTheme?.(theme);
+  } catch {
+    /* app plus ancienne */
+  }
   try {
     window.localStorage.setItem(STORAGE_KEY, theme);
   } catch {
