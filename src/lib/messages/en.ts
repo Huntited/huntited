@@ -367,12 +367,13 @@ export const en: Messages = {
   "hunt.explain.link": "How does it work?",
   "home.browse": "Browse actions",
   "home.example.title": "How it works, with an example",
+  "home.example.step": "Step {n}",
   "home.example.1":
-    'Lea is fed up with litter on the beach. But picking it up alone is pointless. She creates an action: "We clean the beach on Saturday if there are at least 15 of us".',
+    'Lea creates the action: "We clean the beach on Saturday if there are at least 15 of us".',
   "home.example.2":
     "Everyone commits on their own, with a 5 KAS deposit. Nobody sees who committed, not even Lea.",
   "home.example.3":
-    "The 15th commitment triggers the action: everyone is notified and an encrypted chat opens to get organised. If it doesn't reach 15, nothing happens: everyone gets their deposit back.",
+    "At 15, it's on: everyone is notified and a room opens to get organised. Otherwise nothing happens and everyone gets their deposit back.",
   "home.example.cardLabel": "Example action",
   "home.example.cardTitle": "Beach clean-up on Saturday",
   "home.example.cardMeta": "Brighton Beach · before Saturday",

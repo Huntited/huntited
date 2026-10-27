@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Megaphone, PartyPopper, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -139,11 +140,21 @@ function Index() {
           {t("home.example.title")}
         </h2>
         <div className="mt-3 grid gap-6 sm:grid-cols-[1fr_15rem] sm:items-start">
-          <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
-            <p>{t("home.example.1")}</p>
-            <p>{t("home.example.2")}</p>
-            <p>{t("home.example.3")}</p>
-          </div>
+          <ol className="space-y-4">
+            {EXAMPLE_STEPS.map(({ icon: Icon, key }, i) => (
+              <li key={key} className="flex items-start gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                  <Icon className="size-5" aria-hidden />
+                </span>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {t("home.example.step", { n: i + 1 })}
+                  </p>
+                  <p className="text-sm leading-relaxed">{t(key)}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
           <ExampleCard />
         </div>
       </section>
@@ -272,6 +283,13 @@ const FAQ = [
   "home.faq.who",
   "home.faq.after",
   "home.faq.cost",
+] as const;
+
+/** Les trois étapes de l'exemple : créer, s'engager, c'est parti (ou rien). */
+const EXAMPLE_STEPS = [
+  { icon: Megaphone, key: "home.example.1" },
+  { icon: Users, key: "home.example.2" },
+  { icon: PartyPopper, key: "home.example.3" },
 ] as const;
 
 /** Chasse fictive de l'exemple, au format d'une vraie carte. */

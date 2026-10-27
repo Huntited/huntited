@@ -371,12 +371,12 @@ export const fr = {
   "hunt.explain.link": "Comment ça marche ?",
   "home.browse": "Voir les actions",
   "home.example.title": "Comment ça marche, avec un exemple",
-  "home.example.1":
-    "Léa en a marre des déchets sur la plage. Mais ramasser seule ne sert à rien. Elle crée une action : « On nettoie la plage samedi si on est au moins 15 ».",
+  "home.example.step": "Étape {n}",
+  "home.example.1": "Léa crée l'action : « On nettoie la plage samedi si on est au moins 15 ».",
   "home.example.2":
     "Chacun s'engage de son côté, avec un dépôt de 5 KAS. Personne ne voit qui s'est engagé, pas même Léa.",
   "home.example.3":
-    "Au 15e engagement, l'action se déclenche : tout le monde est prévenu et un chat chiffré s'ouvre pour s'organiser. Si on n'arrive pas à 15, rien ne se passe : chacun récupère son dépôt.",
+    "À 15, c'est parti : tout le monde est prévenu et un salon s'ouvre pour s'organiser. Sinon, rien ne se passe et chacun récupère son dépôt.",
   "home.example.cardLabel": "Exemple d'action",
   "home.example.cardTitle": "On nettoie la plage samedi",
   "home.example.cardMeta": "Plage du Prado · avant samedi",
