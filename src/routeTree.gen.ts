@@ -18,6 +18,7 @@ import { Route as LegalRouteImport } from './routes/legal'
 import { Route as MyDataRouteImport } from './routes/my-data'
 import { Route as MyHuntsRouteImport } from './routes/my-hunts'
 import { Route as PassRouteImport } from './routes/pass'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PublishRouteImport } from './routes/publish'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as HuntIdRouteImport } from './routes/hunt.$id'
@@ -70,6 +71,11 @@ const PassRoute = PassRouteImport.update({
   path: '/pass',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublishRoute = PublishRouteImport.update({
   id: '/publish',
   path: '/publish',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
   '/pass': typeof PassRoute
+  '/profile': typeof ProfileRoute
   '/publish': typeof PublishRoute
   '/wallet': typeof WalletRoute
   '/hunt/$id': typeof HuntIdRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByTo {
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
   '/pass': typeof PassRoute
+  '/profile': typeof ProfileRoute
   '/publish': typeof PublishRoute
   '/wallet': typeof WalletRoute
   '/hunt/$id': typeof HuntIdRoute
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
   '/pass': typeof PassRoute
+  '/profile': typeof ProfileRoute
   '/publish': typeof PublishRoute
   '/wallet': typeof WalletRoute
   '/hunt/$id': typeof HuntIdRoute
@@ -165,6 +174,7 @@ export interface FileRouteTypes {
     | '/my-data'
     | '/my-hunts'
     | '/pass'
+    | '/profile'
     | '/publish'
     | '/wallet'
     | '/hunt/$id'
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/my-data'
     | '/my-hunts'
     | '/pass'
+    | '/profile'
     | '/publish'
     | '/wallet'
     | '/hunt/$id'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/my-data'
     | '/my-hunts'
     | '/pass'
+    | '/profile'
     | '/publish'
     | '/wallet'
     | '/hunt/$id'
@@ -217,6 +229,7 @@ export interface RootRouteChildren {
   MyDataRoute: typeof MyDataRoute
   MyHuntsRoute: typeof MyHuntsRoute
   PassRoute: typeof PassRoute
+  ProfileRoute: typeof ProfileRoute
   PublishRoute: typeof PublishRoute
   WalletRoute: typeof WalletRoute
   HuntIdRoute: typeof HuntIdRoute
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/publish': {
       id: '/publish'
       path: '/publish'
@@ -345,6 +365,7 @@ const rootRouteChildren: RootRouteChildren = {
   MyDataRoute: MyDataRoute,
   MyHuntsRoute: MyHuntsRoute,
   PassRoute: PassRoute,
+  ProfileRoute: ProfileRoute,
   PublishRoute: PublishRoute,
   WalletRoute: WalletRoute,
   HuntIdRoute: HuntIdRoute,

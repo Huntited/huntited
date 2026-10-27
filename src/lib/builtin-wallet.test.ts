@@ -57,6 +57,7 @@ describe("protection du wallet", () => {
     await expect(builtinPhrase()).rejects.toThrow("locked"); // pas de fenêtre de déverrouillage
     expect(await unlockBuiltin("000000")).toBe("bad");
     expect(await unlockBuiltin("123456")).toBe("ok");
+    setUnlockHandler(async () => (await unlockBuiltin("123456")) === "ok");
     expect(await builtinPhrase()).toBe(PHRASE);
     expect(isLocked()).toBe(true); // « à chaque opération » : reverrouillé après usage
   }, 30_000);
@@ -65,8 +66,15 @@ describe("protection du wallet", () => {
     importBuiltinWallet(PHRASE);
     await protect("123456");
     lockBuiltin();
-    setUnlockHandler(async () => (await unlockBuiltin("123456")) === "ok");
+    let asked = 0;
+    setUnlockHandler(async () => {
+      asked++;
+      return (await unlockBuiltin("123456")) === "ok";
+    });
     expect(await builtinPhrase()).toBe(PHRASE);
+    // Même déverrouillé, la phrase redemande le code.
+    expect(await builtinPhrase()).toBe(PHRASE);
+    expect(asked).toBe(2);
   }, 30_000);
 
   it("après 5 codes faux, il faut attendre ; option : effacement après 10", async () => {

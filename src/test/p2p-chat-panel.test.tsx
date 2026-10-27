@@ -19,6 +19,7 @@ const relay = vi.hoisted(() => ({
 
 vi.mock("@/lib/onchain/browser-index", () => ({
   getChainChat: async () => ({ members: chain.members, deadline: chain.deadline }),
+  getChainMemberDeeds: async () => ({}),
 }));
 vi.mock("@/lib/nostr-relays", () => ({
   nostrRelays: () => ["wss://test"],

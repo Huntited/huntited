@@ -30,7 +30,9 @@ import {
 } from "@/lib/chat-notify";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { createRelayPool, nostrRelays, type RelayPool } from "@/lib/nostr-relays";
-import { getChainChat } from "@/lib/onchain/browser-index";
+import { getChainChat, getChainMemberDeeds } from "@/lib/onchain/browser-index";
+import { computeXp, rankOf, type ChainDeed, type ClassId, type Rank } from "@/lib/rpg";
+import { getMyClass } from "@/lib/rpg-profile";
 import {
   CHAT_KIND,
   CHAT_TTL_AFTER_DEADLINE_MS,
@@ -175,6 +177,19 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
   // Compteur de présence (src/lib/presence.ts) : clé commune du salon.
   const presence = ready ? presenceState(messages, ready.creator) : null;
   const [around, setAround] = useState<number | null>(null);
+  // Actes publics de chaque membre (niveaux RP), lus une fois par salon.
+  const [memberDeeds, setMemberDeeds] = useState<Record<string, ChainDeed[]>>({});
+  useEffect(() => {
+    if (!ready) return;
+    let cancelled = false;
+    void getChainMemberDeeds(huntId)
+      .then((d) => !cancelled && setMemberDeeds(d))
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [huntId, ready?.members.join()]);
   // Pas encore de clé, une fois l'historique chargé : ce membre en crée une.
   useEffect(() => {
     if (!ready || presence) return;
@@ -234,6 +249,7 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     if (!ready || (!text.trim() && !extra.presence && !extra.audio && !extra.room)) return false;
     const e = await sealMessage(huntId, ready.priv, ready.members, text, ready.deadline, {
       name: myName,
+      ...(getMyClass() ? { cls: getMyClass()! } : {}),
       // Clé de présence et réglages : gardés jusqu'à la fermeture du salon.
       ttl: extra.presence || extra.room ? 0 : roomTtl,
       ...extra,
@@ -262,6 +278,15 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
       void send();
     }
   }
+
+  // Côté RP (src/lib/rpg.ts) : niveau de chaque membre, recalculé ici à partir
+  // de ses actes publics sur la chaîne, et classe annoncée dans ses messages.
+  const classOf = new Map<string, ClassId>();
+  for (const m of messages) if (m.cls) classOf.set(m.author, m.cls);
+  const rankOfMember = (author: string): Rank | null => {
+    const deeds = memberDeeds[author];
+    return deeds ? rankOf(computeXp(deeds, classOf.get(author)).total) : null;
+  };
 
   // Dernier pseudo de chaque membre (un pseudo peut changer ; la marque #XXXX, non).
   const names = new Map<string, string>();
@@ -324,6 +349,16 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
                     <span className="mb-0.5 flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
                       <span className="font-medium text-foreground">{who(m.author)}</span>
                       <span className="font-mono">{memberTag(m.author)}</span>
+                      {rankOfMember(m.author) && (
+                        <span
+                          className="rounded bg-muted px-1 text-[10px]"
+                          title={t(`rpg.title.${rankOfMember(m.author)!.title}`)}
+                        >
+                          {t("rpg.levelShort", { n: rankOfMember(m.author)!.level })}
+                          {classOf.get(m.author) &&
+                            ` · ${t(`rpg.class.${classOf.get(m.author)!}`)}`}
+                        </span>
+                      )}
                       {m.author === ready.creator && names.has(m.author) && (
                         <span className="rounded border px-1 text-[10px] uppercase tracking-wide">
                           {t("chat.p2p.creator")}

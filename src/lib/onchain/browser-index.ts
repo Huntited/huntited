@@ -3,6 +3,7 @@
 // transmet que l'adresse publique du registre, et produit les mêmes vues que
 // l'index du serveur (backend/src/routes/chain.ts).
 import { REGISTRY_ADDRESS } from "../chain";
+import { chainDeeds, type ChainDeed } from "../rpg";
 import { minHuntThreshold } from "../validation";
 import { OFFICIAL_ARCHIVE_SIGNER, archiveSignedBy } from "./archive-signature";
 import { ChainIndexer, parseArchive, restSource } from "./indexer";
@@ -251,6 +252,30 @@ export async function getChainChat(
     deadline: h.deadline,
     title: h.title,
   };
+}
+
+/** Actes d'un wallet sur la chaîne (XP et niveau, src/lib/rpg.ts). */
+export async function getChainDeeds(address: string): Promise<ChainDeed[]> {
+  return chainDeeds((await synced()).allHunts(), address);
+}
+
+/**
+ * Actes de chaque membre du chat d'une chasse, par clé de chat : chacun peut
+ * ainsi recalculer le niveau des autres à partir des données publiques.
+ * Les places d'organisation (sans wallet) n'ont pas d'actes.
+ */
+export async function getChainMemberDeeds(id: string): Promise<Record<string, ChainDeed[]>> {
+  const ledger = await synced();
+  const h = ledger.hunt(id);
+  if (!h) return {};
+  const hunts = ledger.allHunts();
+  const out: Record<string, ChainDeed[]> = {};
+  const add = (chat: string | undefined, who: string) => {
+    if (chat && !(chat in out) && !who.startsWith("g:")) out[chat] = chainDeeds(hunts, who);
+  };
+  add(h.chat, h.creator);
+  for (const c of h.commits) add(c.chat, c.who);
+  return out;
 }
 
 /** Versions officielles du site ancrées sur la chaîne. */

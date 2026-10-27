@@ -11,11 +11,15 @@ import { useWallet } from "@/lib/useWallet";
 import { NotificationBell } from "@/components/NotificationBell";
 import { getDataMode } from "@/lib/hunt-repository";
 
-const NAV: { to: "/" | "/create" | "/my-hunts" | "/pass" | "/wallet"; label: MessageKey }[] = [
+const NAV: {
+  to: "/" | "/create" | "/my-hunts" | "/pass" | "/wallet" | "/profile";
+  label: MessageKey;
+}[] = [
   { to: "/", label: "nav.hunts" },
   { to: "/create", label: "nav.create" },
   { to: "/my-hunts", label: "nav.myHunts" },
   { to: "/pass", label: "nav.pass" },
+  { to: "/profile", label: "nav.progress" },
   { to: "/wallet", label: "nav.wallet" },
 ];
 

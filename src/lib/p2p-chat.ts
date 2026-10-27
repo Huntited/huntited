@@ -12,6 +12,7 @@
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { isClassId, type ClassId } from "./rpg";
 import { bytesToHex, hexToBytes, utf8ToBytes } from "@noble/hashes/utils.js";
 
 /** Type d'événement Nostr des messages de chat Huntited (« régulier » : gardé par les relais). */
@@ -296,6 +297,8 @@ export interface ChatMessage {
   exp?: number;
   /** Réglage du salon, par le créateur : durée de vie des messages (ms, 0 = jusqu'à la fermeture). */
   room?: RoomSettings;
+  /** Classe choisie par l'auteur (côté RP, src/lib/rpg.ts). */
+  cls?: ClassId;
 }
 
 export interface RoomSettings {
@@ -401,6 +404,7 @@ export async function sealMessage(
     audio,
     ttl = 0,
     room,
+    cls,
   }: {
     now?: number;
     name?: string;
@@ -410,6 +414,7 @@ export async function sealMessage(
     /** Messages éphémères : durée de vie de ce message (ms, 0 = jusqu'à la fermeture). */
     ttl?: number;
     room?: RoomSettings;
+    cls?: ClassId;
   } = {},
 ): Promise<NostrEvent> {
   const clean = text.trim().slice(0, MAX_TEXT);
@@ -437,6 +442,7 @@ export async function sealMessage(
         ...(voice ? { audio: voice } : {}),
         ...(settings ? { room: settings } : {}),
         ...(exp !== undefined ? { exp } : {}),
+        ...(isClassId(cls) ? { cls } : {}),
       }),
     ),
   );
@@ -487,7 +493,7 @@ export async function openMessage(
     const wrapped = keys[slot(chatPublicKey(priv))];
     if (v !== 1 || !wrapped) return null;
     const contentKey = await aesDecrypt(pairKey(priv, e.pubkey, huntId), unb64(wrapped));
-    const { text, at, name, bitchat, presence, audio, room, exp } = JSON.parse(
+    const { text, at, name, bitchat, presence, audio, room, exp, cls } = JSON.parse(
       new TextDecoder().decode(await aesDecrypt(contentKey, unb64(body))),
     ) as {
       text: unknown;
@@ -498,6 +504,7 @@ export async function openMessage(
       audio: unknown;
       room: unknown;
       exp: unknown;
+      cls: unknown;
     };
     if (typeof text !== "string" || typeof at !== "number") return null;
     const pseudo = cleanName(name);
@@ -516,6 +523,7 @@ export async function openMessage(
       ...(mesh ? { bitchat: mesh } : {}),
       ...(shared ? { presence: shared } : {}),
       ...(voice ? { audio: voice } : {}),
+      ...(isClassId(cls) ? { cls } : {}),
       readers: Object.keys(keys),
     };
   } catch {

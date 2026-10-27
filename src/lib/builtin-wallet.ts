@@ -302,9 +302,13 @@ export function importBuiltinWallet(phrase: string): boolean {
   return true;
 }
 
-/** Phrase de récupération (demande le déverrouillage si besoin). */
+/**
+ * Phrase de récupération. Wallet protégé : le code (ou l'empreinte) est
+ * redemandé à chaque fois, même déverrouillé.
+ */
 export async function builtinPhrase(): Promise<string | null> {
   if (!hasBuiltinWallet()) return null;
+  if (!read()?.phrase) session = null;
   const u = await requireUnlocked();
   afterUse();
   return u.phrase;

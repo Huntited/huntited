@@ -536,7 +536,11 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
             onClick={() => {
               if (!window.confirm(t("wallet.page.showConfirm"))) return;
               void builtinPhrase()
-                .then(setShownPhrase)
+                .then((p) => {
+                  setShownPhrase(p);
+                  // Masquée de nouveau après 30 s.
+                  setTimeout(() => setShownPhrase(null), 30_000);
+                })
                 .catch(() => undefined);
             }}
           >
