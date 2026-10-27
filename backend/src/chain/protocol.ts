@@ -45,7 +45,15 @@ export interface Genesis {
    * Vide : aucune version officielle.
    */
   releaseAddresses: string[];
+  /**
+   * Remise à zéro : les chasses créées avant cette date (ms) sont ignorées
+   * (elles restent sur la chaîne). Versions du site et pass ne changent pas.
+   */
+  huntsSince?: number;
 }
+
+/** Remise à zéro des chasses (27 octobre 2026, 20 h 10 UTC). */
+export const HUNTS_SINCE = Date.UTC(2026, 9, 27, 20, 10);
 
 export const DEFAULT_GENESIS: Omit<Genesis, "invitationKeys"> = {
   minThreshold: 7,
@@ -53,6 +61,8 @@ export const DEFAULT_GENESIS: Omit<Genesis, "invitationKeys"> = {
   invitesPerMonth: 3,
   passRequired: false,
   releaseAddresses: [],
+  // Chasses de test effacées du site le 27 octobre 2026 (docs/registre-kaspa.md).
+  huntsSince: HUNTS_SINCE,
 };
 
 export const INVITATION_TTL_MS = 7 * 24 * 3600 * 1000;

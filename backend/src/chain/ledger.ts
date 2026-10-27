@@ -344,6 +344,9 @@ export class Ledger {
 
   private async applyHunt(m: HuntMessage, e: ChainEvent): Promise<ApplyResult> {
     if (this.hunts.has(m.id)) return { ok: false, reason: "hunt_exists" };
+    if (this.genesis.huntsSince !== undefined && e.time < this.genesis.huntsSince) {
+      return { ok: false, reason: "before_reset" };
+    }
     if (m.threshold < this.genesis.minThreshold) return { ok: false, reason: "threshold_too_low" };
     if (m.deposit < this.genesis.minCautionKas) return { ok: false, reason: "caution_too_low" };
     if (m.deadline <= e.time || m.deadline > e.time + MAX_DEADLINE_MS) {

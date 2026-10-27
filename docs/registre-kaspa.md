@@ -26,7 +26,10 @@ Décisions (2026-10-07) :
    index indépendants obtiennent exactement le même état.
 4. Issue calculée, sans transaction de clôture : déclenchée avant la date
    limite = succès, sinon échec.
-5. On peut retirer son engagement tant que la chasse n'est pas déclenchée,
+5. Remise à zéro du 27 octobre 2026 (20 h 10 UTC) : les chasses de test créées
+   avant sont ignorées par le site (`HUNTS_SINCE` dans la genèse). Elles restent
+   sur la blockchain ; les versions ancrées du site ne changent pas.
+6. On peut retirer son engagement tant que la chasse n'est pas déclenchée,
    et un engagement peut dépendre d'une autre chasse (docs/chasses-enchainees.md).
 
 Code : `backend/src/chain/protocol.ts` (format), `backend/src/chain/ledger.ts`

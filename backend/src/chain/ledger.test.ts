@@ -260,6 +260,27 @@ describe("grand livre : retrait et chasses enchaînées", () => {
   });
 });
 
+describe("grand livre : remise à zéro", () => {
+  it("ignore les chasses créées avant la date, et leurs engagements", async () => {
+    const { ledger, publish } = setup({ huntsSince: T0 + DAY });
+    const old = huntContent();
+    const fresh = huntContent();
+    expect(await publish({ t: "hunt", ...old }, T0, "kaspatest:alice")).toEqual({
+      ok: false,
+      reason: "before_reset",
+    });
+    expect(await publish({ t: "commit", hunt: old.id }, T0 + 2 * DAY, "kaspatest:bob")).toEqual({
+      ok: false,
+      reason: "unknown_hunt",
+    });
+    expect(await publish({ t: "hunt", ...fresh }, T0 + 2 * DAY, "kaspatest:alice")).toEqual({
+      ok: true,
+      type: "hunt",
+    });
+    expect(ledger.allHunts().map((h) => h.id)).toEqual([fresh.id]);
+  });
+});
+
 describe("grand livre : versions du site", () => {
   it("seule l'adresse de publication ancre une version, une fois par numéro", async () => {
     const { ledger, publish } = setup();
