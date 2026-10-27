@@ -1,75 +1,76 @@
 # Huntited
 
-**Tout le monde ou personne.** Huntited permet de s'engager à agir _si
-assez d'autres le font aussi_ : nettoyer une plage, changer d'appli
-ensemble, lancer un projet, prendre la parole… Seul·e, c'est risqué ;
-ensemble, ça marche. Tant que le seuil n'est pas atteint, personne ne
-s'expose.
+_English · [Français](README.fr.md)_
 
-> _Everyone or no one._ Huntited lets people commit to act only if enough
-> others do too. Threshold coordination on Kaspa, inspired by
-> [Project Staghunt](https://hashd.ag/project-staghunt-six-pager.pdf).
+**Everyone or no one.** Huntited lets people commit to act _only if enough
+others do too_: clean up a beach, switch apps together, launch a project,
+speak up… Alone it's risky; together it works. Until the threshold is
+reached, nobody is exposed. Inspired by
+[Project Staghunt](https://hashd.ag/project-staghunt-six-pager.pdf)
+(assurance contracts for coordination).
 
-- Site : **[huntited.com](https://huntited.com)** (statique, sans serveur)
-- Appli Android **Huntited Chat** :
+- Website: **[huntited.com](https://huntited.com)** (static, no server)
+- Android app **Huntited Chat**:
   [codeberg.org/Huntited/huntited-chat](https://codeberg.org/Huntited/huntited-chat)
-  (fork GPL de bitchat : salons chiffrés, Bluetooth sans internet)
+  (GPL fork of bitchat: encrypted rooms, Bluetooth without internet)
 
-⚠️ **Prototype sur le réseau de test de Kaspa (testnet-10).** Les KAS de
-test n'ont aucune valeur ; dépôts et cautions sont simulés.
+⚠️ **Prototype on the Kaspa test network (testnet-10).** Test KAS have no
+value; deposits are simulated.
 
-## Comment ça marche
+## How it works
 
-1. Quelqu'un crée une **chasse** : une action, une date limite et un seuil
-   (« on y va si on est au moins 15 »).
-2. Chacun **s'engage** de son côté, avec son propre seuil s'il le souhaite
-   (« je viens si on est au moins 30 »). La progression n'est jamais
-   affichée avant le déclenchement.
-3. Dès qu'un groupe dont tous les seuils sont atteints existe, la chasse
-   **se déclenche pour tout le monde en même temps**. Un salon chiffré,
-   réservé aux membres, s'ouvre pour s'organiser.
-4. Sinon, rien ne se passe et personne ne s'est exposé.
+1. Someone creates a **hunt**: an action, a deadline and a threshold
+   ("we go if there are at least 15 of us").
+2. Everyone **commits** on their own, with a personal threshold if they
+   want ("I'm in if there are at least 30 of us"). Progress is never shown
+   before the hunt triggers.
+3. As soon as a group exists in which everyone's threshold is met, the
+   hunt **triggers for everyone at the same time**. An encrypted room,
+   open to members only, opens to get organised.
+4. Otherwise nothing happens, and nobody was exposed.
 
-On peut **retirer** son engagement jusqu'au déclenchement, et
-**enchaîner** des chasses (« je m'engage dans B seulement si A s'est
-déclenchée »).
+You can **withdraw** a commitment until the hunt triggers, and **chain**
+hunts ("I commit to B only if A has triggered").
 
 ## Architecture
 
-| Partie           | Technologie                                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Site             | React 19, TypeScript, TanStack Router, Tailwind ; version statique servie par Codeberg Pages et copiée sur IPFS          |
-| Registre         | Transactions Kaspa (testnet-10) vers une adresse commune, avec un message `HNT1…` ; état recalculé par chaque navigateur |
-| Wallet           | Wallet intégré (BIP39, signature Schnorr, envoi par wRPC) ; Kastle en option                                             |
-| Salons           | Messages chiffrés de bout en bout sur des relais Nostr ; relayés aussi par Bluetooth dans l'appli                        |
-| Versions du site | Chaque version publiée est ancrée sur Kaspa (empreinte des fichiers) et vérifiable depuis le site                        |
+| Part          | Technology                                                                                                        |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Website       | React 19, TypeScript, TanStack Router, Tailwind; static build served by Codeberg Pages and mirrored on IPFS       |
+| Registry      | Kaspa transactions (testnet-10) to a shared address carrying an `HNT1…` message; every browser rebuilds the state |
+| Wallet        | Built-in wallet (BIP39, Schnorr signatures, wRPC submission); Kastle optional                                     |
+| Rooms         | End-to-end encrypted messages over Nostr relays; also relayed over Bluetooth by the app                           |
+| Site releases | Each published version is anchored on Kaspa (hash of its files) and can be verified from the site                 |
 
-Il n'y a **aucun serveur Huntited** : chaque navigateur relit le registre
-sur l'API publique de Kaspa et recalcule l'état des chasses
-(`src/lib/onchain/`, testé dans `ledger.test.ts`).
+There is **no Huntited server**: each browser reads the registry from the
+public Kaspa API and recomputes the state of every hunt
+(`src/lib/onchain/`, tested in `ledger.test.ts`). Nobody holds the
+registry address key: it is derived from a public phrase, so anyone can
+check it (`addresses.test.ts`).
 
-## Développement
+## Development
 
 ```bash
 npm install
-npm run dev            # site en développement (chasses de démonstration)
+npm run dev            # dev server (demo hunts stored in the browser)
 npm test               # tests (vitest)
 npm run lint
-npm run build:static   # version statique dans dist-static/ (registre de test)
-npm run routes         # après avoir ajouté ou supprimé une page dans src/routes
+npm run build:static   # static build in dist-static/ (test registry)
+npm run routes         # after adding or removing a page in src/routes
 ```
 
-Le code est commenté en français. Documentation détaillée dans
-[`docs/`](docs) : registre ([registre-kaspa.md](docs/registre-kaspa.md)),
-seuils personnels ([seuil-personnel.md](docs/seuil-personnel.md)),
-retrait et chasses enchaînées
-([chasses-enchainees.md](docs/chasses-enchainees.md)), salons
+Code comments and docs are in French. Detailed documentation in
+[`docs/`](docs): registry ([registre-kaspa.md](docs/registre-kaspa.md)),
+personal thresholds ([seuil-personnel.md](docs/seuil-personnel.md)),
+withdrawal and chained hunts
+([chasses-enchainees.md](docs/chasses-enchainees.md)), rooms
 ([chat.md](docs/chat.md)), wallet ([wallet.md](docs/wallet.md)), missions
-([missions.md](docs/missions.md)), appli ([app.md](docs/app.md)).
+([missions.md](docs/missions.md)), app ([app.md](docs/app.md)).
 
-Règles du projet : [`AGENTS.md`](AGENTS.md).
+Project rules: [`AGENTS.md`](AGENTS.md). Contributions are welcome:
+open an issue or a pull request.
 
-## Licence
+## License
 
-[GNU AGPL-3.0](LICENSE) ou ultérieure. Toute version modifiée mise en ligne
-doit publier son code source.
+[GNU AGPL-3.0](LICENSE) or later. Any modified version running online
+must publish its source code.
