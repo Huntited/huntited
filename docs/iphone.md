@@ -2,7 +2,7 @@
 
 - **App web installable** : dans Safari, Partager → « Sur l'écran
   d'accueil ». Huntited s'ouvre alors en plein écran comme une app
-  (`public/manifest.webmanifest`, icônes, balises Apple dans
+  (`public/manifest.json`, icônes, balises Apple dans
   `static/index.html`). Un bandeau l'explique une fois sur iPhone
   (`IosInstallHint`).
 - Marche : chasses, wallet intégré (code), salons chiffrés, vocaux,
