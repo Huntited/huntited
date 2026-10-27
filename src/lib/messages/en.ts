@@ -738,6 +738,7 @@ export const en: Messages = {
   "data.server.more": "Details in the privacy policy",
   "footer.legalShort": "Terms and privacy",
   "footer.versions": "Versions",
+  "footer.source": "Source code",
   "footer.nav": "Useful links",
   "kaspa.title": "Getting started with Kaspa",
   "kaspa.lead": "What you need to use Huntited: a wallet, a few KAS, and a couple of good habits.",

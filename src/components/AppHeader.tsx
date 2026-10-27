@@ -218,6 +218,15 @@ export function AppFooter() {
           <Link to="/publish" className={link}>
             {t("footer.versions")}
           </Link>
+          {/* Code public (AGPL-3.0) : chacun peut vérifier ce que fait le site. */}
+          <a
+            href="https://github.com/Huntited/huntited"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={link}
+          >
+            {t("footer.source")}
+          </a>
         </nav>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-2">

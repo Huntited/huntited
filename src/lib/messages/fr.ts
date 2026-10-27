@@ -747,6 +747,7 @@ export const fr = {
   "data.server.more": "Le détail dans la politique de vie privée",
   "footer.legalShort": "Conditions et vie privée",
   "footer.versions": "Versions",
+  "footer.source": "Code source",
   "footer.nav": "Liens utiles",
   "kaspa.title": "Débuter avec Kaspa",
   "kaspa.lead":
