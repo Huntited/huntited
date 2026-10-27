@@ -369,14 +369,14 @@ export const en: Messages = {
   "home.browse": "Browse hunts",
   "home.example.title": "How it works, with an example",
   "home.example.1":
-    'Sam wants to defend the local park at the council meeting on 12 March. Alone, Sam won\'t go. So Sam creates a hunt: "We go if there are at least 20 of us".',
+    'The school parents would like to leave the WhatsApp group for Signal. But nobody leaves alone: they\'d miss every message. Lea creates a hunt: "We all move to Signal if there are at least 20 of us".',
   "home.example.2":
-    "Neighbours commit, each on their own, with a 5 KAS deposit. The site doesn't show who committed, not even to Sam.",
+    "Each parent commits on their own, with a 5 KAS deposit. Nobody sees who committed, not even Lea.",
   "home.example.3":
-    "The 20th commitment triggers the hunt: everyone is notified and an encrypted chat opens to get organised. If it doesn't reach 20, nothing happens: everyone gets their deposit back.",
+    "The 20th commitment triggers the hunt: everyone is notified and moves to Signal on the same day. If it doesn't reach 20, nothing happens: everyone gets their deposit back.",
   "home.example.cardLabel": "Example hunt",
-  "home.example.cardTitle": "Council meeting: save the park",
-  "home.example.cardMeta": "Town hall · before 12 March",
+  "home.example.cardTitle": "School parents: we move to Signal",
+  "home.example.cardMeta": "Online · before 12 March",
   "home.example.cardProgress": "Threshold: 20 people · progress hidden",
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Do I need a wallet?",

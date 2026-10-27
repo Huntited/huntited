@@ -373,14 +373,14 @@ export const fr = {
   "home.browse": "Voir les chasses",
   "home.example.title": "Comment ça marche, avec un exemple",
   "home.example.1":
-    "Sam veut défendre le parc du quartier au conseil municipal du 12 mars. Seul·e, Sam n'ira pas. Sam crée une chasse : « On y va si on est au moins 20 ».",
+    "Les parents de l'école voudraient quitter le groupe WhatsApp pour Signal. Mais personne ne part seul : on raterait tous les messages. Léa crée une chasse : « On passe tous sur Signal si on est au moins 20 ».",
   "home.example.2":
-    "Les voisins s'engagent, chacun de son côté, avec un dépôt de 5 KAS. Le site n'affiche pas qui s'est engagé, pas même à Sam.",
+    "Chaque parent s'engage de son côté, avec un dépôt de 5 KAS. Personne ne voit qui s'est engagé, pas même Léa.",
   "home.example.3":
-    "Au 20e engagement, la chasse se déclenche : tout le monde est prévenu et un chat chiffré s'ouvre pour s'organiser. Si on n'arrive pas à 20, rien ne se passe : chacun récupère son dépôt.",
+    "Au 20e engagement, la chasse se déclenche : tout le monde est prévenu et passe sur Signal le même jour. Si on n'arrive pas à 20, rien ne se passe : chacun récupère son dépôt.",
   "home.example.cardLabel": "Exemple de chasse",
-  "home.example.cardTitle": "Conseil municipal : sauvons le parc",
-  "home.example.cardMeta": "Mairie · avant le 12 mars",
+  "home.example.cardTitle": "Parents de l'école : on passe sur Signal",
+  "home.example.cardMeta": "En ligne · avant le 12 mars",
   "home.example.cardProgress": "Seuil : 20 personnes · progression masquée",
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Il faut un wallet ?",
