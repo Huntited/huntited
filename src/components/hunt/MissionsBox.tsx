@@ -1,17 +1,19 @@
 // Missions du salon (src/lib/missions.ts, docs/missions.md) : le créateur lance
 // une mission ; chacun la prouve par le code de présence (QR sur place, code
-// dit en ligne), par la vérification de trois autres membres, ou en signant
-// la lettre collective.
+// dit en ligne), par la vérification de trois autres membres, en signant
+// la lettre collective, ou par un retweet ou commentaire sur X.
 import { Check, Copy, Download, PenLine, Target, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { XPart, type XCrypt } from "@/components/hunt/XMissionPart";
 import { qrSvg } from "@/lib/app-link";
 import { useI18n } from "@/lib/i18n";
 import {
   CODE_WINDOW_MS,
+  HOLD_DAYS,
   MAX_LETTER,
   codeHash,
   codeProof,
@@ -20,10 +22,14 @@ import {
   normalizeCode,
   shortId,
   signedLetter,
+  xPostUrl,
   type Mission,
   type MissionKind,
   type MissionMsg,
+  type XAction,
 } from "@/lib/missions";
+
+const DAY = 86_400_000;
 
 const CODES = "huntited:mission-codes";
 
@@ -52,6 +58,9 @@ export function MissionsBox({
   isCreator,
   nameOf,
   prefillCode,
+  members,
+  closesAt,
+  crypt,
   onPost,
 }: {
   huntId: string;
@@ -60,6 +69,11 @@ export function MissionsBox({
   isCreator: boolean;
   nameOf: (author: string) => string;
   prefillCode?: string;
+  /** Membres du salon (tirage des vérificateurs). */
+  members: string[];
+  /** Fermeture du salon (ms) : le délai de maintien d'une mission X doit tenir avant. */
+  closesAt: number;
+  crypt: XCrypt;
   onPost: Post;
 }) {
   const { t } = useI18n();
@@ -86,25 +100,34 @@ export function MissionsBox({
           nameOf={nameOf}
           now={now}
           {...(prefillCode ? { prefillCode } : {})}
+          members={members}
+          crypt={crypt}
           onPost={onPost}
         />
       ))}
-      {isCreator && <NewMission onPost={onPost} />}
+      {isCreator && <NewMission onPost={onPost} closesAt={closesAt} />}
     </div>
   );
 }
 
-function NewMission({ onPost }: { onPost: Post }) {
+function NewMission({ onPost, closesAt }: { onPost: Post; closesAt: number }) {
   const { t } = useI18n();
   const [text, setText] = useState("");
   const [kind, setKind] = useState<MissionKind>("code");
+  const [target, setTarget] = useState("");
+  const [action, setAction] = useState<XAction>("retweet");
+  const [holdDays, setHoldDays] = useState<number>(HOLD_DAYS[0]);
   const [busy, setBusy] = useState(false);
+  // Délais possibles : l'action doit être contrôlable avant la fermeture du salon.
+  const holds = HOLD_DAYS.filter((d) => Date.now() + d * DAY + DAY <= closesAt);
+  const post = kind === "x" ? xPostUrl(target) : null;
+  const ready = !!text.trim() && (kind !== "x" || (!!post && holds.includes(holdDays as never)));
   return (
     <form
       className="space-y-2 border-t pt-3"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!text.trim() || busy) return;
+        if (!ready || busy) return;
         setBusy(true);
         const announce =
           kind === "sign"
@@ -115,6 +138,7 @@ function NewMission({ onPost }: { onPost: Post }) {
           id: newMissionId(),
           text: text.trim(),
           kind,
+          ...(kind === "x" ? { target: post!, action, hold: holdDays * DAY } : {}),
         })
           .then((ok) => ok && setText(""))
           .finally(() => setBusy(false));
@@ -132,7 +156,7 @@ function NewMission({ onPost }: { onPost: Post }) {
         placeholder={t(kind === "sign" ? "mission.letterPlaceholder" : "mission.placeholder")}
       />
       <div className="space-y-1 text-xs">
-        {(["code", "peer", "sign"] as const).map((k) => (
+        {(["code", "peer", "sign", "x"] as const).map((k) => (
           <label key={k} className="flex items-start gap-2">
             <input
               type="radio"
@@ -148,7 +172,62 @@ function NewMission({ onPost }: { onPost: Post }) {
           </label>
         ))}
       </div>
-      <Button type="submit" size="sm" disabled={busy || !text.trim()}>
+      {kind === "x" && (
+        <div className="space-y-2 rounded border p-2 text-xs">
+          <label htmlFor="mission-target" className="font-medium">
+            {t("mission.x.target")}
+          </label>
+          <Input
+            id="mission-target"
+            value={target}
+            onChange={(e) => setTarget(e.target.value)}
+            inputMode="url"
+            autoComplete="off"
+            placeholder="https://x.com/…/status/…"
+            className="h-9"
+          />
+          {target.trim() && !post && (
+            <p role="alert" className="text-destructive">
+              {t("mission.x.badTarget")}
+            </p>
+          )}
+          <fieldset className="flex flex-wrap gap-3">
+            <legend className="mb-1 font-medium">{t("mission.x.actionLabel")}</legend>
+            {(["retweet", "reply"] as const).map((a) => (
+              <label key={a} className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="mission-action"
+                  checked={action === a}
+                  onChange={() => setAction(a)}
+                />
+                {t(`mission.x.action.${a}`)}
+              </label>
+            ))}
+          </fieldset>
+          <label htmlFor="mission-hold" className="block font-medium">
+            {t("mission.x.holdLabel")}
+          </label>
+          {holds.length > 0 ? (
+            <select
+              id="mission-hold"
+              value={holdDays}
+              onChange={(e) => setHoldDays(Number(e.target.value))}
+              className="h-9 rounded border bg-background px-2"
+            >
+              {holds.map((d) => (
+                <option key={d} value={d}>
+                  {t("mission.x.days", { n: d })}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-destructive">{t("mission.x.tooLate")}</p>
+          )}
+          <p className="text-muted-foreground">{t("mission.x.holdHint")}</p>
+        </div>
+      )}
+      <Button type="submit" size="sm" disabled={busy || !ready}>
         {t("mission.launch")}
       </Button>
     </form>
@@ -168,6 +247,8 @@ function MissionCard({
   nameOf,
   now,
   prefillCode,
+  members,
+  crypt,
   onPost,
 }: {
   huntId: string;
@@ -177,10 +258,22 @@ function MissionCard({
   nameOf: (author: string) => string;
   now: number;
   prefillCode?: string;
+  members: string[];
+  crypt: XCrypt;
   onPost: Post;
 }) {
   const { t } = useI18n();
   const mine = m.proofs.find((p) => p.author === me);
+  // X : validée d'abord « provisoirement », puis confirmée ou retirée au contrôle surprise.
+  const mineKey = !mine
+    ? null
+    : mine.held === "removed"
+      ? "mission.x.mine.removed"
+      : mine.held === "confirmed"
+        ? "mission.x.mine.confirmed"
+        : m.kind === "x" && mine.status === "valid"
+          ? "mission.x.mine.provisional"
+          : (`mission.mine.${mine.status}` as const);
   const valid = m.proofs.filter((p) => p.status === "valid").length;
 
   return (
@@ -191,12 +284,12 @@ function MissionCard({
       </p>
       {mine && (
         <p className="flex items-center gap-1 text-xs">
-          {mine.status === "valid" ? (
+          {mine.status === "valid" && mine.held !== "removed" ? (
             <Check className="size-4 text-green-600" aria-hidden />
-          ) : mine.status === "invalid" ? (
+          ) : mine.status === "invalid" || mine.held === "removed" ? (
             <X className="size-4 text-destructive" aria-hidden />
           ) : null}
-          {t(`mission.mine.${mine.status}`)}
+          {t(mineKey!, { n: (m.hold ?? 0) / DAY })}
         </p>
       )}
       {m.badReveal && (
@@ -213,6 +306,17 @@ function MissionCard({
           now={now}
           hasProof={!!mine}
           {...(prefillCode ? { prefillCode } : {})}
+          onPost={onPost}
+        />
+      ) : m.kind === "x" ? (
+        <XPart
+          mission={m}
+          me={me}
+          members={members}
+          nameOf={nameOf}
+          now={now}
+          hasProof={!!mine}
+          crypt={crypt}
           onPost={onPost}
         />
       ) : m.kind === "sign" ? (

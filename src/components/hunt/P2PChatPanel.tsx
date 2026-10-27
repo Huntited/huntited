@@ -16,7 +16,7 @@ import {
   Timer,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +48,9 @@ import {
   getChatKey,
   getChatName,
   memberTag,
+  openFrom,
   openMessage,
+  sealFor,
   sealMessage,
   setChatName,
   type Audio,
@@ -185,6 +187,22 @@ export function P2PChatPanel({
   // ou si c'est le sien).
   const last = visible.at(-1);
   const me = ready ? chatPublicKey(ready.priv) : null;
+
+  // Missions X : lien chiffré d'un membre à un autre (ses vérificateurs seulement).
+  const priv = ready?.priv;
+  const xCrypt = useMemo(() => {
+    const context = `huntited-x-proof:${huntId}`;
+    return {
+      seal: async (to: string, url: string) => {
+        if (!priv) throw new Error("no_key");
+        return sealFor(priv, to, context, new TextEncoder().encode(url));
+      },
+      open: async (from: string, sealed: string) => {
+        if (!priv) throw new Error("no_key");
+        return new TextDecoder().decode(await openFrom(priv, from, context, sealed));
+      },
+    };
+  }, [priv, huntId]);
 
   // Compteur de présence (src/lib/presence.ts) : clé commune du salon.
   const presence = ready ? presenceState(messages, ready.creator) : null;
@@ -575,6 +593,9 @@ export function P2PChatPanel({
               isCreator={me === ready.creator}
               nameOf={(a) => `${who(a)} ${memberTag(a)}`}
               {...(prefillCode ? { prefillCode } : {})}
+              members={ready.members}
+              closesAt={ready.deadline + CHAT_TTL_AFTER_DEADLINE_MS}
+              crypt={xCrypt}
               onPost={(text, mission) => post(text, { mission })}
             />
           )}

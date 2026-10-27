@@ -39,13 +39,40 @@ ou télécharge la lettre suivie de la liste des signataires, puis l'envoie
 lui-même au destinataire. Le nom choisi n'est vu que des membres du salon et
 du destinataire de la lettre.
 
+## Action sur X (retweet ou commentaire)
+
+Le créateur donne le lien du post X, l'action demandée (retweet ou
+commentaire) et la durée pendant laquelle l'action doit rester en ligne (1, 3,
+7 ou 30 jours, avant la fermeture du salon). Le like n'est pas proposé : les
+likes sont privés sur X, on ne pourrait le contrôler que par capture d'écran.
+
+1. **Lien chiffré pour 3 membres.** Les vérificateurs d'un membre sont tirés au
+   sort à partir de la mission et du membre (`xCheckersOf`), donc connus avant
+   l'envoi. Le membre envoie le lien de son profil (retweet) ou de son
+   commentaire, chiffré pour chacun d'eux seulement (secret partagé entre deux
+   clés de chat). Les autres membres, créateur compris, ne voient pas le lien.
+2. **Premier contrôle.** Les 3 vérificateurs ouvrent le lien et votent ; la
+   majorité décide. La mission est alors « validée provisoirement ».
+3. **Contrôle surprise.** Chaque vérificateur tire, sur son appareil, un
+   moment secret pendant le délai (jamais dans les 12 premières heures,
+   `holdCheckAt`) ; à ce moment, il revérifie : « toujours là » ou
+   « retirée ». La majorité confirme l'action ou la retire (le ✓ disparaît).
+   Un vérificateur a 3 jours de marge après la fin du délai.
+
+Limites : les 3 vérificateurs voient le compte X du membre ; une action peut
+être retirée puis remise entre deux contrôles ; aucune sanction (le ✓ seul
+disparaît). Preuve sans révéler le compte : docs/zktls.md.
+
 ## Ce qui en sort
 
-- Dans le salon : ✓ à côté du pseudo des membres ayant validé une mission.
+- Dans le salon : ✓ à côté du pseudo des membres ayant validé une mission
+  (action X non retirée).
 - Pas d'XP pour l'instant (non vérifiable hors du salon) ; jamais d'argent
   retenu : la règle du protocole garde les sanctions hors de la blockchain.
 
 ## Pistes
 
-Preuve zkTLS d'un retweet, d'un commentaire ou d'un like sans révéler le
-compte (étude : docs/zktls.md), photo chiffrée comme preuve.
+Preuve zkTLS sans révéler le compte X (étude : docs/zktls.md ; il faudrait un
+serveur de vérification, ou le téléphone d'un vérificateur comme témoin),
+aide d'une petite IA sur le téléphone des vérificateurs, photo chiffrée comme
+preuve.

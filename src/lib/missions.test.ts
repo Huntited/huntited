@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  HOLD_DAYS,
   MAX_LETTER,
+  MIN_HOLD_CHECK_MS,
+  holdCheckAt,
+  xCheckersOf,
+  xPostUrl,
+  xProfileUrl,
   checkerRecord,
   checkersOf,
   cleanMission,
@@ -166,6 +172,79 @@ describe("missions", () => {
         id,
         signed: true,
       });
+    });
+  });
+  describe("action sur X", () => {
+    const id = newMissionId();
+    const DAY = 24 * 3_600_000;
+    const hold = 7 * DAY;
+    const create = msg(CREATOR, 0, {
+      t: "create",
+      id,
+      text: "Retweetez l'appel",
+      kind: "x",
+      target: "https://x.com/huntited/status/123",
+      action: "retweet",
+      hold,
+    });
+    const slot = (k: string) => k.slice(0, 16);
+
+    it("reconnaît les liens X et refuse les autres", () => {
+      expect(xPostUrl("https://twitter.com/abc/status/42?s=20")).toBe(
+        "https://x.com/abc/status/42",
+      );
+      expect(xPostUrl("https://evil.com/abc/status/42")).toBeNull();
+      expect(xProfileUrl("https://x.com/abc_1/")).toBe("https://x.com/abc_1");
+      expect(xProfileUrl("https://x.com/home")).toBeNull();
+      expect(HOLD_DAYS).toContain(7);
+      const bad = { t: "create", id, text: "x", kind: "x", target: "https://x.com/a/status/1" };
+      expect(cleanMission({ ...bad, action: "like", hold })).toBeUndefined();
+      expect(cleanMission({ ...bad, action: "reply", hold: 5 })).toBeUndefined();
+      expect(cleanMission({ ...bad, action: "reply", hold })).toBeDefined();
+    });
+
+    it("premier contrôle puis maintien : confirmé, ou retiré (le ✓ disparaît)", () => {
+      const [c1, c2, c3] = xCheckersOf(id, A, MEMBERS);
+      const links = Object.fromEntries([c1!, c2!, c3!].map((c) => [slot(c), "AAAA"]));
+      const proof = msg(A, 1000, { t: "proof", id, links });
+      const first = [
+        msg(c1!, 2000, { t: "vote", id, proof: proof.id, ok: true }),
+        msg(c2!, 3000, { t: "vote", id, proof: proof.id, ok: true }),
+      ];
+      let ms = missionsOf([create, proof, ...first], CREATOR, MEMBERS);
+      expect(ms[0]!.proofs[0]!.status).toBe("valid");
+      expect(ms[0]!.proofs[0]!.held).toBeUndefined();
+      expect(validatedMembers(ms)).toEqual(new Set([A]));
+
+      // Trop tôt : un contrôle de maintien dans les 12 premières heures ne compte pas.
+      const early = msg(c1!, 1000 + MIN_HOLD_CHECK_MS - 1, {
+        t: "vote",
+        id,
+        proof: proof.id,
+        ok: false,
+        hold: true,
+      });
+      const removed = [
+        msg(c1!, 3 * DAY, { t: "vote", id, proof: proof.id, ok: false, hold: true }),
+        msg(c3!, 4 * DAY, { t: "vote", id, proof: proof.id, ok: false, hold: true }),
+      ];
+      ms = missionsOf([create, proof, ...first, early], CREATOR, MEMBERS);
+      expect(ms[0]!.proofs[0]!.held).toBeUndefined();
+      ms = missionsOf([create, proof, ...first, ...removed], CREATOR, MEMBERS);
+      expect(ms[0]!.proofs[0]!.held).toBe("removed");
+      expect(validatedMembers(ms).size).toBe(0);
+
+      const kept = [
+        msg(c2!, 5 * DAY, { t: "vote", id, proof: proof.id, ok: true, hold: true }),
+        msg(c3!, 6 * DAY, { t: "vote", id, proof: proof.id, ok: true, hold: true }),
+      ];
+      ms = missionsOf([create, proof, ...first, ...kept], CREATOR, MEMBERS);
+      expect(ms[0]!.proofs[0]!.held).toBe("confirmed");
+    });
+
+    it("le moment du contrôle tombe dans le délai, jamais dans les 12 premières heures", () => {
+      expect(holdCheckAt(0, hold, 0)).toBe(MIN_HOLD_CHECK_MS);
+      expect(holdCheckAt(0, hold, 0.999999)).toBeLessThan(hold);
     });
   });
 });
