@@ -376,7 +376,7 @@ export const en: Messages = {
     "The 15th commitment triggers the hunt: everyone is notified and an encrypted chat opens to get organised. If it doesn't reach 15, nothing happens: everyone gets their deposit back.",
   "home.example.cardLabel": "Example hunt",
   "home.example.cardTitle": "Beach clean-up on Saturday",
-  "home.example.cardMeta": "Prado beach · before Saturday",
+  "home.example.cardMeta": "Brighton Beach · before Saturday",
   "home.example.cardProgress": "Threshold: 15 people · progress hidden",
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Do I need a wallet?",
