@@ -12,6 +12,7 @@
 import { schnorr, secp256k1 } from "@noble/curves/secp256k1.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { cleanMission, type MissionMsg } from "./missions";
 import { isClassId, type ClassId } from "./rpg";
 import { bytesToHex, hexToBytes, utf8ToBytes } from "@noble/hashes/utils.js";
 
@@ -299,6 +300,8 @@ export interface ChatMessage {
   room?: RoomSettings;
   /** Classe choisie par l'auteur (côté RP, src/lib/rpg.ts). */
   cls?: ClassId;
+  /** Mission : création, fenêtre, preuve, révélation ou vote (src/lib/missions.ts). */
+  mission?: MissionMsg;
 }
 
 export interface RoomSettings {
@@ -405,6 +408,7 @@ export async function sealMessage(
     ttl = 0,
     room,
     cls,
+    mission,
   }: {
     now?: number;
     name?: string;
@@ -415,15 +419,18 @@ export async function sealMessage(
     ttl?: number;
     room?: RoomSettings;
     cls?: ClassId;
+    mission?: MissionMsg;
   } = {},
 ): Promise<NostrEvent> {
   const clean = text.trim().slice(0, MAX_TEXT);
   const shared = cleanPresence(presence);
   const voice = cleanAudio(audio);
   const settings = cleanRoom(room);
+  const task = cleanMission(mission);
+  if (mission && !task) throw new Error("invalid_mission");
   if (audio && !voice) throw new Error("invalid_audio");
   // Un message peut ne porter que la clé de présence (il n'est pas affiché) ou un vocal.
-  if (!clean && !shared && !voice && !settings) throw new Error("empty_message");
+  if (!clean && !shared && !voice && !settings && !task) throw new Error("empty_message");
   const closes = deadline + CHAT_TTL_AFTER_DEADLINE_MS;
   const exp = ttl > 0 ? Math.min(now + ttl, closes) : undefined;
   const pubkey = chatPublicKey(priv);
@@ -443,6 +450,7 @@ export async function sealMessage(
         ...(settings ? { room: settings } : {}),
         ...(exp !== undefined ? { exp } : {}),
         ...(isClassId(cls) ? { cls } : {}),
+        ...(task ? { mission: task } : {}),
       }),
     ),
   );
@@ -493,7 +501,7 @@ export async function openMessage(
     const wrapped = keys[slot(chatPublicKey(priv))];
     if (v !== 1 || !wrapped) return null;
     const contentKey = await aesDecrypt(pairKey(priv, e.pubkey, huntId), unb64(wrapped));
-    const { text, at, name, bitchat, presence, audio, room, exp, cls } = JSON.parse(
+    const { text, at, name, bitchat, presence, audio, room, exp, cls, mission } = JSON.parse(
       new TextDecoder().decode(await aesDecrypt(contentKey, unb64(body))),
     ) as {
       text: unknown;
@@ -505,6 +513,7 @@ export async function openMessage(
       room: unknown;
       exp: unknown;
       cls: unknown;
+      mission: unknown;
     };
     if (typeof text !== "string" || typeof at !== "number") return null;
     const pseudo = cleanName(name);
@@ -524,6 +533,7 @@ export async function openMessage(
       ...(shared ? { presence: shared } : {}),
       ...(voice ? { audio: voice } : {}),
       ...(isClassId(cls) ? { cls } : {}),
+      ...(cleanMission(mission) ? { mission: cleanMission(mission)! } : {}),
       readers: Object.keys(keys),
     };
   } catch {

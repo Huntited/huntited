@@ -1,8 +1,11 @@
 // Chat chiffré d'une chasse sur la chaîne, sans serveur Huntited
 // (src/lib/p2p-chat.ts, docs/chat.md). Membres = clés de chat inscrites sur
 // la chaîne ; messages chiffrés, transmis par des relais Nostr publics.
+import { MissionsBox } from "@/components/hunt/MissionsBox";
+import { missionsOf, validatedMembers, type MissionMsg } from "@/lib/missions";
 import {
   Bell,
+  Check,
   BellOff,
   Lock,
   Mic,
@@ -89,7 +92,16 @@ type Phase =
 /** Message affiché : reçu, ou envoyé depuis ici (avec son état d'envoi). */
 type Shown = ChatMessage & { status?: "sending" | "failed"; event?: NostrEvent };
 
-export function P2PChatPanel({ huntId, title }: { huntId: string; title: string }) {
+export function P2PChatPanel({
+  huntId,
+  title,
+  prefillCode,
+}: {
+  huntId: string;
+  title: string;
+  /** Code de présence lu dans un QR (lien #/hunt/<id>?code=…). */
+  prefillCode?: string;
+}) {
   const { t, date, locale } = useI18n();
   const [phase, setPhase] = useState<Phase>({ kind: "loading" });
   const [messages, setMessages] = useState<Shown[]>([]);
@@ -248,14 +260,24 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
 
   async function post(
     text: string,
-    extra: { bitchat?: string; presence?: Presence; audio?: Audio; room?: RoomSettings } = {},
+    extra: {
+      bitchat?: string;
+      presence?: Presence;
+      audio?: Audio;
+      room?: RoomSettings;
+      mission?: MissionMsg;
+    } = {},
   ) {
-    if (!ready || (!text.trim() && !extra.presence && !extra.audio && !extra.room)) return false;
+    if (
+      !ready ||
+      (!text.trim() && !extra.presence && !extra.audio && !extra.room && !extra.mission)
+    )
+      return false;
     const e = await sealMessage(huntId, ready.priv, ready.members, text, ready.deadline, {
       name: myName,
       ...(getMyClass() ? { cls: getMyClass()! } : {}),
       // Clé de présence et réglages : gardés jusqu'à la fermeture du salon.
-      ttl: extra.presence || extra.room ? 0 : roomTtl,
+      ttl: extra.presence || extra.room || extra.mission ? 0 : roomTtl,
       ...extra,
     });
     const mine = await openMessage(huntId, ready.priv, ready.members, e);
@@ -291,6 +313,10 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     const deeds = memberDeeds[author];
     return deeds ? rankOf(computeXp(deeds, classOf.get(author)).total) : null;
   };
+
+  // Missions du salon (src/lib/missions.ts) et membres qui en ont validé une.
+  const missions = ready ? missionsOf(messages, ready.creator, ready.members) : [];
+  const validated = validatedMembers(missions);
 
   // Dernier pseudo de chaque membre (un pseudo peut changer ; la marque #XXXX, non).
   const names = new Map<string, string>();
@@ -353,6 +379,12 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
                     <span className="mb-0.5 flex items-center gap-1.5 px-1 text-xs text-muted-foreground">
                       <span className="font-medium text-foreground">{who(m.author)}</span>
                       <span className="font-mono">{memberTag(m.author)}</span>
+                      {validated.has(m.author) && (
+                        <Check
+                          className="size-3.5 text-green-600"
+                          aria-label={t("mission.validatedMember")}
+                        />
+                      )}
                       {rankOfMember(m.author) && (
                         <span
                           className="rounded bg-muted px-1 text-[10px]"
@@ -535,6 +567,17 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
               )
             }
           />
+          {me && (
+            <MissionsBox
+              huntId={huntId}
+              missions={missions}
+              me={me}
+              isCreator={me === ready.creator}
+              nameOf={(a) => `${who(a)} ${memberTag(a)}`}
+              {...(prefillCode ? { prefillCode } : {})}
+              onPost={(text, mission) => post(text, { mission })}
+            />
+          )}
           <PresenceBox
             around={around}
             onsite={presence?.onsite}

@@ -31,6 +31,9 @@ import { getUserHunts } from "@/lib/user-hunts";
 import { useWallet } from "@/lib/useWallet";
 
 export const Route = createFileRoute("/hunt/$id")({
+  // Code de présence d'une mission, lu dans un QR (src/lib/missions.ts).
+  validateSearch: (s: Record<string, unknown>): { code?: string } =>
+    typeof s["code"] === "string" && /^[A-Za-z0-9]{6}$/.test(s["code"]) ? { code: s["code"] } : {},
   // Aperçu riche du lien (rendu serveur) : informations publiques uniquement.
   loader: ({ params }) => fetchHuntPreview(params.id),
   head: ({ loaderData, params }) => ({
@@ -40,6 +43,7 @@ export const Route = createFileRoute("/hunt/$id")({
 });
 
 function HuntDetailPage() {
+  const search = Route.useSearch();
   const { id } = Route.useParams();
   // Ouvrir la chasse = voir ses nouveautés (cloche de l'en-tête).
   useEffect(() => markRead({ huntId: id }), [id]);
@@ -324,7 +328,11 @@ function HuntDetailPage() {
       <div className="mt-6">
         {canOpenChat(status, outcome) && getDataMode() === "chain" ? (
           // Chasse sur la chaîne : chat chiffré entre membres, sans serveur.
-          <P2PChatPanel huntId={hunt.id} title={hunt.title} />
+          <P2PChatPanel
+            huntId={hunt.id}
+            title={hunt.title}
+            {...(search.code ? { prefillCode: search.code } : {})}
+          />
         ) : canOpenChat(status, outcome) && !hasBackend() ? (
           // Version sans serveur : chat chiffré pair à pair à venir.
           <section className="rounded-lg border bg-card p-4 text-sm">
