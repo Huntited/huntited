@@ -10,6 +10,7 @@ import { useTheme } from "@/lib/theme";
 import { useWallet } from "@/lib/useWallet";
 import { NotificationBell } from "@/components/NotificationBell";
 import { getDataMode } from "@/lib/hunt-repository";
+import { getPassConfig } from "@/lib/pass";
 
 const NAV: {
   to: "/" | "/create" | "/my-hunts" | "/pass" | "/wallet" | "/profile";
@@ -42,6 +43,12 @@ export function AppHeader() {
   const { isConnected, address, isLoading, connectWallet, disconnectWallet } = useWallet();
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // « Mon pass » seulement quand les pass sont disponibles (en réserve pour l'instant).
+  const [passOn, setPassOn] = useState(false);
+  useEffect(() => {
+    void getPassConfig().then((c) => setPassOn(c.available));
+  }, []);
+  const nav = NAV.filter((item) => item.to !== "/pass" || passOn);
 
   // Le menu se referme à chaque changement de page, et avec Échap.
   useEffect(() => setMenuOpen(false), [pathname]);
@@ -100,7 +107,7 @@ export function AppHeader() {
       {/* Navigation : onglets sur grand écran… */}
       <nav aria-label={t("nav.menu")} className="mx-auto hidden max-w-3xl px-4 sm:block">
         <ul className="flex gap-1 pb-2 text-sm">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <li key={item.to}>
               <Link
                 to={item.to}
@@ -123,7 +130,7 @@ export function AppHeader() {
           className="border-t px-4 pb-4 pt-2 sm:hidden"
         >
           <ul className="space-y-1 text-base">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <li key={item.to}>
                 <Link
                   to={item.to}
