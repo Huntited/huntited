@@ -1,6 +1,7 @@
 {
   "name": "tanstack_start_ts",
   "version": "0.3.0",
+  "license": "AGPL-3.0-or-later",
   "private": true,
   "sideEffects": false,
   "type": "module",

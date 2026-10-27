@@ -48,3 +48,6 @@ playwright-report/
 
 # Version statique (IPFS), reconstruite par npm run build:static
 dist-static/
+
+# Réglages locaux de Claude Code (chemins de cette machine)
+.claude/
