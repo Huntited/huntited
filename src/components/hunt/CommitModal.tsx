@@ -94,7 +94,7 @@ export function CommitModal({
     >
       <DialogContent className="max-h-[85vh] overflow-y-auto rounded-2xl sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">{t("commit.title")}</DialogTitle>
+          <DialogTitle>{t("commit.title")}</DialogTitle>
           <DialogDescription>{hunt.title}</DialogDescription>
         </DialogHeader>
 
@@ -233,7 +233,7 @@ export function CommitModal({
             </Button>
           ) : (
             <Button
-              className="h-11 rounded-xl text-base"
+              className="rounded-xl"
               onClick={handleConfirm}
               disabled={!accepted || !canCommit || !personalValid}
             >

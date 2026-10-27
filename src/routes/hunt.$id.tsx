@@ -124,32 +124,28 @@ function HuntDetailPage() {
 
   // Bouton principal : un seul, selon la situation.
   const cta = pending ? (
-    <Button size="lg" className="h-12 w-full rounded-xl text-base" disabled>
+    <Button size="lg" className="h-11 w-full rounded-xl" disabled>
       {t("hunt.cta.pending")}
     </Button>
   ) : !commitsOpen ? (
-    <Button size="lg" className="h-12 w-full rounded-xl text-base" disabled>
+    <Button size="lg" className="h-11 w-full rounded-xl" disabled>
       {t("hunt.cta.closed")}
     </Button>
   ) : !wallet.isConnected ? (
     <Button
       size="lg"
-      className="h-12 w-full rounded-xl text-base"
+      className="h-11 w-full rounded-xl"
       onClick={() => wallet.connectWallet()}
       disabled={wallet.isLoading}
     >
       {wallet.isLoading ? t("wallet.connecting") : t("hunt.cta.commit")}
     </Button>
   ) : commitment.isCommitted ? (
-    <Button size="lg" variant="secondary" className="h-12 w-full rounded-xl text-base" disabled>
+    <Button size="lg" variant="secondary" className="h-11 w-full rounded-xl" disabled>
       <Check aria-hidden /> {t("hunt.cta.committed")}
     </Button>
   ) : (
-    <Button
-      size="lg"
-      className="h-12 w-full rounded-xl text-base"
-      onClick={() => setCommitOpen(true)}
-    >
+    <Button size="lg" className="h-11 w-full rounded-xl" onClick={() => setCommitOpen(true)}>
       {t("hunt.cta.commit")}
     </Button>
   );
@@ -169,15 +165,15 @@ function HuntDetailPage() {
           </span>
         )}
       </div>
-      <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight">{hunt.title}</h1>
-      <p className="mt-3 flex items-start gap-2 text-muted-foreground">
+      <h1 className="mt-3 text-2xl font-semibold leading-snug tracking-tight">{hunt.title}</h1>
+      <p className="mt-2 flex items-start gap-2 text-sm text-muted-foreground">
         <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>
           {placeLabel(hunt, t)}
           {hunt.country && ` · ${countryName(hunt.country, locale)}`}
         </span>
       </p>
-      <p className="mt-1 flex items-start gap-2 text-muted-foreground">
+      <p className="mt-1 flex items-start gap-2 text-sm text-muted-foreground">
         <CalendarClock className="mt-0.5 size-4 shrink-0" aria-hidden />
         <span>
           {t("hunt.before", {
@@ -213,8 +209,8 @@ function HuntDetailPage() {
       )}
 
       {/* Le chiffre qui compte, et le bouton */}
-      <section className="mt-6 rounded-2xl border bg-card p-5 text-center">
-        <p className="text-5xl font-bold tracking-tight text-primary">{hunt.threshold}</p>
+      <section className="mt-5 rounded-2xl border bg-card p-4 text-center">
+        <p className="text-4xl font-semibold tracking-tight text-primary">{hunt.threshold}</p>
         <p className="mt-1 font-medium">{t("hunt.big.needed")}</p>
         {isProgressVisible(hunt, status) ? (
           <div className="mx-auto mt-3 max-w-xs">
@@ -228,7 +224,7 @@ function HuntDetailPage() {
             <p className="mt-1 text-sm text-muted-foreground">{t("hunt.big.otherwise")}</p>
           )
         )}
-        <div className="mt-5">{cta}</div>
+        <div className="mt-4">{cta}</div>
         {commitsOpen && !commitment.isCommitted && (
           <p className="mt-3 text-sm text-muted-foreground">
             {t("hunt.reassure", { threshold: hunt.threshold })}
@@ -296,7 +292,7 @@ function HuntDetailPage() {
       )}
 
       {/* Ce qu'on fera */}
-      <p className="mt-8 whitespace-pre-line leading-relaxed">{hunt.description}</p>
+      <p className="mt-6 whitespace-pre-line text-sm leading-relaxed">{hunt.description}</p>
 
       {/* Salon chiffré des membres : n'existe qu'après l'activation (jamais avant). */}
       <div className="mt-8">
