@@ -12,6 +12,7 @@ import {
   getPassConfig,
   hasPass,
   importPass,
+  invitationFromLocation,
   joinWithInvitation,
   onPassChange,
   remainingInvites,
@@ -50,10 +51,10 @@ function PassPage() {
     setMine(hasPass());
     // Invitation reçue par lien : le code est après « # » (jamais envoyé au
     // serveur de la page). On l'efface de la barre d'adresse et de l'historique.
-    const fromLink = window.location.hash.slice(1);
+    const fromLink = invitationFromLocation(window.location);
     if (fromLink) {
-      setCode(fromLink);
-      window.history.replaceState(null, "", window.location.pathname);
+      setCode(fromLink.code);
+      window.history.replaceState(window.history.state, "", fromLink.cleanUrl);
     }
     return onPassChange(() => setMine(hasPass()));
   }, []);

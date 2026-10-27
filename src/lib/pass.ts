@@ -195,7 +195,7 @@ export async function createInvitation(perMonth: number): Promise<string> {
         proof,
       });
       markSlot(slot);
-      return `${window.location.origin}/pass#${r.invitation}`;
+      return invitationLink(r.invitation);
     } catch (e) {
       // Emplacement déjà utilisé (autre appareil, données effacées) : suivant.
       if (e instanceof ApiError && e.code === "slot_used") {
@@ -206,4 +206,30 @@ export async function createInvitation(perMonth: number): Promise<string> {
     }
   }
   throw new PassError("pass.err.noInvitesLeft");
+}
+
+/**
+ * Lien d'invitation : le code va après un « # » (jamais envoyé au serveur).
+ * Version statique (adresses en « #/… ») : …/#/pass#code ; sinon …/pass#code.
+ */
+export function invitationLink(code: string): string {
+  const { origin, pathname, hash } = window.location;
+  return hash.startsWith("#/") ? `${origin}${pathname}#/pass#${code}` : `${origin}/pass#${code}`;
+}
+
+/**
+ * Code d'invitation reçu dans l'adresse de la page « Mon pass », et l'adresse
+ * à garder une fois le code effacé ; null s'il n'y en a pas.
+ */
+export function invitationFromLocation(loc: {
+  pathname: string;
+  hash: string;
+}): { code: string; cleanUrl: string } | null {
+  if (loc.hash.startsWith("#/")) {
+    // Version statique : « #/pass » est la page, le code vient après un second « # ».
+    const [, route, code] = loc.hash.split("#");
+    return code ? { code, cleanUrl: `${loc.pathname}#${route}` } : null;
+  }
+  const code = loc.hash.slice(1);
+  return code ? { code, cleanUrl: loc.pathname } : null;
 }
