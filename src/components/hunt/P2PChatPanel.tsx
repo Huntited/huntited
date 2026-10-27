@@ -18,7 +18,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { APP_PAGE, isAndroid, isInApp, qrSvg, roomIntent, roomLink } from "@/lib/app-link";
-import { meshAvailable } from "@/lib/mesh-bridge";
+import { meshAvailable, setMeshRoomKey } from "@/lib/mesh-bridge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   chatNotifySupported,
@@ -208,6 +208,10 @@ export function P2PChatPanel({ huntId, title }: { huntId: string; title: string 
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presence?.from.id, ready?.members.join()]);
+  // Bluetooth : les messages du salon y passent sous enveloppe, avec la clé commune.
+  useEffect(() => {
+    if (presence) setMeshRoomKey(chatTopic(huntId), presence.key);
+  }, [huntId, presence?.key]);
   // Dans l'app : signal « je suis là » et compte des membres autour.
   useEffect(() => {
     if (!ready || !presence || !presenceSupported()) return;

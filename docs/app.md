@@ -37,6 +37,10 @@ téléphone (jusqu'à 7 sauts) :
 - Le site (`src/lib/mesh-bridge.ts`) envoie chaque événement Nostr signé aux
   relais **et** à l'app (`HuntitedApp.meshSend`) ; l'app remet ceux du mesh
   à la page (`window.__huntitedMesh`). Signature vérifiée, doublons écartés.
+- Confidentialité : un message de salon part sur le Bluetooth dans une
+  enveloppe chiffrée en entier avec la clé commune des membres (dérivée de la
+  clé de présence) : ni auteur ni salon visibles, étiquette qui change chaque
+  heure. Sans cette clé, le message passe seulement par internet.
 - Côté app, un type de paquet à part (`HUNTITED_EVENT`, 0x48 ;
   `huntited/HuntitedMesh.kt`) : n'apparaît jamais dans le chat bitchat, et
   les apps bitchat ordinaires ne le relaient pas. Le contenu reste chiffré.
