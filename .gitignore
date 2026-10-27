@@ -33,14 +33,11 @@ dist-ssr
 
 # Environnement (secrets) — jamais versionné
 .env
-backend/.env
 .env.publish
 .testnet-bots/
 !.env.example
-!backend/.env.example
 
 # Registre local des chasses (données de test, jamais versionnées)
-backend/data/
 
 # Rapports des tests de parcours (Playwright)
 test-results/

@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { computeRetainedGroup, isRetained } from "./retained-group";
@@ -13,17 +12,6 @@ function bruteForce(ts: number[], T: number): number {
   }
   return best;
 }
-
-describe("copies front / backend", () => {
-  it("le code est identique (hors commentaires)", () => {
-    const code = (path: string) =>
-      readFileSync(path, "utf8")
-        .replace(/\/\/.*$/gm, "")
-        .replace(/\s+/g, " ")
-        .trim();
-    expect(code("backend/src/services/retained-group.ts")).toBe(code("src/lib/retained-group.ts"));
-  });
-});
 
 describe("computeRetainedGroup", () => {
   it("exemple du document : 3,3,4,10 (T=3) → pas de groupe ; +3 → groupe de 4", () => {

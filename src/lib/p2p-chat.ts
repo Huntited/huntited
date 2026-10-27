@@ -18,7 +18,7 @@ import { bytesToHex, hexToBytes, utf8ToBytes } from "@noble/hashes/utils.js";
 
 /** Type d'événement Nostr des messages de chat Huntited (« régulier » : gardé par les relais). */
 export const CHAT_KIND = 4242;
-/** Le chat reste ouvert 24 h après la date limite (comme le salon Matrix). */
+/** Le chat reste ouvert 24 h après la date limite. */
 export const CHAT_TTL_AFTER_DEADLINE_MS = 24 * 60 * 60 * 1000;
 const MAX_TEXT = 2000;
 

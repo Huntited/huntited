@@ -1,6 +1,5 @@
 // Construction de la version statique (IPFS) : `npm run build:static`.
-// Indépendante de la version serveur (vite.config.ts) : pas de rendu serveur,
-// chemins relatifs (fonctionne sous /ipfs/<identifiant>/ comme sur un domaine).
+// Aussi utilisée par npm run dev. Pas de rendu serveur, chemins relatifs (fonctionne sous /ipfs/<identifiant>/ comme sur un domaine).
 import path from "node:path";
 
 import tailwindcss from "@tailwindcss/vite";
@@ -15,7 +14,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
-      "@tanstack/react-start": path.resolve(__dirname, "static/start-shim.ts"),
     },
   },
   build: {

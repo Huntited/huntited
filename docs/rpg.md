@@ -7,13 +7,13 @@ Non financier : rien ne change les montants (`src/lib/rpg.ts`).
 L'XP vient des actes d'un wallet inscrits sur la blockchain
 (`chainDeeds`) ; rien ne compte tant que la chasse ne s'est pas déclenchée :
 
-| Acte | XP |
-| --- | --- |
-| Engagement dans une chasse déclenchée | 20 |
-| … qui a compté pour le déclenchement | +10 |
-| Création d'une chasse déclenchée | 80 |
+| Acte                                                  | XP                           |
+| ----------------------------------------------------- | ---------------------------- |
+| Engagement dans une chasse déclenchée                 | 20                           |
+| … qui a compté pour le déclenchement                  | +10                          |
+| Création d'une chasse déclenchée                      | 80                           |
 | Chasse déclenchée arrivée à sa date (action réalisée) | +30 (membre), +50 (créateur) |
-| Quêtes de la semaine (lundi–dimanche, UTC) | 30 / 40 / 50 |
+| Quêtes de la semaine (lundi–dimanche, UTC)            | 30 / 40 / 50                 |
 
 Niveau `L` à partir de `50 × L × (L − 1)` XP (2 : 100, 3 : 300, 4 : 600…).
 Titres : Recrue, Apprenti·e, Pisteur·euse, Traqueur·euse, Meneur·euse,

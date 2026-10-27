@@ -10,7 +10,6 @@ import {
   getDataMode,
   listHuntViews,
   onHuntsChange,
-  syncMyActivity,
   isCommitted,
   type HuntView,
 } from "@/lib/hunt-repository";
@@ -59,20 +58,6 @@ function MyHuntsPage() {
     };
   }, [address, version]);
 
-  const handleSync = async () => {
-    if (!address) return;
-    setSync({ busy: true, message: null });
-    try {
-      const r = await syncMyActivity(address);
-      setSync({
-        busy: false,
-        message: t("my.synced", { created: r.created, commitments: r.commitments }),
-      });
-    } catch (e) {
-      setSync({ busy: false, message: e instanceof Error ? e.message : t("my.syncFailed") });
-    }
-  };
-
   if (!isConnected || !address) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center px-4 py-16 text-center">
@@ -96,25 +81,7 @@ function MyHuntsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">{t("nav.myHunts")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        {t(getDataMode() === "api" ? "my.lead" : "my.leadLocal")}
-      </p>
-
-      {getDataMode() === "api" && (
-        <div className="mt-4 rounded-lg border bg-card p-3 text-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-muted-foreground">{t("my.syncText")}</span>
-            <Button size="sm" variant="outline" onClick={handleSync} disabled={sync.busy}>
-              {sync.busy ? t("my.syncing") : t("my.sync")}
-            </Button>
-          </div>
-          {sync.message && (
-            <p className="mt-2 text-xs" role="status">
-              {sync.message}
-            </p>
-          )}
-        </div>
-      )}
+      <p className="mt-1 text-sm text-muted-foreground">{t("my.leadLocal")}</p>
 
       <Section title={t("my.created")} count={created.length}>
         {views === null ? (

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { fetchHuntPreview, huntPreviewMeta } from "./hunt-preview";
+import { huntPreviewMeta } from "./hunt-preview";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -35,21 +35,5 @@ describe("aperçu riche d'une chasse", () => {
 
   it("reste générique pour une chasse inconnue", () => {
     expect(huntPreviewMeta(null, "h1")).toContainEqual({ title: "Chasse — Huntited" });
-  });
-
-  it("ne lit le registre qu'en mode partagé, et ignore toute réponse invalide ou erreur", async () => {
-    const fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
-    vi.stubEnv("VITE_DATA_MODE", "local");
-    expect(await fetchHuntPreview("h1")).toBeNull();
-    expect(fetchMock).not.toHaveBeenCalled();
-
-    vi.stubEnv("VITE_DATA_MODE", "api");
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ ...preview, commitCount: 3 })));
-    expect(await fetchHuntPreview("h1")).toEqual(preview);
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ title: 1 })));
-    expect(await fetchHuntPreview("h1")).toBeNull();
-    fetchMock.mockRejectedValueOnce(new Error("réseau"));
-    expect(await fetchHuntPreview("h1")).toBeNull();
   });
 });

@@ -17,7 +17,6 @@ import { Route as KaspaRouteImport } from './routes/kaspa'
 import { Route as LegalRouteImport } from './routes/legal'
 import { Route as MyDataRouteImport } from './routes/my-data'
 import { Route as MyHuntsRouteImport } from './routes/my-hunts'
-import { Route as PassRouteImport } from './routes/pass'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PublishRouteImport } from './routes/publish'
 import { Route as WalletRouteImport } from './routes/wallet'
@@ -66,11 +65,6 @@ const MyHuntsRoute = MyHuntsRouteImport.update({
   path: '/my-hunts',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PassRoute = PassRouteImport.update({
-  id: '/pass',
-  path: '/pass',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -116,7 +110,6 @@ export interface FileRoutesByFullPath {
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
-  '/pass': typeof PassRoute
   '/profile': typeof ProfileRoute
   '/publish': typeof PublishRoute
   '/wallet': typeof WalletRoute
@@ -134,7 +127,6 @@ export interface FileRoutesByTo {
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
-  '/pass': typeof PassRoute
   '/profile': typeof ProfileRoute
   '/publish': typeof PublishRoute
   '/wallet': typeof WalletRoute
@@ -153,7 +145,6 @@ export interface FileRoutesById {
   '/legal': typeof LegalRoute
   '/my-data': typeof MyDataRoute
   '/my-hunts': typeof MyHuntsRoute
-  '/pass': typeof PassRoute
   '/profile': typeof ProfileRoute
   '/publish': typeof PublishRoute
   '/wallet': typeof WalletRoute
@@ -173,7 +164,6 @@ export interface FileRouteTypes {
     | '/legal'
     | '/my-data'
     | '/my-hunts'
-    | '/pass'
     | '/profile'
     | '/publish'
     | '/wallet'
@@ -191,7 +181,6 @@ export interface FileRouteTypes {
     | '/legal'
     | '/my-data'
     | '/my-hunts'
-    | '/pass'
     | '/profile'
     | '/publish'
     | '/wallet'
@@ -209,7 +198,6 @@ export interface FileRouteTypes {
     | '/legal'
     | '/my-data'
     | '/my-hunts'
-    | '/pass'
     | '/profile'
     | '/publish'
     | '/wallet'
@@ -228,7 +216,6 @@ export interface RootRouteChildren {
   LegalRoute: typeof LegalRoute
   MyDataRoute: typeof MyDataRoute
   MyHuntsRoute: typeof MyHuntsRoute
-  PassRoute: typeof PassRoute
   ProfileRoute: typeof ProfileRoute
   PublishRoute: typeof PublishRoute
   WalletRoute: typeof WalletRoute
@@ -296,13 +283,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MyHuntsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pass': {
-      id: '/pass'
-      path: '/pass'
-      fullPath: '/pass'
-      preLoaderRoute: typeof PassRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -364,7 +344,6 @@ const rootRouteChildren: RootRouteChildren = {
   LegalRoute: LegalRoute,
   MyDataRoute: MyDataRoute,
   MyHuntsRoute: MyHuntsRoute,
-  PassRoute: PassRoute,
   ProfileRoute: ProfileRoute,
   PublishRoute: PublishRoute,
   WalletRoute: WalletRoute,
@@ -376,13 +355,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

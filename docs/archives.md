@@ -8,9 +8,9 @@ longtemps que cette fenêtre.
 
 **La solution : des archives.** Une archive est un fichier JSON qui garde
 chaque transaction finale du registre, telle que la chaîne l'a acceptée. Le
-site (et l'index du serveur) rejoue les archives puis l'API : même ordre, même
+site rejoue les archives puis l'API : même ordre, même
 résultat que si l'API avait tout gardé (`ChainIndexer.seed`, testé dans
-`backend/src/chain/indexer.test.ts` et `src/lib/onchain/browser-index.test.ts`).
+`src/lib/onchain/browser-index.test.ts`).
 
 ```json
 {
@@ -18,7 +18,13 @@ résultat que si l'API avait tout gardé (`ChainIndexer.seed`, testé dans
   "version": 1,
   "registry": "kaspatest:qr2ck8…",
   "entries": [
-    { "txId": "…", "score": 591178395, "time": 1792610368460, "sender": "kaspatest:…", "payload": "484e5431…" }
+    {
+      "txId": "…",
+      "score": 591178395,
+      "time": 1792610368460,
+      "sender": "kaspatest:…",
+      "payload": "484e5431…"
+    }
   ]
 }
 ```

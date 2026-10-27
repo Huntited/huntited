@@ -5,10 +5,8 @@ import {
   createRootRouteWithContext,
   useRouter,
   HeadContent,
-  Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { AppFooter, AppHeader } from "@/components/AppHeader";
@@ -18,7 +16,6 @@ import { DevResetButton } from "@/components/DevResetButton";
 import { LogoMark } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 /** Lien d'évitement (clavier, lecteur d'écran) : visible seulement au focus. */
 function SkipLink() {
@@ -113,34 +110,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: `${import.meta.env.BASE_URL}favicon.ico`, sizes: "any" },
     ],
   }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    // suppressHydrationWarning : le thème (classe `dark`) et la langue sont
-    // appliqués sur <html> avant l'hydratation.
-    <html lang="fr" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
+      {/* Balises de tête de chaque page (titre, description…). Le document
+          HTML lui-même est static/index.html. */}
+      <HeadContent />
       <div className="flex min-h-screen flex-col">
         <SkipLink />
         <AppHeader />

@@ -16,7 +16,7 @@ venir » ; l'aperçu des liens sur X est générique.
    - avec Kubo : `ipfs add -r --cid-version 1 dist-static` ;
    - ou par un service d'épinglage (Filebase, Pinata, 4EVERLAND…) : envoyer
      le dossier. Avec Filebase : `npx ipfs-car pack dist-static --no-wrap --hidden
-     --output site.car`, puis envoyer `site.car` dans un bucket avec la
+--output site.car`, puis envoyer `site.car` dans un bucket avec la
      métadonnée `import: car` (API S3) ; Filebase renvoie le même CID.
 3. **Épingler chez plusieurs services** (le site reste disponible si l'un
    disparaît).
@@ -40,7 +40,7 @@ affiche la version et le manifest.
    la **même clé** :
    `kaspatest:qz0nnwepcezwrnx4fdptsg996590s78s8gay8nt9yuhdj6fwwjhfzsvt2pucp`
    (`src/lib/onchain/publisher.ts`, vérifié par
-   `backend/src/chain/publisher.test.ts`). C'est la valeur par défaut partout ;
+   `src/lib/onchain/addresses.test.ts`). C'est la valeur par défaut partout ;
    `RELEASE_PUBLISHERS` permet de la remplacer.
 2. **Ancrer** : ouvrir la page `#/publish` du site publié, connecter le compte
    de publication, indiquer l'identifiant IPFS (facultatif), puis « Ancrer ».

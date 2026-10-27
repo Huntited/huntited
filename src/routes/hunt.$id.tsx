@@ -1,13 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
-import { ChatPanel } from "@/components/hunt/ChatPanel";
 import { P2PChatPanel } from "@/components/hunt/P2PChatPanel";
 import { HuntSettlementPanel } from "@/components/hunt/HuntSettlementPanel";
 import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
 import { AfterNote, WithdrawBox } from "@/components/hunt/CommitExtras";
 import { CommitModal } from "@/components/hunt/CommitModal";
-import { NotifyButton } from "@/components/hunt/NotifyButton";
 import { ReplyOnXButton } from "@/components/hunt/ReplyOnXButton";
 import { ShareHuntButton } from "@/components/hunt/ShareHuntButton";
 import { Button } from "@/components/ui/button";
@@ -20,8 +18,7 @@ import {
 } from "@/lib/hunt-lifecycle";
 import { countryName } from "@/lib/countries";
 import { placeLabel } from "@/lib/online";
-import { hasBackend } from "@/lib/api-client";
-import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
+import { huntPreviewMeta } from "@/lib/hunt-preview";
 import { getDataMode, getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
 import { getMyCommitment } from "@/lib/my-commitments";
 import { useI18n, type MessageKey } from "@/lib/i18n";
@@ -36,11 +33,7 @@ export const Route = createFileRoute("/hunt/$id")({
   // Code de présence d'une mission, lu dans un QR (src/lib/missions.ts).
   validateSearch: (s: Record<string, unknown>): { code?: string } =>
     typeof s["code"] === "string" && /^[A-Za-z0-9]{6}$/.test(s["code"]) ? { code: s["code"] } : {},
-  // Aperçu riche du lien (rendu serveur) : informations publiques uniquement.
-  loader: ({ params }) => fetchHuntPreview(params.id),
-  head: ({ loaderData, params }) => ({
-    meta: huntPreviewMeta(loaderData ?? null, params.id),
-  }),
+  head: ({ params }) => ({ meta: huntPreviewMeta(null, params.id) }),
   component: HuntDetailPage,
 });
 
@@ -291,8 +284,6 @@ function HuntDetailPage() {
           </p>
         )}
 
-        {/* Être prévenu·e du résultat, sans compte ni wallet */}
-        {status === "active" && <NotifyButton huntId={hunt.id} />}
         {/* Pass de groupe : une association offre des places (mode chaîne). */}
         {commitsOpen && getDataMode() === "chain" && (
           <Link
@@ -343,7 +334,7 @@ function HuntDetailPage() {
         </div>
       )}
 
-      {/* Chat Matrix : n'existe qu'après l'activation (jamais avant). */}
+      {/* Salon chiffré des membres : n'existe qu'après l'activation (jamais avant). */}
       <div className="mt-6">
         {canOpenChat(status, outcome) && getDataMode() === "chain" ? (
           // Chasse sur la chaîne : chat chiffré entre membres, sans serveur.
@@ -352,14 +343,12 @@ function HuntDetailPage() {
             title={hunt.title}
             {...(search.code ? { prefillCode: search.code } : {})}
           />
-        ) : canOpenChat(status, outcome) && !hasBackend() ? (
-          // Version sans serveur : chat chiffré pair à pair à venir.
+        ) : canOpenChat(status, outcome) ? (
+          // Mode démo (chasses de ce navigateur) : pas de membres sur la chaîne.
           <section className="rounded-lg border bg-card p-4 text-sm">
             <h2 className="mb-1 font-semibold">{t("hunt.chat.title")}</h2>
             <p className="text-muted-foreground">{t("chat.soon")}</p>
           </section>
-        ) : canOpenChat(status, outcome) ? (
-          <ChatPanel hunt={hunt} status={status} outcome={outcome} />
         ) : (
           <section className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
             <h2 className="mb-1 font-semibold text-foreground">{t("hunt.chat.title")}</h2>

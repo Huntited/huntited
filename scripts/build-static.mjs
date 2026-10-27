@@ -33,9 +33,7 @@ const liveArchive =
 Object.assign(process.env, {
   VITE_DATA_MODE: "chain",
   VITE_WALLET_MODE: "kastle",
-  VITE_MATRIX_MODE: "mock",
   // Vide : aucun serveur Huntited (chat, notifications : bientôt).
-  VITE_API_BASE_URL: "",
   VITE_HASH_ROUTING: "true",
   // Adresse(s) de publication : par défaut celle de huntited.kas
   // (src/lib/onchain/publisher.ts) ; RELEASE_PUBLISHERS pour la remplacer.

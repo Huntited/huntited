@@ -50,6 +50,4 @@ publics sur la blockchain, et quelqu'un d'équipé peut les compter. Une vraie
 opacité demanderait du chiffrement avancé (FHE à seuil), hors de portée pour
 l'instant. Les anciennes chasses « visibles » restent affichées comme avant.
 
-Code : `src/lib/onchain/ledger.ts` et sa copie `backend/src/chain/ledger.ts`
-(vérifiées par `conformance.test.ts`), tests dans
-`backend/src/chain/ledger.test.ts`.
+Code : `src/lib/onchain/ledger.ts`, tests dans `src/lib/onchain/ledger.test.ts`.

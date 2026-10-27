@@ -5,8 +5,6 @@
 // remplie : { engagés avec t ≤ k* }, k* étant le plus grand k tel qu'au moins
 // k engagés ont un seuil ≤ k. Ajouter un engagement ne peut que l'agrandir :
 // une activation n'est jamais remise en cause.
-//
-// ⚠️ Copie conforme de backend/src/services/retained-group.ts (mêmes tests).
 
 export interface RetainedGroup {
   /** k* : seuil personnel maximal satisfait ; null s'il n'y a pas de groupe. */

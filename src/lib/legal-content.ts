@@ -92,18 +92,8 @@ const fr: LegalSection[] = [
       {
         heading: "Ce qui reste sur ton appareil",
         paragraphs: [
-          "Dans le stockage de ton navigateur : l'état de connexion de ton wallet, ta langue et ton thème, le brouillon de création, la liste des chasses que tu as créées, rejointes ou suivies, tes réglages de badges, et le secret de ton pass. Ces données ne quittent pas ton appareil ; la page « Tes données » permet de les voir, de les exporter et de les effacer.",
+          "Dans le stockage de ton navigateur : ton wallet intégré (sa phrase de récupération, chiffrée si tu l'as protégé par un code ou une empreinte), l'état de connexion de ton wallet, ta langue et ton thème, le brouillon de création, la liste des chasses que tu as créées ou rejointes, tes clés et messages de chat, et tes réglages de badges. Ces données ne quittent pas ton appareil ; la page « Tes données » permet de les voir, de les exporter et de les effacer.",
           "La recherche de villes se fait sur ton appareil : aucune lettre tapée n'est envoyée (données GeoNames, CC BY 4.0).",
-        ],
-      },
-      {
-        heading: "Ancienne version avec serveur",
-        paragraphs: [
-          "Les informations publiques des chasses (titre, description, lieu, pays, date limite, seuil, caution), une empreinte du wallet créateur, une empreinte par engagement (propre à chaque chasse) et l'éventuel seuil personnel ; pour les pass, uniquement des empreintes anonymes et des codes à usage unique.",
-          "L'adresse de ton wallet n'est jamais conservée en clair. Les adresses IP ne sont pas enregistrées : elles servent seulement, sous forme d'empreinte gardée en mémoire quelques minutes, à limiter les abus.",
-          "Chat : les salons sont créés sur un serveur Matrix géré par Huntited, sans fédération, avec chiffrement de bout en bout ; ils sont supprimés, avec les comptes temporaires, 24 heures après la date limite.",
-          "Chasse ratée : 24 heures après la date limite, les empreintes d'engagement, seuils personnels et codes de pass de la chasse sont effacés ; seul leur nombre reste affiché.",
-          "Notifications (facultatives) : si tu demandes à être prévenu·e, le serveur garde l'adresse de livraison fournie par ton navigateur, l'identifiant de la chasse et ta langue, sans lien avec ton wallet. Elles sont supprimées dès la notification envoyée. Le message, chiffré de bout en bout, transite par le service de notification de ton navigateur (Google, Mozilla, Apple ou Microsoft), qui ne peut pas le lire.",
         ],
       },
       {
@@ -112,7 +102,6 @@ const fr: LegalSection[] = [
           "Sur huntited.com, ton navigateur contacte directement : l'API publique du réseau de test Kaspa (pour lire la blockchain), Codeberg (hébergement du site et de l'archive du registre) et, pour le chat, des relais Nostr publics (relay.damus.io, nos.lol, relay.primal.net). Une copie du site est aussi publiée sur IPFS (Filebase). Ces services voient ton adresse IP et l'heure de tes visites, pas le contenu de tes messages.",
           "Chat : chaque membre a une clé de chat par chasse, créée et gardée dans son navigateur. Les messages et les pseudos sont chiffrés pour les seuls membres ; les relais voient l'heure d'envoi et la clé publique de l'auteur, inscrite sur la blockchain avec son engagement. Les messages portent une date d'expiration (24 heures après la date limite), que les relais peuvent ne pas respecter.",
           "Ton wallet (par exemple Kastle) et le réseau Kaspa ont leurs propres règles. Le bouton « Répondre à un tweet » ouvre X (x.com) : ce que tu y publies relève des conditions de X. Huntited n'envoie aucune donnée à ces services.",
-          "Quand tu connectes Kastle, le serveur Huntited consulte l'historique public de ton adresse sur l'API du réseau de test Kaspa, pour te prévenir si elle a déjà servi hors de Huntited. C'est le serveur qui fait la demande (l'API ne voit pas ton IP), et rien n'est conservé.",
         ],
       },
       {
@@ -233,18 +222,8 @@ const en: LegalSection[] = [
       {
         heading: "What stays on your device",
         paragraphs: [
-          "In your browser's storage: your wallet connection state, your language and theme, the creation draft, the hunts you created, joined or follow, your badge settings, and your pass secret. This data doesn't leave your device; the “Your data” page lets you view, export and erase it.",
+          "In your browser's storage: your built-in wallet (its recovery phrase, encrypted if you protected it with a code or fingerprint), your wallet connection state, your language and theme, the creation draft, the hunts you created or joined, your chat keys and messages, and your badge settings. This data doesn't leave your device; the “Your data” page lets you view, export and erase it.",
           "City search runs on your device: no keystroke is sent anywhere (GeoNames data, CC BY 4.0).",
-        ],
-      },
-      {
-        heading: "Former version with a server",
-        paragraphs: [
-          "Public hunt information (title, description, place, country, deadline, threshold, deposit), a fingerprint of the creator's wallet, one fingerprint per commitment (specific to each hunt) and any personal threshold; for passes, only anonymous fingerprints and single-use codes.",
-          "Your wallet address is never stored in clear. IP addresses aren't recorded: they're only used, as a fingerprint kept in memory for a few minutes, to limit abuse.",
-          "Chat: rooms are created on a Matrix server run by Huntited, without federation, with end-to-end encryption; they're deleted, along with the temporary accounts, 24 hours after the deadline.",
-          "Failed hunt: 24 hours after the deadline, the hunt's commitment fingerprints, personal thresholds and pass codes are erased; only their number remains displayed.",
-          "Notifications (optional): if you ask to be notified, the server keeps the delivery address provided by your browser, the hunt's identifier and your language, with no link to your wallet. They're deleted as soon as the notification is sent. The message, end-to-end encrypted, goes through your browser's notification service (Google, Mozilla, Apple or Microsoft), which can't read it.",
         ],
       },
       {
@@ -253,7 +232,6 @@ const en: LegalSection[] = [
           "On huntited.com, your browser directly contacts: the public Kaspa test network API (to read the blockchain), Codeberg (hosting of the site and of the registry archive) and, for the chat, public Nostr relays (relay.damus.io, nos.lol, relay.primal.net). A copy of the site is also published on IPFS (Filebase). These services see your IP address and when you visit, not the content of your messages.",
           "Chat: each member has one chat key per hunt, created and kept in their browser. Messages and nicknames are encrypted for members only; relays see the sending time and the author's public key, which is written on the blockchain with their commitment. Messages carry an expiry date (24 hours after the deadline), which relays may not honour.",
           'Your wallet (for example Kastle) and the Kaspa network have their own rules. The "Reply to a tweet" button opens X (x.com): what you post there falls under X\'s terms. Huntited sends no data to these services.',
-          "When you connect Kastle, the Huntited server looks up your address's public history on the Kaspa test network API, to warn you if it has been used outside Huntited. The server makes the request (the API doesn't see your IP), and nothing is kept.",
         ],
       },
       {

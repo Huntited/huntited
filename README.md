@@ -44,19 +44,19 @@ déclenchée »).
 | Salons           | Messages chiffrés de bout en bout sur des relais Nostr ; relayés aussi par Bluetooth dans l'appli                        |
 | Versions du site | Chaque version publiée est ancrée sur Kaspa (empreinte des fichiers) et vérifiable depuis le site                        |
 
-Il n'y a **aucun serveur Huntited** : le dossier `backend/` est une
-ancienne version avec serveur, gardée comme référence ; son grand livre
-est une copie conforme de celui du site (`src/lib/onchain/`), vérifiée par
-`conformance.test.ts`.
+Il n'y a **aucun serveur Huntited** : chaque navigateur relit le registre
+sur l'API publique de Kaspa et recalcule l'état des chasses
+(`src/lib/onchain/`, testé dans `ledger.test.ts`).
 
 ## Développement
 
 ```bash
 npm install
-npm run dev            # site en développement
+npm run dev            # site en développement (chasses de démonstration)
 npm test               # tests (vitest)
 npm run lint
-npm run build:static   # version statique dans dist-static/
+npm run build:static   # version statique dans dist-static/ (registre de test)
+npm run routes         # après avoir ajouté ou supprimé une page dans src/routes
 ```
 
 Le code est commenté en français. Documentation détaillée dans

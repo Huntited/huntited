@@ -62,7 +62,7 @@ format Nostr). Licence Android à vérifier (GPL-3.0 annoncée).
 
 - Vocal : bouton micro à côté d'« Envoyer » (30 s au plus, Opus ~12 kbit/s,
   environ 45 Ko). Le son est dans le message chiffré (`audio: { mime, data,
-  ms }`), comme le texte : relais et Bluetooth ne voient rien. Relu par une
+ms }`), comme le texte : relais et Bluetooth ne voient rien. Relu par une
   adresse `data:` (CSP `media-src`).
 - Talkie-walkie (app Huntited Chat) : « Écouter », puis maintenir le bouton
   pour parler (15 s au plus). Le message part au relâchement (`ptt: true`),

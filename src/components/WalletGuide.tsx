@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { subscribeWallet } from "@/lib/wallet";
-import { checkAddressOnce, closeGuide, showGuide, subscribeGuide } from "@/lib/wallet-guide";
+import { closeGuide, subscribeGuide } from "@/lib/wallet-guide";
 
 export function WalletGuide() {
   const { t } = useI18n();
@@ -23,23 +23,6 @@ export function WalletGuide() {
     mode: "info",
   });
   useEffect(() => subscribeGuide(setState), []);
-
-  // Après connexion : une vérification par adresse, avertissement si besoin.
-  useEffect(() => {
-    let last: string | null = null;
-    return subscribeWallet((w) => {
-      if (!w.isConnected || !w.address || w.address === last) return;
-      last = w.address;
-      void checkAddressOnce(w.address).then((r) => {
-        if (!r?.usedElsewhere) return;
-        toast.warning(t("guide.used.title"), {
-          description: t("guide.used.text"),
-          duration: 20_000,
-          action: { label: t("guide.used.action"), onClick: showGuide },
-        });
-      });
-    });
-  }, [t]);
 
   return (
     <Dialog open={state.open} onOpenChange={(open) => !open && closeGuide(false)}>

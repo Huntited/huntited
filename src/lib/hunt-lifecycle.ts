@@ -3,7 +3,7 @@
  *
  *   Créée → Active → Activée / Expirée → Résolue
  *                       ↓
- *                Chat Matrix ouvert
+ *                Salon chiffré ouvert
  *
  * Règle clé : l'activation prime sur l'expiration. L'état persisté
  * (hunt-state-store) est prioritaire, et "settled" n'est jamais recalculé.
@@ -39,7 +39,7 @@ export function isProgressVisible(
 // S'engager : voir HuntView.commitsOpen (hunt-repository) — ouvert jusqu'à la
 // date limite, y compris après l'activation (seuil personnel, option B).
 
-/** Chat Matrix : après activation, ou après une résolution en succès. */
+/** Salon chiffré : après activation, ou après une résolution en succès. */
 export function canOpenChat(status: HuntStatus, outcome?: SettlementOutcome): boolean {
   return status === "activated" || (status === "settled" && outcome === "success");
 }

@@ -16,7 +16,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { getDataMode } from "@/lib/hunt-repository";
 import { useI18n } from "@/lib/i18n";
-import { getPassConfig, hasPass, onPassChange } from "@/lib/pass";
 import { commitRefundHighlight, termsFullFor, termsShortFor } from "@/lib/terms";
 import type { Hunt } from "@/lib/types";
 import type { UseCommitmentResult } from "@/lib/useCommitment";
@@ -66,13 +65,6 @@ export function CommitModal({
   // Chasses enchaînées (mode chaîne) : « seulement si cette autre chasse se déclenche ».
   const [after, setAfter] = useState<string | null>(null);
   const { isConnected, isCommitted, canCommit, isSubmitting, error, commit } = commitment;
-  // Pass exigé par le serveur et absent de cet appareil.
-  const [needsPass, setNeedsPass] = useState(false);
-  useEffect(() => {
-    const check = () => void getPassConfig().then((c) => setNeedsPass(c.required && !hasPass()));
-    check();
-    return onPassChange(check);
-  }, []);
   const personalValue = Number(personal);
   const personalValid =
     Number.isInteger(personalValue) && personalValue >= hunt.threshold && personalValue <= 100_000;
@@ -212,15 +204,6 @@ export function CommitModal({
           <span>{t("commit.accept")}</span>
         </label>
 
-        {needsPass && !isCommitted && (
-          <p className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950 p-3 text-sm text-amber-800 dark:text-amber-300">
-            {t("commit.needPass")}{" "}
-            <Link to="/pass" className="font-medium underline">
-              {t("commit.getPass")}
-            </Link>
-          </p>
-        )}
-
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error}
@@ -236,10 +219,7 @@ export function CommitModal({
               {walletLoading ? t("wallet.connecting") : t("wallet.connect")}
             </Button>
           ) : (
-            <Button
-              onClick={handleConfirm}
-              disabled={!accepted || !canCommit || !personalValid || needsPass}
-            >
+            <Button onClick={handleConfirm} disabled={!accepted || !canCommit || !personalValid}>
               {isSubmitting ? t("commit.submitting") : t("commit.confirm")}
             </Button>
           )}

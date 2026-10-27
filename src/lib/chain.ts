@@ -1,12 +1,12 @@
 // Registre sur la chaîne, côté site (docs/registre-kaspa.md) :
-// - format des messages, identique à backend/src/chain/protocol.ts ;
+// - format des messages, identique à src/lib/onchain/protocol.ts ;
 // - publication par Kastle (0,2 KAS de test vers l'adresse du registre) ;
 // - chasses envoyées mais pas encore vues par l'index (≈ 1 min).
 import { sendToRegistry } from "./wallet";
 
 /**
  * Adresse du registre : sans clé privée connue, dérivée de la phrase publique
- * « huntited:registry:v1 » (backend/src/chain/registry-address.ts, qui teste
+ * « huntited:registry:v1 » (src/lib/onchain/addresses.test.ts, qui teste
  * cette même valeur).
  */
 export const REGISTRY_ADDRESS =

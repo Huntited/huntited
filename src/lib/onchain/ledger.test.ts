@@ -2,16 +2,14 @@
 // 1. Par défaut : chasses et engagements envoyés depuis un wallet.
 // 2. En réserve : le pass (vraies preuves Semaphore, fichiers de public/zk).
 import { randomBytes } from "node:crypto";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 
 import { schnorr } from "@noble/curves/secp256k1.js";
-import { Group } from "@semaphore-protocol/group";
-import { Identity } from "@semaphore-protocol/identity";
-import { generateProof } from "@semaphore-protocol/proof";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
+import { Group, Identity, generateProof } from "@semaphore-protocol/core";
 import { describe, expect, it } from "vitest";
 
-import { PROOF_DEPTH } from "../services/semaphore.js";
-import { byAddress, byPass, byPlace, Ledger, type ChainEvent } from "./ledger.js";
+import { byAddress, byPass, byPlace, Ledger, type ChainEvent } from "./ledger";
 import {
   createScope,
   decodeMessage,
@@ -22,15 +20,17 @@ import {
   inviteDigest,
   inviteScope,
   monthOf,
+  PROOF_DEPTH,
   signPlaceCommit,
   signPlaceWithdraw,
   signRedeem,
   type Genesis,
   type HuntMessage,
   type Message,
-} from "./protocol.js";
+  type ProofInput,
+} from "./protocol";
 
-const zk = (f: string) => fileURLToPath(new URL(`../../../public/zk/${f}`, import.meta.url));
+const zk = (f: string) => path.resolve(process.cwd(), "public/zk", f);
 const ARTIFACTS = { wasm: zk("semaphore-20.wasm"), zkey: zk("semaphore-20.zkey") };
 
 const code = () => randomBytes(32).toString("hex");
@@ -64,7 +64,7 @@ function setup(over: Partial<Genesis> = {}) {
       scope,
       PROOF_DEPTH,
       ARTIFACTS,
-    );
+    ).then((p) => p as ProofInput); // même forme que le message (champ par champ)
   const join = (invite: string, id: Identity, time = T0) => {
     const commitment = id.commitment.toString();
     return publish(
@@ -217,7 +217,7 @@ describe("grand livre : retrait et chasses enchaînées", () => {
     const { ledger, publish } = setup();
     const content = huntContent({ threshold: 3 });
     const placeKey = code();
-    const place = Buffer.from(schnorr.getPublicKey(Buffer.from(placeKey, "hex"))).toString("hex");
+    const place = bytesToHex(schnorr.getPublicKey(hexToBytes(placeKey)));
     await publish({ t: "hunt", ...content }, T0, ALICE);
     await publish({ t: "places", hunt: content.id, keys: [place] }, T0 + 1, BOB);
     const sig = signPlaceCommit(placeKey, content.id, {});
@@ -306,8 +306,7 @@ describe("grand livre : versions du site", () => {
 
 describe("grand livre : pass de groupe", () => {
   const placeKey = () => randomBytes(32).toString("hex");
-  const pub = (k: string) =>
-    Buffer.from(schnorr.getPublicKey(Buffer.from(k, "hex"))).toString("hex");
+  const pub = (k: string) => bytesToHex(schnorr.getPublicKey(hexToBytes(k)));
 
   it("l'association inscrit des places ; les membres s'engagent par lot, sans wallet", async () => {
     const { ledger, publish } = setup();

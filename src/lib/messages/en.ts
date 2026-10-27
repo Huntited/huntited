@@ -6,7 +6,6 @@ export const en: Messages = {
   "nav.hunts": "Hunts",
   "nav.create": "Create",
   "nav.myHunts": "My hunts",
-  "nav.pass": "My pass",
   "nav.wallet": "My wallet",
   "mission.title": "Missions",
   "mission.new": "New mission",
@@ -463,8 +462,6 @@ export const en: Messages = {
   "commit.fullTerms": "See the full terms",
   "commit.accept":
     "I understand my deposit stays locked until the hunt triggers or reaches its deadline.",
-  "commit.needPass": "You need a Huntited pass to commit (one person = one commitment).",
-  "commit.getPass": "Get my pass",
   "commit.submitting": "Committing… (computing proof)",
   "commit.confirm": "Confirm commitment",
 
@@ -484,26 +481,7 @@ export const en: Messages = {
   "settle.simulate": "Simulate settlement",
 
   // Chat
-  "chat.checking": "Checking access…",
-  "chat.connect": "Connect your wallet to access the chat (creator and participants only).",
-  "chat.forbidden":
-    "The chat is reserved for the hunt's creator and retained participants (whose condition is met).",
-  "chat.unavailable": "The chat is temporarily unavailable.",
-  "chat.signatureRefused": "Signature refused: sign the message in your wallet to access the chat.",
-  "chat.expiredOn": "The room expired on {date}.",
-  "chat.neverOpened": "No room was opened for this hunt.",
-  "chat.open": "The chat is open. Join it to coordinate the action.",
-  "chat.openLink": "Open the Matrix chat",
-  "chat.expiresOn": "Expires on {date}",
-  "notify.follow": "Notify me of the result",
-  "notify.on": "You'll be notified (cancel)",
-  "notify.hint": "A notification when the hunt triggers or fails.",
-  "notify.denied": "Notifications are blocked for this site: allow them in your browser settings.",
-  "notify.unavailable": "Notifications aren't available right now.",
-  "chat.opening": "The hunt is triggered: opening the chat…",
   "common.retry": "Try again",
-  "chat.demoRoom":
-    "Demo: the room is open, but no chat server is online yet. At launch, an “Open the Matrix chat” button will appear here with your credentials.",
   "chat.soon":
     "The hunt is triggered. Encrypted chat between participants is coming soon: meanwhile, get organised through your usual channels.",
   "chat.p2p.secure": "Encrypted: only the hunt's members can read.",
@@ -590,7 +568,6 @@ export const en: Messages = {
   "chat.p2p.placeholder": "Write a message…",
   "chat.p2p.send": "Send",
   "chat.p2p.sending": "Sending…",
-  "chat.p2p.sendFailed": "Message not sent: no relay answered. Try again.",
   "chat.p2p.you": "You",
   "chat.p2p.member": "Member {n}",
   "chat.p2p.ends":
@@ -640,18 +617,7 @@ export const en: Messages = {
     "Approximate count: Bluetooth reaches 10 to 50 m per phone, and signals hop from phone to phone.",
   "chat.p2p.ended": "The chat is closed (24 h after the deadline).",
   "chat.p2p.unavailable": "Chat unavailable for now.",
-  "chat.demo": "(Demo: simulated chat, no real room)",
-  "chatLogin.title": "Your login for this chat",
-  "chatLogin.step1": "Open the chat with the button above (Element app).",
-  "chatLogin.step2": "Sign in with the username and password below.",
-  "chatLogin.username": "Username",
-  "chatLogin.password": "Password",
-  "chatLogin.copy": "Copy",
   "chatLogin.copied": "Copied.",
-  "chatLogin.show": "Show",
-  "chatLogin.hide": "Hide",
-  "chatLogin.note":
-    "Temporary account, for this hunt only and unrelated to your wallet. It's deleted with the room, 24 hours after the deadline. Messages are end-to-end encrypted.",
 
   // Sharing and X
   "share.share": "Share",
@@ -788,10 +754,6 @@ export const en: Messages = {
   "guide.note": "Huntited never displays your address. You'll only see this advice once.",
   "guide.connect": "Connect",
   "guide.close": "Close",
-  "guide.used.title": "This address has been used outside Huntited",
-  "guide.used.text":
-    "Your commitments could be linked to your other activity. An account reserved for Huntited avoids that.",
-  "guide.used.action": "Advice",
   "chain.commitNote":
     "Test network. Your wallet sends 0.2 test KAS to the Huntited registry, after you approve: that's what records your commitment on the blockchain, publicly (your address is visible there). The 5 KAS deposit is still simulated for now.",
   "chain.createNote":
@@ -862,60 +824,10 @@ export const en: Messages = {
   "review.createError": "Something went wrong while creating the hunt. Please try again.",
 
   // My pass
-  "pass.lead":
-    "The pass proves you're a real person: one person = one commitment per hunt. It stays on this device; Huntited never knows who you are or which hunts you join.",
-  "pass.unavailable":
-    "Passes work with the shared registry: they aren't available in this demo mode.",
-  "pass.join.title": "Join with an invitation",
-  "pass.join.text": "A member sends it to you (for example on Signal). Each invitation works once.",
-  "pass.join.label": "Invitation code or link",
-  "pass.create": "Create my pass",
-  "pass.creating": "Creating…",
-  "pass.created": "Your pass is created.",
-  "pass.active": "Your pass is active on this device.",
-  "pass.invite.title": "Invite someone",
-  "pass.invite.textOne":
-    "Only invite people you know: each invitation creates a pass. You have {count} invitation left this month.",
-  "pass.invite.textMany":
-    "Only invite people you know: each invitation creates a pass. You have {count} invitations left this month.",
-  "pass.invite.link": "Invitation link",
-  "pass.invite.copy": "Copy the link",
-  "pass.invite.copyFailed": "Can't copy: select the link instead.",
-  "pass.invite.help":
-    "Send it through an encrypted messenger (Signal). Valid 7 days, for one person.",
-  "pass.invite.create": "Create an invitation",
-  "pass.invite.proving": "Computing proof…",
-  "pass.backup.title": "Back up or remove my pass",
-  "pass.backup.text":
-    "Without a backup, your pass is lost if you change phones or clear the site's data. Keep this code to yourself: whoever has it can commit in your place.",
-  "pass.backup.code": "Backup code",
-  "pass.remove": "Remove the pass from this device",
-  "pass.remove.confirm": "Remove the pass from this device? Without a backup, it's lost.",
-  "pass.restore.title": "I already have a pass (restore a backup)",
-  "pass.restore.code": "Backup code to restore",
-  "pass.restore": "Restore",
-  "pass.restored": "Pass restored.",
-  "pass.err.generic": "That didn't work. Please try again.",
-  "pass.err.noPass": "No pass on this device.",
-  "pass.err.badBackup": "Invalid pass backup.",
-  "pass.err.unknown": "This pass isn't registered.",
-  "pass.err.alreadyHere": "This device already has a pass.",
-  "pass.err.invalidInvitation": "Invalid, expired or already used invitation.",
-  "pass.err.alreadyMember": "This pass is already registered.",
-  "pass.err.createFailed": "The pass couldn't be created. Please try again.",
-  "pass.err.inviteFailed": "The invitation couldn't be created. Please try again.",
-  "pass.err.noInvitesLeft": "You've used all your invitations this month.",
 
   // My hunts
   "my.connect": "Connect your wallet to see the hunts you created.",
-  "my.lead": "Hunts created with this wallet.",
   "my.leadLocal": "Hunts created with this wallet, on this device.",
-  "my.syncText":
-    "Used this wallet on another device? Get your hunts and commitments back (one signature, no KAS).",
-  "my.sync": "Sync",
-  "my.syncing": "Syncing…",
-  "my.synced": "Synced: {created} hunt(s) created, {commitments} commitment(s).",
-  "my.syncFailed": "Sync failed.",
   "my.noHunts": "You haven't created a hunt yet.",
   "my.threshold": "threshold {threshold}",
   "my.commitments": "My commitments",
@@ -964,10 +876,6 @@ export const en: Messages = {
   "card.ended": "Ended {when}",
   "my.created": "Hunts created",
   "my.browse": "Browse hunts",
-  "pass.step1": "A member sends you an invitation (for example on Signal).",
-  "pass.step2": "You create your pass: it stays on your phone, with no name or address.",
-  "pass.step3":
-    "To commit, your phone proves you have a pass without saying which one: one person = one commitment.",
   "form.section.action": "The action",
   "form.section.people": "Participants",
   "form.section.money": "Deposits",
@@ -980,7 +888,6 @@ export const en: Messages = {
   "wallet.err.accountChanged": "The Kastle account changed while connecting. Please try again.",
   "wallet.err.notConnected": "Wallet not connected.",
   "wallet.err.generic": "The wallet can't be connected. Please try again.",
-  "err.signature": "Signature refused: sign the message in your wallet to continue.",
   "err.unavailable": "The service is temporarily unavailable. Please try again.",
   "err.create": "Creating the hunt failed. Please try again.",
   "err.commit": "The commitment failed. Please try again.",
@@ -1001,6 +908,4 @@ export const en: Messages = {
   "after.mine": "Your commitment only counts if this hunt triggers:",
   "after.met": "done, it counts.",
   "after.waiting": "waiting.",
-  "err.sync": "Sync failed. Please try again.",
-  "err.needPass": "You need a Huntited pass to commit: ask a member for an invitation.",
 };

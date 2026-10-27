@@ -9,14 +9,14 @@
 ## Cycle de vie d'une chasse
 
 ```text
-Brouillon → Créée → Active → Seuil atteint / Activée → Chat Matrix ouvert → Résolution économique
+Brouillon → Créée → Active → Seuil atteint / Activée → Salon chiffré ouvert → Résolution économique
 ```
 
 - **Brouillon** : formulaire en cours, rien n'est déposé.
 - **Créée** : la caution (30 KAS au moins) est verrouillée dans le covenant.
 - **Active** : les engagements (5 KAS chacun) sont ouverts jusqu'à la deadline.
 - **Seuil atteint / Activée** : activation atomique pour tous les engagés.
-- **Chat Matrix ouvert** : salon chiffré éphémère, expire 24 h après la deadline.
+- **Salon chiffré ouvert** : salon chiffré éphémère (relais Nostr), expire 24 h après la deadline.
 - **Résolution économique** : flux ci-dessous (succès) ; une chasse qui expire sans atteindre le seuil passe directement à la résolution (échec).
 
 Les badges (`src/lib/badges.ts`) et, plus tard, les missions, XP et niveaux sont des récompenses non financières : ils n'influencent jamais les paiements. Les badges sont privés par défaut ; chaque wallet choisit de les rendre visibles publiquement.

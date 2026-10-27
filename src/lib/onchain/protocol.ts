@@ -1,8 +1,5 @@
-// Format des messages du registre, côté navigateur.
-// ⚠️ Copie conforme de backend/src/chain/protocol.ts (sans dépendance à Node) :
-// un test compare les deux versions sur les mêmes transactions
-// (src/lib/onchain/conformance.test.ts). Toute règle changée ici doit l'être
-// là-bas, et inversement.
+// Format des messages du registre (préfixe « HNT1 » + JSON, docs/registre-kaspa.md).
+// Tout index, d'où qu'il tourne, doit appliquer exactement les mêmes règles.
 import { schnorr } from "@noble/curves/secp256k1.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex, hexToBytes, utf8ToBytes } from "@noble/hashes/utils.js";
@@ -264,6 +261,13 @@ export const inviteDigest = (key: string) => digestField(`huntited:invite|${key}
 
 export const redeemDigest = (commitment: string) =>
   hexToBytes(sha256Hex(`huntited:redeem|${commitment}`));
+
+/** Clé publique d'une invitation à partir de son code secret (32 octets hex). */
+export const invitationKey = (code: string) => bytesToHex(schnorr.getPublicKey(hexToBytes(code)));
+
+/** Ce que signe la clé d'invitation : le pass qu'elle fait entrer (anti-vol en route). */
+export const signRedeem = (code: string, commitment: string) =>
+  bytesToHex(schnorr.sign(redeemDigest(commitment), hexToBytes(code)));
 
 /** Ce que signe une place : la chasse, le seuil personnel et la clé de chat. */
 export const placeDigest = (

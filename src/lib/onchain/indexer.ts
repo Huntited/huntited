@@ -1,9 +1,8 @@
 // Index du registre dans le navigateur : lit directement, sur l'API publique
 // du réseau de test, les transactions envoyées à l'adresse du registre, et les
 // rejoue dans le grand livre. Aucun serveur Huntited : chaque navigateur
-// recalcule l'état lui-même, et obtient le même que tous les autres.
-// ⚠️ Copie conforme de backend/src/chain/indexer.ts (même ordre, même
-// finalité, même tolérance au retard de l'API).
+// recalcule l'état lui-même, et obtient le même que tous les autres (même
+// ordre, même finalité, même tolérance au retard de l'API).
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 
 import type { ChainEvent, Ledger } from "./ledger";

@@ -1,7 +1,6 @@
 // L'index du registre, tournant dans ce navigateur (aucun serveur Huntited).
 // Il lit l'API publique du réseau de test (VITE_KASPA_API_URL), ne lui
-// transmet que l'adresse publique du registre, et produit les mêmes vues que
-// l'index du serveur (backend/src/routes/chain.ts).
+// transmet que l'adresse publique du registre, et produit les vues des chasses.
 import { REGISTRY_ADDRESS } from "../chain";
 import { chainDeeds, type ChainDeed } from "../rpg";
 import { minHuntThreshold } from "../validation";

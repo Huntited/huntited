@@ -5,7 +5,6 @@ export const fr = {
   "nav.hunts": "Chasses",
   "nav.create": "Créer",
   "nav.myHunts": "Mes chasses",
-  "nav.pass": "Mon pass",
   "nav.wallet": "Mon wallet",
   "mission.title": "Missions",
   "mission.new": "Nouvelle mission",
@@ -470,8 +469,6 @@ export const fr = {
   "commit.fullTerms": "Voir les conditions complètes",
   "commit.accept":
     "J'ai compris que mon dépôt reste bloqué jusqu'au déclenchement ou à la date limite de la chasse.",
-  "commit.needPass": "Il te faut un pass Huntited pour t'engager (une personne = un engagement).",
-  "commit.getPass": "Obtenir mon pass",
   "commit.submitting": "Engagement… (preuve en cours)",
   "commit.confirm": "Confirmer l'engagement",
 
@@ -491,29 +488,7 @@ export const fr = {
   "settle.simulate": "Simuler le règlement",
 
   // Chat
-  "chat.checking": "Vérification de l'accès…",
-  "chat.connect":
-    "Connecte ton wallet pour accéder au chat (réservé au créateur et aux engagé·es).",
-  "chat.forbidden":
-    "Le chat est réservé à la personne qui a créé la chasse et aux engagé·es retenu·es (dont la condition est remplie).",
-  "chat.unavailable": "Le chat est temporairement indisponible.",
-  "chat.signatureRefused":
-    "Signature refusée : signe le message dans ton wallet pour accéder au chat.",
-  "chat.expiredOn": "Le salon a expiré le {date}.",
-  "chat.neverOpened": "Aucun salon n'a été ouvert pour cette chasse.",
-  "chat.open": "Le chat est ouvert. Rejoins-le pour coordonner l'action.",
-  "chat.openLink": "Ouvrir le chat Matrix",
-  "chat.expiresOn": "Expire le {date}",
-  "notify.follow": "Me prévenir du résultat",
-  "notify.on": "Tu seras prévenu·e (annuler)",
-  "notify.hint": "Une notification quand la chasse se déclenche ou échoue.",
-  "notify.denied":
-    "Les notifications sont bloquées pour ce site : autorise-les dans les réglages du navigateur.",
-  "notify.unavailable": "Les notifications ne sont pas disponibles pour le moment.",
-  "chat.opening": "La chasse est déclenchée : ouverture du chat…",
   "common.retry": "Réessayer",
-  "chat.demoRoom":
-    "Démonstration : le salon est ouvert, mais aucun serveur de chat n'est encore en ligne. À la mise en ligne, un bouton « Ouvrir le chat Matrix » apparaîtra ici avec tes identifiants.",
   "chat.soon":
     "La chasse est déclenchée. Le chat chiffré entre participants arrive bientôt : en attendant, organisez-vous par vos moyens habituels.",
   "chat.p2p.secure": "Chiffré : seuls les membres de la chasse peuvent lire.",
@@ -604,7 +579,6 @@ export const fr = {
   "chat.p2p.placeholder": "Écrire un message…",
   "chat.p2p.send": "Envoyer",
   "chat.p2p.sending": "Envoi…",
-  "chat.p2p.sendFailed": "Message non envoyé : aucun relais n'a répondu. Réessaie.",
   "chat.p2p.you": "Toi",
   "chat.p2p.member": "Membre {n}",
   "chat.p2p.ends":
@@ -654,18 +628,7 @@ export const fr = {
     "Compte approximatif : la portée Bluetooth est de 10 à 50 m par téléphone, et les signaux passent de téléphone en téléphone.",
   "chat.p2p.ended": "Le chat est fermé (24 h après la date limite).",
   "chat.p2p.unavailable": "Chat indisponible pour le moment.",
-  "chat.demo": "(Démonstration : chat simulé, aucun salon réel)",
-  "chatLogin.title": "Tes identifiants pour ce chat",
-  "chatLogin.step1": "Ouvre le chat avec le bouton ci-dessus (application Element).",
-  "chatLogin.step2": "Connecte-toi avec l'identifiant et le mot de passe ci-dessous.",
-  "chatLogin.username": "Identifiant",
-  "chatLogin.password": "Mot de passe",
-  "chatLogin.copy": "Copier",
   "chatLogin.copied": "Copié.",
-  "chatLogin.show": "Afficher",
-  "chatLogin.hide": "Masquer",
-  "chatLogin.note":
-    "Compte temporaire, réservé à cette chasse et sans lien avec ton wallet. Il est supprimé avec le salon, 24 h après la date limite. Les messages sont chiffrés de bout en bout.",
 
   // Partage et X
   "share.share": "Partager",
@@ -803,10 +766,6 @@ export const fr = {
   "guide.note": "Huntited n'affiche jamais ton adresse. Ces conseils ne s'afficheront qu'une fois.",
   "guide.connect": "Connecter",
   "guide.close": "Fermer",
-  "guide.used.title": "Cette adresse a déjà servi hors de Huntited",
-  "guide.used.text":
-    "Tes engagements pourront être reliés à ton autre activité. Un compte réservé à Huntited l'évite.",
-  "guide.used.action": "Conseils",
   "chain.commitNote":
     "Réseau de test. Ton wallet envoie 0,2 KAS de test au registre Huntited, après ton accord : c'est ce qui inscrit ton engagement sur la blockchain, de façon publique (ton adresse y est visible). Le dépôt de 5 KAS reste simulé pour l'instant.",
   "chain.createNote":
@@ -878,61 +837,10 @@ export const fr = {
   "review.createError": "Une erreur est survenue lors de la création de la chasse. Réessaie.",
 
   // Mon pass
-  "pass.lead":
-    "Le pass prouve que tu es une vraie personne : une personne = un engagement par chasse. Il reste sur cet appareil ; Huntited ne sait jamais qui tu es ni à quelles chasses tu participes.",
-  "pass.unavailable":
-    "Les pass fonctionnent avec le registre partagé : ils ne sont pas disponibles dans ce mode de démonstration.",
-  "pass.join.title": "Rejoindre avec une invitation",
-  "pass.join.text":
-    "Un membre te l'envoie (par exemple sur Signal). Chaque invitation ne sert qu'une fois.",
-  "pass.join.label": "Code ou lien d'invitation",
-  "pass.create": "Créer mon pass",
-  "pass.creating": "Création…",
-  "pass.created": "Ton pass est créé.",
-  "pass.active": "Ton pass est actif sur cet appareil.",
-  "pass.invite.title": "Inviter quelqu'un",
-  "pass.invite.textOne":
-    "Invite seulement des personnes que tu connais : chaque invitation crée un pass. Il te reste {count} invitation ce mois-ci.",
-  "pass.invite.textMany":
-    "Invite seulement des personnes que tu connais : chaque invitation crée un pass. Il te reste {count} invitations ce mois-ci.",
-  "pass.invite.link": "Lien d'invitation",
-  "pass.invite.copy": "Copier le lien",
-  "pass.invite.copyFailed": "Copie impossible : sélectionne le lien.",
-  "pass.invite.help":
-    "Envoie-le par une messagerie chiffrée (Signal). Valable 7 jours, pour une seule personne.",
-  "pass.invite.create": "Créer une invitation",
-  "pass.invite.proving": "Preuve en cours…",
-  "pass.backup.title": "Sauvegarder ou retirer mon pass",
-  "pass.backup.text":
-    "Sans sauvegarde, ton pass est perdu si tu changes de téléphone ou effaces les données du site. Garde ce code pour toi : qui l'a peut s'engager à ta place.",
-  "pass.backup.code": "Code de sauvegarde",
-  "pass.remove": "Retirer le pass de cet appareil",
-  "pass.remove.confirm": "Retirer le pass de cet appareil ? Sans sauvegarde, il est perdu.",
-  "pass.restore.title": "J'ai déjà un pass (restaurer une sauvegarde)",
-  "pass.restore.code": "Code de sauvegarde à restaurer",
-  "pass.restore": "Restaurer",
-  "pass.restored": "Pass restauré.",
-  "pass.err.generic": "L'opération a échoué. Réessaie.",
-  "pass.err.noPass": "Aucun pass sur cet appareil.",
-  "pass.err.badBackup": "Sauvegarde de pass invalide.",
-  "pass.err.unknown": "Ce pass n'est pas enregistré.",
-  "pass.err.alreadyHere": "Cet appareil a déjà un pass.",
-  "pass.err.invalidInvitation": "Invitation invalide, expirée ou déjà utilisée.",
-  "pass.err.alreadyMember": "Ce pass est déjà enregistré.",
-  "pass.err.createFailed": "Impossible de créer le pass. Réessaie.",
-  "pass.err.inviteFailed": "Impossible de créer l'invitation. Réessaie.",
-  "pass.err.noInvitesLeft": "Tu as utilisé toutes tes invitations ce mois-ci.",
 
   // Mes chasses
   "my.connect": "Connecte ton wallet pour voir les chasses que tu as créées.",
-  "my.lead": "Les chasses créées avec ce wallet.",
   "my.leadLocal": "Les chasses créées avec ce wallet, sur cet appareil.",
-  "my.syncText":
-    "Tu as utilisé ce wallet sur un autre appareil ? Récupère tes chasses et tes engagements (une signature, aucun KAS).",
-  "my.sync": "Synchroniser",
-  "my.syncing": "Synchronisation…",
-  "my.synced": "Synchronisé : {created} chasse(s) créée(s), {commitments} engagement(s).",
-  "my.syncFailed": "La synchronisation a échoué.",
   "my.noHunts": "Tu n'as pas encore créé de chasse.",
   "my.threshold": "seuil {threshold}",
   "my.commitments": "Mes engagements",
@@ -982,10 +890,6 @@ export const fr = {
   "card.ended": "Terminée {when}",
   "my.created": "Chasses créées",
   "my.browse": "Voir les chasses",
-  "pass.step1": "Un membre t'envoie une invitation (par exemple sur Signal).",
-  "pass.step2": "Tu crées ton pass : il reste sur ton téléphone, sans nom ni adresse.",
-  "pass.step3":
-    "Pour t'engager, ton téléphone prouve que tu as un pass, sans dire lequel : une personne = un engagement.",
   "form.section.action": "L'action",
   "form.section.people": "Les participants",
   "form.section.money": "Les dépôts",
@@ -998,7 +902,6 @@ export const fr = {
   "wallet.err.accountChanged": "Le compte Kastle a changé pendant la connexion. Réessaie.",
   "wallet.err.notConnected": "Wallet non connecté.",
   "wallet.err.generic": "Connexion au wallet impossible. Réessaie.",
-  "err.signature": "Signature refusée : signe le message dans ton wallet pour continuer.",
   "err.unavailable": "Le service est temporairement indisponible. Réessaie.",
   "err.create": "La création de la chasse a échoué. Réessaie.",
   "err.commit": "L'engagement a échoué. Réessaie.",
@@ -1019,9 +922,6 @@ export const fr = {
   "after.mine": "Ton engagement compte seulement si cette chasse se déclenche :",
   "after.met": "c'est fait, il compte.",
   "after.waiting": "en attente.",
-  "err.sync": "La synchronisation a échoué. Réessaie.",
-  "err.needPass":
-    "Il te faut un pass Huntited pour t'engager : demande une invitation à un membre.",
 } as const;
 
 export type Messages = Record<keyof typeof fr, string>;

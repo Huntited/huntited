@@ -16,14 +16,9 @@ const index = vi.hoisted(() => ({
   listChainHunts: vi.fn(async () => []),
 }));
 vi.mock("./onchain/browser-index", () => index);
-const api = vi.hoisted(() => ({ apiFetch: vi.fn() }));
-vi.mock("./api-client", async (orig) => ({
-  ...(await orig<typeof import("./api-client")>()),
-  apiFetch: api.apiFetch,
-}));
 
 import { REGISTRY_ADDRESS, REGISTRY_FEE_SOMPI } from "./chain";
-import { commit, createHunt, getHuntView, isCommitted } from "./hunt-repository";
+import { commit, createHunt, getDataMode, getHuntView, isCommitted } from "./hunt-repository";
 
 const ADDR = `kaspatest:${"q".repeat(61)}`;
 const decode = (hex: string) =>
@@ -32,11 +27,16 @@ const decode = (hex: string) =>
 beforeEach(() => {
   localStorage.clear();
   sent.calls = [];
-  api.apiFetch.mockReset();
   vi.stubEnv("VITE_DATA_MODE", "chain");
 });
 
 describe("mode chaîne", () => {
+  it("lit le mode depuis VITE_DATA_MODE (démo locale par défaut)", () => {
+    expect(getDataMode()).toBe("chain");
+    vi.stubEnv("VITE_DATA_MODE", "");
+    expect(getDataMode()).toBe("local");
+  });
+
   it("crée une chasse par une transaction au registre, visible « en cours » avant l'index", async () => {
     const id = await createHunt(
       {
@@ -72,7 +72,6 @@ describe("mode chaîne", () => {
     expect(view).toMatchObject({ pending: true, commitsOpen: false });
     expect(view?.hunt.title).toBe("Conseil");
     expect(index.getChainHunt).toHaveBeenCalledWith(id);
-    expect(api.apiFetch).not.toHaveBeenCalled();
   });
 
   it("engagement : seuil personnel dans le message, un seul par wallet", async () => {

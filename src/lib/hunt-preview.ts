@@ -1,9 +1,6 @@
-// Aperçu riche d'un lien de chasse (X, WhatsApp, Signal…) : balises Open
-// Graph rendues par le serveur. Seules des informations déjà publiques sont
-// utilisées : titre, seuil, date limite. Jamais le lieu, le nombre d'engagés
-// ni aucune donnée de wallet.
-import { apiBaseUrl } from "./api-client";
-import { getDataMode } from "./hunt-repository";
+// Balises d'aperçu d'un lien de chasse (X, WhatsApp, Signal…). Le site est
+// statique : sans serveur pour lire la chasse, l'aperçu reste générique.
+// Seules des informations publiques seraient utilisées : titre, seuil, date.
 
 export interface HuntPreview {
   title: string;
@@ -15,36 +12,6 @@ export interface HuntPreview {
 export function siteUrl(): string | null {
   const v = import.meta.env["VITE_SITE_URL"] as string | undefined;
   return v ? v.replace(/\/+$/, "") : null;
-}
-
-/**
- * Lit les informations publiques d'une chasse dans le registre partagé.
- * En mode local (chasses dans le navigateur), le serveur ne les connaît pas :
- * l'aperçu reste générique. Ne bloque jamais la page (délai court, erreurs ignorées).
- */
-export async function fetchHuntPreview(id: string): Promise<HuntPreview | null> {
-  const mode = getDataMode();
-  if (mode === "local") return null;
-  // Index dans le navigateur (aucun serveur) : pas d'aperçu riche, aperçu générique.
-  if (mode === "chain" && import.meta.env["VITE_CHAIN_INDEX"] !== "server") return null;
-  const path = mode === "chain" ? "/api/chain/hunts" : "/api/hunts";
-  try {
-    const res = await fetch(`${apiBaseUrl()}${path}/${encodeURIComponent(id)}`, {
-      signal: AbortSignal.timeout(2_000),
-    });
-    if (!res.ok) return null;
-    const h = (await res.json()) as Record<string, unknown>;
-    if (
-      typeof h["title"] !== "string" ||
-      typeof h["threshold"] !== "number" ||
-      typeof h["deadline"] !== "string"
-    ) {
-      return null;
-    }
-    return { title: h["title"], threshold: h["threshold"], deadline: h["deadline"] };
-  } catch {
-    return null;
-  }
 }
 
 export function huntPreviewDescription(p: HuntPreview): string {

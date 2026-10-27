@@ -4,31 +4,13 @@
 // passerelle IPFS, sans règle de réécriture.
 import { applyInitialTheme } from "./theme";
 import { QueryClient } from "@tanstack/react-query";
-import {
-  createHashHistory,
-  createRouter,
-  HeadContent,
-  RouterProvider,
-} from "@tanstack/react-router";
-import { StrictMode, type ReactNode } from "react";
+import { createHashHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { routeTree } from "@/routeTree.gen";
-import { Route as RootRoute } from "@/routes/__root";
 
 applyInitialTheme();
-
-// Pas de document HTML à produire (il est dans index.html) : on garde
-// seulement les balises de tête (titre, description…), que React place
-// lui-même dans <head>.
-RootRoute.update({
-  shellComponent: ({ children }: { children: ReactNode }) => (
-    <>
-      <HeadContent />
-      {children}
-    </>
-  ),
-});
 
 const router = createRouter({
   routeTree,
@@ -47,6 +29,12 @@ router.subscribe("onResolved", () => {
     window.history.replaceState(window.history.state, "", pathname + search);
   }
 });
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 createRoot(document.getElementById("app")!).render(
   <StrictMode>

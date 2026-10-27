@@ -1,9 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-vi.mock("./push", () => ({ isFollowing: () => true, unfollowHunt: vi.fn(async () => {}) }));
+import { beforeEach, describe, expect, it } from "vitest";
 
 import { eraseDeviceData, exportDeviceData, readDeviceData } from "./device-data";
-import { unfollowHunt } from "./push";
 
 beforeEach(() => {
   localStorage.clear();
@@ -37,10 +34,8 @@ describe("données de l'appareil", () => {
     expect(out.data["autre-site"]).toBeUndefined();
   });
 
-  it("efface tout ce qui est à Huntited, se désabonne, et laisse le reste", async () => {
+  it("efface tout ce qui est à Huntited, et laisse le reste", async () => {
     await eraseDeviceData();
-    expect(unfollowHunt).toHaveBeenCalledWith("h1");
-    expect(unfollowHunt).toHaveBeenCalledWith("h2");
     expect(readDeviceData()).toEqual([]);
     expect(localStorage.getItem("autre-site")).toBe("à ne pas toucher");
   });

@@ -1,7 +1,6 @@
 // « Tes données » : tout ce que Huntited garde dans ce navigateur, regroupé
 // et expliqué, avec export et effacement. Lit uniquement les clés
 // « huntited:… » du stockage local : rien n'est envoyé nulle part.
-import { isFollowing, unfollowHunt } from "./push";
 
 const PREFIX = "huntited:";
 
@@ -128,25 +127,12 @@ export function downloadDeviceData(): void {
 }
 
 /**
- * Efface tout ce que Huntited garde dans ce navigateur : stockage local,
- * abonnements aux notifications (aussi retirés du serveur) et service worker.
+ * Efface tout ce que Huntited garde dans ce navigateur : stockage local et
+ * service worker.
  */
 export async function eraseDeviceData(): Promise<void> {
   const s = storage();
   if (!s) return;
-  // Notifications : se désabonner côté serveur tant qu'on connaît les chasses.
-  try {
-    const followed = JSON.parse(s.getItem(`${PREFIX}push`) ?? "[]") as unknown;
-    if (Array.isArray(followed)) {
-      await Promise.all(
-        followed
-          .filter((id): id is string => typeof id === "string" && isFollowing(id))
-          .map((id) => unfollowHunt(id)),
-      );
-    }
-  } catch {
-    /* le serveur les oubliera de toute façon à la fin des chasses */
-  }
   try {
     const reg = await navigator.serviceWorker?.getRegistration("/sw.js");
     await reg?.unregister();

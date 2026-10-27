@@ -11,7 +11,7 @@ La blockchain ne permet pas de supprimer une chasse. Huntited peut seulement
 - **Messages** (`src/lib/onchain/protocol.ts`, identique côté serveur) :
   - `{"t":"hide","hunt":"<id>","reason":"illegal|violence|harassment|personal-data|deception|spam"}`
   - `{"t":"unhide","hunt":"<id>"}`
-  Envoyés par une autre adresse : ignorés (`not_publisher`).
+    Envoyés par une autre adresse : ignorés (`not_publisher`).
 - **Effet** : la chasse disparaît des listes ; sa page indique « Chasse
   masquée » avec la raison et un lien vers les usages interdits. Côté serveur,
   `/api/chain/hunts` l'omet et `/api/chain/hunts/:id` répond 410.

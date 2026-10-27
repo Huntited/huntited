@@ -1,11 +1,11 @@
-// Grand livre du registre, côté navigateur : rejoue les messages lus sur la
-// chaîne, dans l'ordre, et en déduit l'état des chasses (et des pass).
-// ⚠️ Copie conforme de backend/src/chain/ledger.ts, vérifiée par
-// src/lib/onchain/conformance.test.ts.
-// Différence technique seulement : le groupe et la vérification des preuves de
-// pass (en réserve, rares) sont chargés à la demande, pour ne pas alourdir le site.
-import { createClientOnlyFn } from "@tanstack/react-start";
-
+// Grand livre du registre : rejoue les messages lus sur la chaîne, dans
+// l'ordre de la chaîne, et en déduit l'état des chasses (et des pass).
+// Déterministe : deux navigateurs qui lisent les mêmes transactions obtiennent
+// exactement le même état (aucune horloge locale, seulement l'heure des blocs).
+// Un message invalide est simplement ignoré (avec sa raison). Tests :
+// ledger.test.ts.
+// Le groupe et la vérification des preuves de pass (en réserve, rares) sont
+// chargés à la demande, pour ne pas alourdir le site.
 import { computeRetainedGroup, isRetained, type RetainedGroup } from "../retained-group";
 import {
   INVITATION_TTL_MS,
@@ -70,9 +70,8 @@ export type ApplyResult =
 
 export type ProofVerifier = (proof: ProofInput) => Promise<boolean>;
 
-// Bibliothèque des preuves de pass : chargée dans le navigateur seulement (le
-// rendu serveur ne sait pas l'empaqueter, et n'en a pas besoin).
-const semaphore = createClientOnlyFn(() => import("@semaphore-protocol/core"));
+// Bibliothèque des preuves de pass : chargée seulement quand une preuve arrive.
+const semaphore = () => import("@semaphore-protocol/core");
 
 const realVerifier: ProofVerifier = async (proof) => {
   try {

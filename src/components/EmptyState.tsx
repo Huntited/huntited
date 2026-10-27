@@ -13,7 +13,7 @@ export function EmptyState({
   title: string;
   text?: string;
   action?: string;
-  to?: "/" | "/create" | "/pass";
+  to?: "/" | "/create";
 }) {
   return (
     <div className="mt-3 flex flex-col items-center rounded-lg border border-dashed px-4 py-10 text-center">

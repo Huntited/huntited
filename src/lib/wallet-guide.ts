@@ -2,7 +2,6 @@
 // - fenêtre affichée avant la première connexion de Kastle ;
 // - vérification, après connexion, que l'adresse n'a pas servi ailleurs.
 import { hasBuiltinWallet } from "./builtin-wallet";
-import { apiFetch, hasBackend } from "./api-client";
 import { getDataMode } from "./hunt-repository";
 import { getWalletMode } from "./wallet";
 
@@ -72,29 +71,4 @@ export function closeGuide(go: boolean): void {
   pending?.(go);
   pending = null;
   set({ ...guide, open: false });
-}
-
-export type AddressCheck = { usedElsewhere: boolean; reasons: string[] } | null;
-
-/**
- * Vérifie une fois par adresse si elle a servi hors de Huntited. Par le
- * serveur Huntited (l'API publique ne voit pas l'IP) ; rien n'est conservé.
- * null : pas de vérification (mode local, wallet factice, service indisponible).
- */
-export async function checkAddressOnce(address: string): Promise<AddressCheck> {
-  if (getDataMode() === "local" || getWalletMode() !== "kastle" || !hasBackend()) return null;
-  if (!address.startsWith("kaspatest:")) return null;
-  const checked = new Set((read(CHECKED_KEY) ?? "").split(",").filter(Boolean));
-  if (checked.has(address)) return null;
-  try {
-    const r = await apiFetch<{ usedElsewhere: boolean; reasons: string[] }>(
-      "POST",
-      "/api/wallet/exposure",
-      { address },
-    );
-    write(CHECKED_KEY, [...checked, address].slice(-20).join(","));
-    return r;
-  } catch {
-    return null;
-  }
 }

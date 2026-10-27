@@ -3,7 +3,7 @@
 // C'est la clé qui possède le nom huntited.kas (service de noms de Kaspa, sur
 // le réseau principal). Le registre fonctionnant sur le réseau de test, on
 // utilise l'adresse de test de cette même clé : seul le préfixe et la somme de
-// contrôle changent (vérifié par backend/src/chain/publisher.test.ts).
+// contrôle changent (vérifié par addresses.test.ts).
 // N'importe qui peut donc vérifier qui publie les versions officielles.
 export const OFFICIAL_DOMAIN = "huntited.kas";
 export const OFFICIAL_MAINNET_ADDRESS =

@@ -94,7 +94,7 @@ date limite.
 
 ## 7. Mise en œuvre (après validation)
 
-1. Fonction pure `computeRetainedGroup(seuils, T)` + tests (backend et front).
+1. Fonction pure `computeRetainedGroup(seuils, T)` + tests.
 2. Registre : seuil personnel stocké avec l'engagement, groupe retenu calculé
    à chaque engagement, règlement sur le groupe retenu.
 3. Économie : `calculateSettlement` reçoit retenus / non retenus.

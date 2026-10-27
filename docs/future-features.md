@@ -18,9 +18,9 @@ Une réputation on-chain ou hors-chaîne pourrait refléter l'historique des cr�
 
 Un fonds de secours pourrait aider après un bug ou financer certains dépôts. Le placement temporaire des fonds est aussi une piste, mais ces mécanismes ajoutent des risques financiers incompatibles avec le MVP.
 
-## Chat Matrix avancé
+## Salons chiffrés avancés
 
-Salons éphémères, E2EE avec clés par chasse, modération anti-doxxing et historique optionnel.
+Relais Nostr propre à Huntited (chez un CHATONS), modération anti-doxxing et historique optionnel.
 
 ## Indexer et explorateur
 
@@ -33,9 +33,10 @@ La multi-signature initiale pourra évoluer vers une gouvernance plus décentral
 ## Priorité indicative
 
 1. Indexer et explorateur après le déploiement on-chain.
-2. Chat Matrix avancé selon les besoins de coordination.
+2. Salons chiffrés avancés selon les besoins de coordination.
 3. Veto des engagés uniquement si des abus réels le justifient.
 4. Réputation, assurance, DeFi et gouvernance décentralisée à plus long terme.
+
 ## Gamification (en réserve)
 
 Chaque mission = une quête ; les engagés = une team ; la participation vérifiée = quête accomplie.
