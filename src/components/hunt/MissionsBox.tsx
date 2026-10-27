@@ -1,7 +1,8 @@
 // Missions du salon (src/lib/missions.ts, docs/missions.md) : le créateur lance
 // une mission ; chacun la prouve par le code de présence (QR sur place, code
-// dit en ligne) ou par la vérification de trois autres membres.
-import { Check, Target, X } from "lucide-react";
+// dit en ligne), par la vérification de trois autres membres, ou en signant
+// la lettre collective.
+import { Check, Copy, Download, PenLine, Target, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -11,12 +12,14 @@ import { qrSvg } from "@/lib/app-link";
 import { useI18n } from "@/lib/i18n";
 import {
   CODE_WINDOW_MS,
+  MAX_LETTER,
   codeHash,
   codeProof,
   newCode,
   newMissionId,
   normalizeCode,
   shortId,
+  signedLetter,
   type Mission,
   type MissionKind,
   type MissionMsg,
@@ -103,7 +106,11 @@ function NewMission({ onPost }: { onPost: Post }) {
         e.preventDefault();
         if (!text.trim() || busy) return;
         setBusy(true);
-        void onPost(t("mission.announce", { text: text.trim() }), {
+        const announce =
+          kind === "sign"
+            ? t("mission.announceLetter", { text: text.trim().split("\n")[0]!.slice(0, 120) })
+            : t("mission.announce", { text: text.trim() });
+        void onPost(announce, {
           t: "create",
           id: newMissionId(),
           text: text.trim(),
@@ -120,12 +127,12 @@ function NewMission({ onPost }: { onPost: Post }) {
         id="mission-text"
         value={text}
         onChange={(e) => setText(e.target.value)}
-        maxLength={500}
-        rows={2}
-        placeholder={t("mission.placeholder")}
+        maxLength={kind === "sign" ? MAX_LETTER : 500}
+        rows={kind === "sign" ? 8 : 2}
+        placeholder={t(kind === "sign" ? "mission.letterPlaceholder" : "mission.placeholder")}
       />
       <div className="space-y-1 text-xs">
-        {(["code", "peer"] as const).map((k) => (
+        {(["code", "peer", "sign"] as const).map((k) => (
           <label key={k} className="flex items-start gap-2">
             <input
               type="radio"
@@ -178,7 +185,7 @@ function MissionCard({
 
   return (
     <div className="space-y-2 rounded border bg-background p-3 text-sm">
-      <p className="font-medium">{m.text}</p>
+      <p className={m.kind === "sign" ? "whitespace-pre-wrap" : "font-medium"}>{m.text}</p>
       <p className="text-xs text-muted-foreground">
         {t(`mission.kind.${m.kind}`)} · {t("mission.validCount", { n: valid })}
       </p>
@@ -208,6 +215,8 @@ function MissionCard({
           {...(prefillCode ? { prefillCode } : {})}
           onPost={onPost}
         />
+      ) : m.kind === "sign" ? (
+        <SignPart mission={m} isCreator={isCreator} hasProof={!!mine} onPost={onPost} />
       ) : (
         <PeerPart mission={m} me={me} nameOf={nameOf} hasProof={!!mine} onPost={onPost} />
       )}
@@ -437,6 +446,101 @@ function PeerPart({
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SignPart({
+  mission: m,
+  isCreator,
+  hasProof,
+  onPost,
+}: {
+  mission: Mission;
+  isCreator: boolean;
+  hasProof: boolean;
+  onPost: Post;
+}) {
+  const { t } = useI18n();
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const signers = m.proofs.filter((p) => p.status === "valid");
+  const letter = () =>
+    signedLetter(m, t("mission.anonymous"), t("mission.signersHeader", { n: signers.length }));
+
+  return (
+    <div className="space-y-3">
+      {signers.length > 0 && (
+        <div className="text-xs">
+          <p className="font-medium">{t("mission.signersHeader", { n: signers.length })}</p>
+          <ul className="mt-1 list-inside list-disc text-muted-foreground">
+            {signers.map((p) => (
+              <li key={p.msgId}>{p.text ?? t("mission.anonymous")}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {!hasProof && (
+        <form
+          className="space-y-1"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setBusy(true);
+            void onPost("", {
+              t: "proof",
+              id: m.id,
+              signed: true,
+              ...(name.trim() ? { text: name.trim() } : {}),
+            }).finally(() => setBusy(false));
+          }}
+        >
+          <label htmlFor={`sign-${m.id}`} className="text-xs font-medium">
+            {t("mission.signAs")}
+          </label>
+          <div className="flex gap-2">
+            <Input
+              id={`sign-${m.id}`}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={80}
+              placeholder={t("mission.anonymous")}
+              className="h-9"
+            />
+            <Button type="submit" size="sm" disabled={busy}>
+              <PenLine aria-hidden /> {t("mission.sign")}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">{t("mission.signHint")}</p>
+        </form>
+      )}
+      {isCreator && signers.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              void navigator.clipboard?.writeText(letter()).then(() => setCopied(true));
+            }}
+          >
+            <Copy aria-hidden /> {copied ? t("mission.copied") : t("mission.copyLetter")}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const url = URL.createObjectURL(new Blob([letter()], { type: "text/plain" }));
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "lettre.txt";
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download aria-hidden /> {t("mission.downloadLetter")}
+          </Button>
         </div>
       )}
     </div>

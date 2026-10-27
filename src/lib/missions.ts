@@ -9,6 +9,8 @@
 //   (HMAC), et tout le monde peut tout vérifier, créateur compris.
 // - « pairs » : le membre décrit ce qu'il a fait ; trois autres membres, tirés
 //   au sort de façon vérifiable, votent « faite » ou « pas faite ».
+// - « lettre » : le créateur rédige une lettre ; chaque membre la signe dans le
+//   salon (nom choisi, ou anonyme). La signature est l'action : validée d'office.
 // Inspiré des vérificateurs de Ta-da, sans jeton ni argent en jeu.
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -16,12 +18,12 @@ import { bytesToHex, utf8ToBytes } from "@noble/hashes/utils.js";
 
 import type { ChatMessage } from "./p2p-chat";
 
-export type MissionKind = "code" | "peer";
+export type MissionKind = "code" | "peer" | "sign";
 
 export type MissionMsg =
   | { t: "create"; id: string; text: string; kind: MissionKind }
   | { t: "open"; id: string; hash: string; opensAt: number; closesAt: number }
-  | { t: "proof"; id: string; mac?: string; text?: string }
+  | { t: "proof"; id: string; mac?: string; text?: string; signed?: true }
   | { t: "reveal"; id: string; code: string; seen: string[] }
   | { t: "vote"; id: string; proof: string; ok: boolean };
 
@@ -30,6 +32,9 @@ export const CODE_WINDOW_MS = 10 * 60_000;
 const GRACE_MS = 2 * 60_000;
 export const CHECKERS = 3;
 const MAX_TEXT = 500;
+/** Lettre collective : texte plus long. */
+export const MAX_LETTER = 4000;
+const MAX_SIGNATURE = 80;
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 const HEX = (n: number) => new RegExp(`^[0-9a-f]{${n}}$`);
@@ -51,7 +56,8 @@ export function cleanMission(m: unknown): MissionMsg | undefined {
       | "code"
       | "seen"
       | "proof"
-      | "ok",
+      | "ok"
+      | "signed",
       unknown
     >
   >;
@@ -59,7 +65,8 @@ export function cleanMission(m: unknown): MissionMsg | undefined {
   const id = o.id;
   switch (o.t) {
     case "create":
-      return str(o.text, MAX_TEXT) && (o.kind === "code" || o.kind === "peer")
+      return str(o.text, o.kind === "sign" ? MAX_LETTER : MAX_TEXT) &&
+        (o.kind === "code" || o.kind === "peer" || o.kind === "sign")
         ? { t: "create", id, text: (o.text as string).trim(), kind: o.kind }
         : undefined;
     case "open":
@@ -72,6 +79,11 @@ export function cleanMission(m: unknown): MissionMsg | undefined {
         ? { t: "open", id, hash: o.hash, opensAt: o.opensAt, closesAt: o.closesAt }
         : undefined;
     case "proof": {
+      // Signature : nom affiché sous la lettre (facultatif, sinon anonyme).
+      if (o.signed === true) {
+        const name = str(o.text, MAX_SIGNATURE) ? (o.text as string).trim() : "";
+        return { t: "proof", id, signed: true, ...(name ? { text: name } : {}) };
+      }
       const mac = typeof o.mac === "string" && HEX(64).test(o.mac) ? o.mac : undefined;
       const text = str(o.text, MAX_TEXT) ? (o.text as string).trim() : undefined;
       if (!mac && !text) return undefined;
@@ -133,6 +145,8 @@ export interface MissionProof {
   text?: string;
   /** Code : preuve de connaissance du code. */
   mac?: string;
+  /** Lettre : signature. */
+  signed?: true;
   status: ProofStatus;
   /** Pairs : vérificateurs tirés au sort, et leurs votes. */
   checkers: string[];
@@ -191,8 +205,8 @@ export function missionsOf(
       } else mission.badReveal = true;
     } else if (x.t === "proof") {
       const list = proofs.get(mission.id) ?? new Map<string, MissionProof>();
-      // Code : la première preuve compte ; pairs : la dernière remplace.
-      if (mission.kind === "code" && list.has(m.author)) continue;
+      // Code et lettre : la première preuve compte ; pairs : la dernière remplace.
+      if (mission.kind !== "peer" && list.has(m.author)) continue;
       list.set(m.author, {
         msgId: m.id,
         author: m.author,
@@ -202,6 +216,7 @@ export function missionsOf(
         checkers: mission.kind === "peer" ? checkersOf(m.id, m.author, members) : [],
         votes: {},
         ...(x.mac ? { mac: x.mac } : {}),
+        ...(x.signed ? { signed: true as const } : {}),
       });
       proofs.set(mission.id, list);
     } else if (x.t === "vote") {
@@ -228,6 +243,7 @@ export function missionsOf(
 export const shortId = (msgId: string) => msgId.slice(0, 16);
 
 function statusOf(mission: Mission, p: MissionProof): ProofStatus {
+  if (mission.kind === "sign") return p.signed ? "valid" : "invalid";
   if (mission.kind === "code") {
     if (!mission.window || !mission.revealed || !p.mac)
       return mission.badReveal ? "invalid" : "pending";
@@ -247,6 +263,12 @@ function statusOf(mission: Mission, p: MissionProof): ProofStatus {
   if (yes >= needed) return "valid";
   if (no >= needed) return "invalid";
   return "pending";
+}
+
+/** Lettre signée, prête à envoyer : le texte, puis les signataires (dans l'ordre). */
+export function signedLetter(mission: Mission, anonymous: string, header: string): string {
+  const names = mission.proofs.filter((p) => p.status === "valid").map((p) => p.text ?? anonymous);
+  return [mission.text, "", header, ...names.map((n) => `- ${n}`)].join("\n");
 }
 
 /** Membres dont la mission est validée (au moins une mission du salon). */

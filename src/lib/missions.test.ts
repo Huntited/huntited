@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MAX_LETTER,
   checkerRecord,
   checkersOf,
   cleanMission,
@@ -10,6 +11,7 @@ import {
   newCode,
   newMissionId,
   shortId,
+  signedLetter,
   validatedMembers,
   type MissionMsg,
 } from "./missions";
@@ -128,6 +130,42 @@ describe("missions", () => {
       expect(m!.proofs[0]!.status).toBe("valid");
       expect(checkerRecord([m!], c1!)).toEqual({ agree: 1, total: 1 });
       expect(checkerRecord([m!], c3!)).toEqual({ agree: 0, total: 1 });
+    });
+  });
+
+  describe("lettre collective", () => {
+    const id = newMissionId();
+    const letter = "Madame la Maire,\n\nNous demandons un banc.";
+    const create = msg(CREATOR, 0, { t: "create", id, text: letter, kind: "sign" });
+
+    it("signer valide d'office ; une seule signature par membre ; la lettre liste les signataires", () => {
+      const ms = missionsOf(
+        [
+          create,
+          msg(A, 1, { t: "proof", id, signed: true, text: "Alice, Lyon" }),
+          msg(B, 2, { t: "proof", id, signed: true }),
+          msg(A, 3, { t: "proof", id, signed: true, text: "Autre nom" }),
+          msg(D, 4, { t: "proof", id, text: "pas une signature" }),
+        ],
+        CREATOR,
+        MEMBERS,
+      );
+      const m = ms[0]!;
+      expect(validatedMembers(ms)).toEqual(new Set([A, B]));
+      expect(signedLetter(m, "Anonyme", "Signataires (2) :")).toBe(
+        `${letter}\n\nSignataires (2) :\n- Alice, Lyon\n- Anonyme`,
+      );
+    });
+
+    it("accepte une lettre longue, pas les autres missions", () => {
+      const long = "x".repeat(MAX_LETTER);
+      expect(cleanMission({ t: "create", id, text: long, kind: "sign" })).toBeDefined();
+      expect(cleanMission({ t: "create", id, text: long, kind: "peer" })).toBeUndefined();
+      expect(cleanMission({ t: "proof", id, signed: true })).toEqual({
+        t: "proof",
+        id,
+        signed: true,
+      });
     });
   });
 });

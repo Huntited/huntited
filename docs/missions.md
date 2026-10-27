@@ -30,6 +30,15 @@ façon vérifiable (tri par `sha256(<preuve>|<membre>)`) ; seuls leurs votes
 comptent, la majorité décide. La fiabilité d'un vérificateur (votes conformes
 à la décision) est calculée (`checkerRecord`).
 
+## Lettre collective
+
+Le créateur rédige la lettre (jusqu'à 4 000 caractères). Chaque membre la signe
+dans le salon, sous un nom de son choix ou anonymement : la signature est
+l'action, elle est validée d'office (une seule par membre). Le créateur copie
+ou télécharge la lettre suivie de la liste des signataires, puis l'envoie
+lui-même au destinataire. Le nom choisi n'est vu que des membres du salon et
+du destinataire de la lettre.
+
 ## Ce qui en sort
 
 - Dans le salon : ✓ à côté du pseudo des membres ayant validé une mission.
@@ -38,5 +47,5 @@ comptent, la majorité décide. La fiabilité d'un vérificateur (votes conforme
 
 ## Pistes
 
-Lettre collective signée (preuve automatique), preuve zkTLS d'un retweet sans
-révéler le compte, photo chiffrée comme preuve.
+Preuve zkTLS d'un retweet, d'un commentaire ou d'un like sans révéler le
+compte (étude : docs/zktls.md), photo chiffrée comme preuve.
