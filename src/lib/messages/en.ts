@@ -369,15 +369,15 @@ export const en: Messages = {
   "home.browse": "Browse hunts",
   "home.example.title": "How it works, with an example",
   "home.example.1":
-    'The school parents would like to leave the WhatsApp group for Signal. But nobody leaves alone: they\'d miss every message. Lea creates a hunt: "We all move to Signal if there are at least 20 of us".',
+    'Lea is fed up with litter on the beach. But picking it up alone is pointless. She creates a hunt: "We clean the beach on Saturday if there are at least 15 of us".',
   "home.example.2":
-    "Each parent commits on their own, with a 5 KAS deposit. Nobody sees who committed, not even Lea.",
+    "Everyone commits on their own, with a 5 KAS deposit. Nobody sees who committed, not even Lea.",
   "home.example.3":
-    "The 20th commitment triggers the hunt: everyone is notified and moves to Signal on the same day. If it doesn't reach 20, nothing happens: everyone gets their deposit back.",
+    "The 15th commitment triggers the hunt: everyone is notified and an encrypted chat opens to get organised. If it doesn't reach 15, nothing happens: everyone gets their deposit back.",
   "home.example.cardLabel": "Example hunt",
-  "home.example.cardTitle": "School parents: we move to Signal",
-  "home.example.cardMeta": "Online · before 12 March",
-  "home.example.cardProgress": "Threshold: 20 people · progress hidden",
+  "home.example.cardTitle": "Beach clean-up on Saturday",
+  "home.example.cardMeta": "Prado beach · before Saturday",
+  "home.example.cardProgress": "Threshold: 15 people · progress hidden",
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Do I need a wallet?",
   "home.faq.wallet.a":
