@@ -7,6 +7,7 @@ export const en: Messages = {
   "nav.create": "Create",
   "nav.myHunts": "My hunts",
   "nav.pass": "My pass",
+  "nav.wallet": "My wallet",
   "nav.menu": "Menu",
   "nav.home": "Huntited home",
   "lang.switch": "Language",

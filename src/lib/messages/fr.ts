@@ -6,6 +6,7 @@ export const fr = {
   "nav.create": "Créer",
   "nav.myHunts": "Mes chasses",
   "nav.pass": "Mon pass",
+  "nav.wallet": "Mon wallet",
   "nav.menu": "Menu",
   "nav.home": "Accueil Huntited",
   "lang.switch": "Langue",
