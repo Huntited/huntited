@@ -105,12 +105,12 @@ export const termsFullFor = (cautionKas: number, locale: Locale = "fr") => {
 COMMITMENT TERMS — HUNTITED (test version)
 
 1. What you lock
-By committing, you lock 5 KAS until the end of the hunt (end of the
-action or deadline passed). They are returned in full at the end, in
-every case. You can't take them back before.
+By committing, you lock 5 KAS until the end of the action (deadline
+passed). They are returned in full at the end, in every case. You can
+withdraw your commitment until the action triggers; after that, you can't.
 
 2. The creator's reward
-The creator locks a deposit (${a.caution} for this hunt, 30 KAS at
+The creator locks a deposit (${a.caution} for this action, 30 KAS at
 least). They never gain anything from it: part of it is returned.
 - The action happens (threshold reached): up to ${a.pool} are shared
   equally among participants, capped at ${a.cap} each, and
@@ -132,7 +132,7 @@ all. Nobody ends up exposed alone.
 
 4. What is public
 Your commitment is written on the Kaspa blockchain with your wallet
-address, the hunt's identifier and any personal threshold. It is
+address, the action's identifier and any personal threshold. It is
 public and permanent: anyone can read it, even though the site doesn't
 show it. The creator can hide the number of commitments on the site,
 but it stays readable on the blockchain. For more discretion, use a
@@ -144,12 +144,13 @@ Registering the commitment costs 0.2 KAS, not returned.
 CONDITIONS D'ENGAGEMENT — HUNTITED (version de test)
 
 1. Ce que tu bloques
-En t'engageant, tu bloques 5 KAS jusqu'à la fin de la chasse (fin de
-l'action ou date limite passée). Ils te sont rendus intégralement à la
-fin, dans tous les cas. Tu ne peux pas les reprendre avant.
+En t'engageant, tu bloques 5 KAS jusqu'à la fin de l'action (date
+limite passée). Ils te sont rendus intégralement à la fin, dans tous les
+cas. Tu peux retirer ton engagement tant que l'action ne s'est pas
+déclenchée ; ensuite, tu ne peux plus.
 
 2. La récompense du créateur
-Le créateur bloque une caution (${a.caution} pour cette chasse, 30 KAS au
+Le créateur bloque une caution (${a.caution} pour cette action, 30 KAS au
 moins). Il n'y gagne jamais rien : on lui en rend une partie.
 - L'action a lieu (seuil atteint) : jusqu'à ${a.pool} sont partagés à
   parts égales entre les engagés, plafonnés à ${a.cap} chacun, et
@@ -172,7 +173,7 @@ pas du tout. Personne ne se retrouve exposé seul.
 
 4. Ce qui est public
 Ton engagement est inscrit sur la blockchain Kaspa avec l'adresse de
-ton wallet, l'identifiant de la chasse et ton éventuel seuil
+ton wallet, l'identifiant de l'action et ton éventuel seuil
 personnel. C'est public et permanent : n'importe qui peut le lire,
 même si le site ne l'affiche pas. Le créateur peut masquer le nombre
 d'engagés sur le site, mais il reste lisible sur la blockchain. Pour
