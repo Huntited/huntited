@@ -223,7 +223,10 @@ export const en: Messages = {
   "wallet.page.faucet": "Get free test KAS",
   "wallet.page.faucetNote":
     "The address is copied and the test network faucet opens: paste it, confirm, and the KAS arrive in seconds.",
-  "wallet.page.buyTitle": "Buy KAS with euros",
+  "wallet.page.buyTitle": "Get KAS",
+  "wallet.page.changenow": "Swap for KAS with ChangeNOW",
+  "wallet.page.changenowNote":
+    "ChangeNOW swaps other cryptocurrencies (BTC, ETH…) for KAS, without an account. Your address is copied: paste it as the receiving address. Depending on the amount or paying in euros, ID may be requested.",
   "wallet.page.buy": "Buy KAS with euros",
   "wallet.page.buyLater":
     "Available when Huntited moves to the main network. For now, test KAS are free.",
@@ -286,7 +289,7 @@ export const en: Messages = {
   "moderation.hide": "Hide this hunt",
   "moderation.unhide": "Show again",
   "moderation.publicNote":
-    "Kastle will send 0.2 test KAS to the registry: the decision is public and final (it can be undone by showing the hunt again).",
+    "Your wallet will send 0.2 test KAS to the registry: the decision is public and final (it can be undone by showing the hunt again).",
   "moderation.sent": "Decision sent. It will show up here in about a minute.",
   "place.kicker": "Place offered by an association",
   "place.invalid": "This place link isn't valid. Ask your association for a new link.",
@@ -378,7 +381,7 @@ export const en: Messages = {
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Do I need a wallet?",
   "home.faq.wallet.a":
-    "Yes, a Kaspa wallet such as Kastle. For now everything runs on the test network: no real KAS is used.",
+    'Yes, a Kaspa wallet: Huntited creates one for you in one click, no extension needed ("My wallet" page). For now everything runs on the test network: no real KAS is used.',
   "home.faq.deposit.q": "Why a deposit?",
   "home.faq.deposit.a":
     "So a commitment means something: you think before clicking, and fake commitments get expensive. The deposit is always returned at the end.",
@@ -790,9 +793,9 @@ export const en: Messages = {
     "Your commitments could be linked to your other activity. An account reserved for Huntited avoids that.",
   "guide.used.action": "Advice",
   "chain.commitNote":
-    "Test network. Your wallet sends 0.2 test KAS to the Huntited registry (with Kastle, after you approve): that's what records your commitment on the blockchain, publicly (your address is visible there). The 5 KAS deposit is still simulated for now.",
+    "Test network. Your wallet sends 0.2 test KAS to the Huntited registry, after you approve: that's what records your commitment on the blockchain, publicly (your address is visible there). The 5 KAS deposit is still simulated for now.",
   "chain.createNote":
-    "Test network. Your wallet sends 0.2 test KAS to the Huntited registry (with Kastle, after you approve): that's what records the hunt on the blockchain, permanently and publicly (your address is visible there). The deposit is still simulated for now.",
+    "Test network. Your wallet sends 0.2 test KAS to the Huntited registry, after you approve: that's what records the hunt on the blockchain, permanently and publicly (your address is visible there). The deposit is still simulated for now.",
   "hunt.cta.pending": "Being recorded…",
   "hunt.outcomePending":
     "Deadline passed: checking the result. The last commitments can take a few minutes to show up.",

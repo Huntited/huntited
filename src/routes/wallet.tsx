@@ -39,6 +39,8 @@ const TESTNET = REGISTRY_ADDRESS.startsWith("kaspatest:");
 const FAUCET = "https://faucet-tn10.kaspanet.io/";
 /** Service d'achat en euros (réseau principal), choisi au lancement : VITE_ONRAMP_URL. */
 const ONRAMP = (import.meta.env["VITE_ONRAMP_URL"] as string | undefined)?.trim() || null;
+/** Échange d'autres cryptomonnaies contre des KAS, sans compte (réseau principal). */
+const CHANGENOW = "https://changenow.io/currencies/kaspa";
 
 const kas = (sompi: bigint) =>
   (Number(sompi) / 1e8).toLocaleString(undefined, { maximumFractionDigits: 4 });
@@ -515,6 +517,21 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
             >
               {t("wallet.page.buy")}
             </Button>
+          ) : null}
+          {!TESTNET ? (
+            <>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  copy();
+                  window.open(CHANGENOW, "_blank", "noopener");
+                }}
+              >
+                {t("wallet.page.changenow")}
+              </Button>
+              <p className="text-xs text-muted-foreground">{t("wallet.page.changenowNote")}</p>
+            </>
           ) : (
             <p className="text-xs text-muted-foreground">{t("wallet.page.buyLater")}</p>
           )}

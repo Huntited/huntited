@@ -38,6 +38,16 @@ const router = createRouter({
   defaultPreloadStaleTime: 0,
 });
 
+// Accueil : adresse propre (huntited.com/ plutôt que huntited.com/#/). Les
+// autres pages gardent le # : sans serveur (Codeberg, IPFS), c'est lui qui
+// permet d'ouvrir directement n'importe quelle page.
+router.subscribe("onResolved", () => {
+  const { hash, pathname, search } = window.location;
+  if (hash === "#/" || hash === "#") {
+    window.history.replaceState(window.history.state, "", pathname + search);
+  }
+});
+
 createRoot(document.getElementById("app")!).render(
   <StrictMode>
     <RouterProvider router={router} />

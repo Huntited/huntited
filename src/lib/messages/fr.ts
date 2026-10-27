@@ -224,7 +224,10 @@ export const fr = {
   "wallet.page.faucet": "Recevoir des KAS de test gratuits",
   "wallet.page.faucetNote":
     "L'adresse est copiée et le distributeur du réseau de test s'ouvre : colle-la, valide, et les KAS arrivent en quelques secondes.",
-  "wallet.page.buyTitle": "Acheter des KAS en euros",
+  "wallet.page.buyTitle": "Obtenir des KAS",
+  "wallet.page.changenow": "Échanger contre des KAS avec ChangeNOW",
+  "wallet.page.changenowNote":
+    "ChangeNOW échange d'autres cryptomonnaies (BTC, ETH…) contre des KAS, sans compte. Ton adresse est copiée : colle-la comme adresse de réception. Selon le montant ou le paiement en euros, une pièce d'identité peut être demandée.",
   "wallet.page.buy": "Acheter des KAS en euros",
   "wallet.page.buyLater":
     "Disponible au passage au réseau principal. Pour l'instant, les KAS de test sont gratuits.",
@@ -287,7 +290,7 @@ export const fr = {
   "moderation.hide": "Masquer cette chasse",
   "moderation.unhide": "Réafficher",
   "moderation.publicNote":
-    "Kastle va envoyer 0,2 KAS de test au registre : la décision est publique et définitive (on peut la défaire en réaffichant).",
+    "Ton wallet va envoyer 0,2 KAS de test au registre : la décision est publique et définitive (on peut la défaire en réaffichant).",
   "moderation.sent": "Décision envoyée. Elle apparaîtra ici dans une minute environ.",
   "place.kicker": "Place offerte par une association",
   "place.invalid": "Ce lien de place n'est pas valide. Demande un nouveau lien à ton association.",
@@ -382,7 +385,7 @@ export const fr = {
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Il faut un wallet ?",
   "home.faq.wallet.a":
-    "Oui, un wallet Kaspa, par exemple Kastle. Pour l'instant, tout se passe sur le réseau de test : aucun vrai KAS n'est utilisé.",
+    "Oui, un wallet Kaspa : Huntited t'en crée un en un clic, sans extension (page « Mon wallet »). Pour l'instant, tout se passe sur le réseau de test : aucun vrai KAS n'est utilisé.",
   "home.faq.deposit.q": "Pourquoi un dépôt ?",
   "home.faq.deposit.a":
     "Pour que l'engagement compte : on réfléchit avant de cliquer, et créer de faux engagements coûte cher. Le dépôt est toujours rendu à la fin.",
@@ -805,9 +808,9 @@ export const fr = {
     "Tes engagements pourront être reliés à ton autre activité. Un compte réservé à Huntited l'évite.",
   "guide.used.action": "Conseils",
   "chain.commitNote":
-    "Réseau de test. Ton wallet envoie 0,2 KAS de test au registre Huntited (avec Kastle, après ton accord) : c'est ce qui inscrit ton engagement sur la blockchain, de façon publique (ton adresse y est visible). Le dépôt de 5 KAS reste simulé pour l'instant.",
+    "Réseau de test. Ton wallet envoie 0,2 KAS de test au registre Huntited, après ton accord : c'est ce qui inscrit ton engagement sur la blockchain, de façon publique (ton adresse y est visible). Le dépôt de 5 KAS reste simulé pour l'instant.",
   "chain.createNote":
-    "Réseau de test. Ton wallet envoie 0,2 KAS de test au registre Huntited (avec Kastle, après ton accord) : c'est ce qui inscrit la chasse sur la blockchain, pour toujours et de façon publique (ton adresse y est visible). La caution reste simulée pour l'instant.",
+    "Réseau de test. Ton wallet envoie 0,2 KAS de test au registre Huntited, après ton accord : c'est ce qui inscrit la chasse sur la blockchain, pour toujours et de façon publique (ton adresse y est visible). La caution reste simulée pour l'instant.",
   "hunt.cta.pending": "Inscription en cours…",
   "hunt.outcomePending":
     "Date limite passée : vérification du résultat en cours. Les derniers engagements peuvent mettre quelques minutes à apparaître.",
