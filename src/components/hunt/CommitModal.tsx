@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { AfterPicker } from "@/components/hunt/CommitExtras";
 import { SettlementSimulator } from "@/components/hunt/SettlementSimulator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -62,6 +63,8 @@ export function CommitModal({
   const [accepted, setAccepted] = useState(false);
   // Seuil personnel : « je viens si au moins N personnes viennent » (N ≥ seuil de la chasse).
   const [personal, setPersonal] = useState(String(hunt.threshold));
+  // Chasses enchaînées (mode chaîne) : « seulement si cette autre chasse se déclenche ».
+  const [after, setAfter] = useState<string | null>(null);
   const { isConnected, isCommitted, canCommit, isSubmitting, error, commit } = commitment;
   // Pass exigé par le serveur et absent de cet appareil.
   const [needsPass, setNeedsPass] = useState(false);
@@ -76,9 +79,13 @@ export function CommitModal({
 
   const handleConfirm = async () => {
     try {
-      await commit(personalValue !== hunt.threshold ? personalValue : undefined);
+      await commit(
+        personalValue !== hunt.threshold ? personalValue : undefined,
+        after ?? undefined,
+      );
       setAccepted(false);
       setPersonal(String(hunt.threshold));
+      setAfter(null);
       onCommitted?.();
     } catch {
       /* l'erreur est affichée via commitment.error */
@@ -154,6 +161,9 @@ export function CommitModal({
                 </p>
               )}
             </div>
+            {getDataMode() === "chain" && (
+              <AfterPicker huntId={hunt.id} value={after} onChange={setAfter} />
+            )}
             <SettlementSimulator
               role="participant"
               cautionKas={hunt.deposit}

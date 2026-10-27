@@ -37,6 +37,14 @@ export interface ChainCommitMessage {
   threshold?: number;
   /** Clé publique de chat de la personne qui s'engage. */
   chat?: string;
+  /** Engagement conditionnel : ne compte que si cette autre chasse s'est déclenchée. */
+  after?: string;
+}
+
+/** Retrait d'un engagement (wallet), avant le déclenchement seulement. */
+export interface ChainWithdrawMessage {
+  t: "withdraw";
+  hunt: string;
 }
 
 /** Version officielle du site (seule l'adresse de publication est prise en compte). */
@@ -63,6 +71,7 @@ export type ChainGroupMessage =
 export type ChainMessage =
   | ChainHuntMessage
   | ChainCommitMessage
+  | ChainWithdrawMessage
   | ChainReleaseMessage
   | ChainModerationMessage
   | ChainGroupMessage;

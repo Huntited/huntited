@@ -23,6 +23,7 @@ import {
   inviteScope,
   monthOf,
   signPlaceCommit,
+  signPlaceWithdraw,
   signRedeem,
   type Genesis,
   type HuntMessage,
@@ -176,6 +177,86 @@ describe("grand livre : wallets (par défaut)", () => {
       status: "expired",
       outcome: "failure",
     });
+  });
+});
+
+describe("grand livre : retrait et chasses enchaînées", () => {
+  const ALICE = "kaspatest:alice";
+  const BOB = "kaspatest:bob";
+  const CAROL = "kaspatest:carol";
+
+  it("on se retire avant le déclenchement, jamais après ; on peut revenir", async () => {
+    const { ledger, publish, replay } = setup();
+    const content = huntContent({ threshold: 3 });
+    const id = content.id;
+    await publish({ t: "hunt", ...content }, T0, ALICE);
+    await publish({ t: "commit", hunt: id }, T0 + 1, BOB);
+    await publish({ t: "commit", hunt: id }, T0 + 2, CAROL);
+    expect(await publish({ t: "withdraw", hunt: id }, T0 + 3, BOB)).toEqual({
+      ok: true,
+      type: "withdraw",
+    });
+    expect(await publish({ t: "withdraw", hunt: id }, T0 + 4, BOB)).toEqual({
+      ok: false,
+      reason: "not_committed",
+    });
+    // Bob ne compte plus : Alice seule ne déclenche pas.
+    await publish({ t: "commit", hunt: id }, T0 + 5, ALICE);
+    expect(ledger.hunt(id)!.activatedAt).toBeUndefined();
+    // Bob revient : déclenchement ; plus aucun retrait possible.
+    await publish({ t: "commit", hunt: id }, T0 + 6, BOB);
+    expect(ledger.hunt(id)!.activatedAt).toBe(T0 + 6);
+    expect(await publish({ t: "withdraw", hunt: id }, T0 + 7, CAROL)).toEqual({
+      ok: false,
+      reason: "activated",
+    });
+    expect((await replay()).allHunts()).toEqual(ledger.allHunts());
+  });
+
+  it("une place de pass de groupe se retire avec sa signature", async () => {
+    const { ledger, publish } = setup();
+    const content = huntContent({ threshold: 3 });
+    const placeKey = code();
+    const place = Buffer.from(schnorr.getPublicKey(Buffer.from(placeKey, "hex"))).toString("hex");
+    await publish({ t: "hunt", ...content }, T0, ALICE);
+    await publish({ t: "places", hunt: content.id, keys: [place] }, T0 + 1, BOB);
+    const sig = signPlaceCommit(placeKey, content.id, {});
+    await publish({ t: "gcommit", hunt: content.id, entries: [{ place, sig }] }, T0 + 2, BOB);
+    expect(ledger.place(place)?.used).toBe(true);
+    const bad = { t: "withdraw" as const, hunt: content.id, place, sig: "0".repeat(128) };
+    expect(await publish(bad, T0 + 3, CAROL)).toEqual({ ok: false, reason: "invalid_signature" });
+    const ok = { ...bad, sig: signPlaceWithdraw(placeKey, content.id) };
+    expect(await publish(ok, T0 + 4, CAROL)).toEqual({ ok: true, type: "withdraw" });
+    expect(ledger.place(place)?.used).toBe(false);
+  });
+
+  it("un engagement conditionnel compte quand l'autre chasse se déclenche", async () => {
+    const { ledger, publish, replay } = setup();
+    const a = huntContent({ threshold: 2 });
+    const b = huntContent({ threshold: 2 });
+    await publish({ t: "hunt", ...a }, T0, ALICE);
+    await publish({ t: "hunt", ...b }, T0, ALICE);
+    expect(await publish({ t: "commit", hunt: b.id, after: b.id }, T0 + 1, BOB)).toEqual({
+      ok: false,
+      reason: "invalid_condition",
+    });
+    expect(await publish({ t: "commit", hunt: b.id, after: "f".repeat(24) }, T0 + 1, BOB)).toEqual({
+      ok: false,
+      reason: "invalid_condition",
+    });
+    // B : deux engagements « seulement si A se déclenche ».
+    await publish({ t: "commit", hunt: b.id, after: a.id }, T0 + 2, BOB);
+    await publish({ t: "commit", hunt: b.id, after: a.id }, T0 + 3, CAROL);
+    expect(ledger.hunt(b.id)!.activatedAt).toBeUndefined();
+    expect(ledger.retainedGroup(ledger.hunt(b.id)!).retainedCount).toBe(0);
+    expect(ledger.roleOf(b.id, byAddress(BOB))).toBeUndefined();
+    // A se déclenche : B se déclenche au même moment.
+    await publish({ t: "commit", hunt: a.id }, T0 + 4, BOB);
+    await publish({ t: "commit", hunt: a.id }, T0 + 5, CAROL);
+    expect(ledger.hunt(a.id)!.activatedAt).toBe(T0 + 5);
+    expect(ledger.hunt(b.id)!.activatedAt).toBe(T0 + 5);
+    expect(ledger.roleOf(b.id, byAddress(BOB))).toBe("participant");
+    expect((await replay()).allHunts()).toEqual(ledger.allHunts());
   });
 });
 

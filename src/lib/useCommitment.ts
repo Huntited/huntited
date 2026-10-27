@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 
 import {
   commit as commitToHunt,
+  getDataMode,
   isCommitted as checkCommitted,
   onHuntsChange,
+  withdraw as withdrawFromHunt,
 } from "./hunt-repository";
 import { getLocale, translate } from "./i18n";
 import { useWallet } from "./useWallet";
@@ -14,8 +16,14 @@ export interface UseCommitmentResult {
   canCommit: boolean;
   isSubmitting: boolean;
   error: string | null;
-  /** S'engage, avec un seuil personnel facultatif (« je viens si au moins N »). */
-  commit: (personalThreshold?: number) => Promise<void>;
+  /**
+   * S'engage, avec un seuil personnel facultatif (« je viens si au moins N »)
+   * et, en mode chaîne, une condition facultative (autre chasse déclenchée).
+   */
+  commit: (personalThreshold?: number, after?: string) => Promise<void>;
+  /** Retrait possible : engagé·e, chasse ouverte et pas encore déclenchée (mode chaîne). */
+  canWithdraw: boolean;
+  withdraw: () => Promise<void>;
 }
 
 /**
@@ -24,7 +32,12 @@ export interface UseCommitmentResult {
  * Un wallet ne peut s'engager qu'une fois par chasse (vérifié aussi par le
  * registre en mode partagé). Aucun log d'adresse ni de commitment.
  */
-export function useCommitment(huntId: string, commitsOpen: boolean): UseCommitmentResult {
+export function useCommitment(
+  huntId: string,
+  commitsOpen: boolean,
+  /** Chasse déjà déclenchée : plus de retrait possible. */
+  activated = false,
+): UseCommitmentResult {
   const { isConnected, address } = useWallet();
   const [isCommitted, setIsCommitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,15 +51,22 @@ export function useCommitment(huntId: string, commitsOpen: boolean): UseCommitme
   }, [huntId, address]);
 
   const canCommit = isConnected && commitsOpen && !isCommitted && !isSubmitting;
+  const canWithdraw =
+    isConnected &&
+    commitsOpen &&
+    !activated &&
+    isCommitted &&
+    !isSubmitting &&
+    getDataMode() === "chain";
 
   const commit = useCallback(
-    async (personalThreshold?: number) => {
+    async (personalThreshold?: number, after?: string) => {
       if (!address || !canCommit) return;
       setIsSubmitting(true);
       setError(null);
       try {
         // Le compteur se met à jour via onHuntsChange.
-        await commitToHunt(huntId, address, personalThreshold);
+        await commitToHunt(huntId, address, personalThreshold, after);
       } catch (e) {
         setError(e instanceof Error ? e.message : translate(getLocale(), "err.commit"));
         throw e;
@@ -57,5 +77,28 @@ export function useCommitment(huntId: string, commitsOpen: boolean): UseCommitme
     [address, canCommit, huntId],
   );
 
-  return { isConnected, isCommitted, canCommit, isSubmitting, error, commit };
+  const withdraw = useCallback(async () => {
+    if (!address || !canWithdraw) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await withdrawFromHunt(huntId, address);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : translate(getLocale(), "err.withdraw"));
+      throw e;
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [address, canWithdraw, huntId]);
+
+  return {
+    isConnected,
+    isCommitted,
+    canCommit,
+    isSubmitting,
+    error,
+    commit,
+    canWithdraw,
+    withdraw,
+  };
 }

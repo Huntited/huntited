@@ -110,6 +110,11 @@ export const huntMessage = z.object({
 export const commitMessage = z.object({
   t: z.literal("commit"),
   hunt: huntIdSchema,
+  /**
+   * Engagement conditionnel : il ne compte que si cette autre chasse s'est
+   * déclenchée (chasses enchaînées). Wallet seulement.
+   */
+  after: huntIdSchema.optional(),
   /** Seuil personnel (≥ seuil de la chasse) ; absent = seuil de la chasse. */
   threshold: z.number().int().positive().optional(),
   /** Clé publique de chat de la personne qui s'engage. */
@@ -122,6 +127,19 @@ export const commitMessage = z.object({
  * Version officielle du site : son numéro, l'empreinte (sha256) de la liste
  * de ses fichiers (release.json) et, si connu, son identifiant IPFS.
  */
+/**
+ * Retrait d'un engagement, tant que la chasse n'est pas déclenchée. Qui se
+ * retire : l'adresse qui envoie (wallet), le code d'une preuve de pass (même
+ * scope que l'engagement), ou une place de pass de groupe (signature).
+ */
+export const withdrawMessage = z.object({
+  t: z.literal("withdraw"),
+  hunt: huntIdSchema,
+  proof: proofSchema.optional(),
+  place: hex(64).optional(),
+  sig: hex(128).optional(),
+});
+
 export const releaseMessage = z.object({
   t: z.literal("release"),
   version: z.string().regex(/^[\w.+-]{1,40}$/),
@@ -198,6 +216,7 @@ export const messageSchema = z.discriminatedUnion("t", [
   unhideMessage,
   placesMessage,
   groupCommitMessage,
+  withdrawMessage,
 ]);
 
 export type InviteMessage = z.infer<typeof inviteMessage>;
@@ -211,6 +230,7 @@ export type HideReason = (typeof HIDE_REASONS)[number];
 export type PlacesMessage = z.infer<typeof placesMessage>;
 export type GroupCommitEntry = z.infer<typeof groupCommitEntry>;
 export type GroupCommitMessage = z.infer<typeof groupCommitMessage>;
+export type WithdrawMessage = z.infer<typeof withdrawMessage>;
 export type Message = z.infer<typeof messageSchema>;
 
 // --- Encodage ------------------------------------------------------------------
@@ -294,6 +314,24 @@ export const signPlaceCommit = (
 export function verifyPlaceCommit(hunt: string, e: GroupCommitEntry): boolean {
   try {
     return schnorr.verify(hexToBytes(e.sig), placeDigest(hunt, e), hexToBytes(e.place));
+  } catch {
+    return false;
+  }
+}
+
+/** Message de la preuve de pass d'un retrait (même scope que l'engagement). */
+export const withdrawDigest = (hunt: string) => digestField(`huntited:withdraw|${hunt}`);
+
+/** Ce que signe une place pour retirer son engagement. */
+export const placeWithdrawDigest = (hunt: string) =>
+  sha256(utf8ToBytes(`huntited:place-withdraw|${hunt}`));
+
+export const signPlaceWithdraw = (placePriv: string, hunt: string) =>
+  bytesToHex(schnorr.sign(placeWithdrawDigest(hunt), hexToBytes(placePriv)));
+
+export function verifyPlaceWithdraw(hunt: string, place: string, sig: string): boolean {
+  try {
+    return schnorr.verify(hexToBytes(sig), placeWithdrawDigest(hunt), hexToBytes(place));
   } catch {
     return false;
   }

@@ -31,6 +31,8 @@ import {
   monthOf,
   scopeField,
   verifyPlaceCommit,
+  verifyPlaceWithdraw,
+  withdrawDigest,
   verifyRedeem,
   type CommitMessage,
   type Genesis,
@@ -43,6 +45,7 @@ import {
   type PlacesMessage,
   type HideReason,
   type UnhideMessage,
+  type WithdrawMessage,
 } from "./protocol.js";
 
 /** Transaction lue sur la chaîne (heure du bloc qui l'a acceptée, en ms). */
@@ -75,7 +78,8 @@ export type ApplyResult =
         | "hide"
         | "unhide"
         | "places"
-        | "gcommit";
+        | "gcommit"
+        | "withdraw";
     }
   | { ok: false; reason: string };
 
@@ -97,6 +101,8 @@ export interface LedgerCommit {
   txId: string;
   /** Clé publique de chat (chat chiffré, docs/chat.md). */
   chat?: string;
+  /** Engagement conditionnel : compte seulement si cette chasse s'est déclenchée. */
+  after?: string;
 }
 
 export interface LedgerHunt extends Omit<HuntMessage, "t" | "proof"> {
@@ -191,9 +197,18 @@ export class Ledger {
 
   retainedGroup(h: LedgerHunt): RetainedGroup {
     return computeRetainedGroup(
-      h.commits.map((c) => c.personalThreshold),
+      h.commits.filter((c) => this.conditionMet(c)).map((c) => c.personalThreshold),
       h.threshold,
     );
+  }
+
+  /**
+   * Condition d'un engagement : aucune, ou l'autre chasse s'est déclenchée.
+   * Une activation n'est jamais remise en cause : la condition, une fois
+   * remplie, le reste (le groupe retenu ne fait que grandir).
+   */
+  conditionMet(c: LedgerCommit): boolean {
+    return c.after === undefined || this.hunts.get(c.after)?.activatedAt !== undefined;
   }
 
   /** État à l'instant `now` : l'activation prime ; après la date limite, l'issue est connue. */
@@ -211,7 +226,9 @@ export class Ledger {
     if (!h) return undefined;
     if (h.creator === who) return "creator";
     const mine = h.commits.find((c) => c.who === who);
-    return mine && isRetained(mine.personalThreshold, this.retainedGroup(h))
+    return mine &&
+      this.conditionMet(mine) &&
+      isRetained(mine.personalThreshold, this.retainedGroup(h))
       ? "participant"
       : undefined;
   }
@@ -242,6 +259,8 @@ export class Ledger {
         return this.applyPlaces(m, e);
       case "gcommit":
         return this.applyGroupCommit(m, e);
+      case "withdraw":
+        return this.applyWithdraw(m, e);
     }
   }
 
@@ -354,6 +373,13 @@ export class Ledger {
   private async applyCommit(m: CommitMessage, e: ChainEvent): Promise<ApplyResult> {
     const h = this.hunts.get(m.hunt);
     if (!h) return { ok: false, reason: "unknown_hunt" };
+    // Condition : une autre chasse, déjà connue ; wallet seulement.
+    if (m.after !== undefined) {
+      if (m.after === h.id || !this.hunts.has(m.after)) {
+        return { ok: false, reason: "invalid_condition" };
+      }
+      if (m.proof) return { ok: false, reason: "condition_needs_wallet" };
+    }
     // Engagements ouverts jusqu'à la date limite, même après l'activation.
     if (e.time > h.deadline) return { ok: false, reason: "closed" };
     if (!m.proof && this.genesis.passRequired) return { ok: false, reason: "pass_required" };
@@ -369,22 +395,68 @@ export class Ledger {
     if (m.proof && !(await this.proofOk(m.proof, huntScope(h.id), t))) {
       return { ok: false, reason: "invalid_proof" };
     }
-    this.addCommit(h, who, t, e, m.chat);
+    this.addCommit(h, who, t, e, m.chat, m.after);
     return { ok: true, type: "commit" };
   }
 
-  private addCommit(h: LedgerHunt, who: string, t: number, e: ChainEvent, chat?: string): void {
+  private addCommit(
+    h: LedgerHunt,
+    who: string,
+    t: number,
+    e: ChainEvent,
+    chat?: string,
+    after?: string,
+  ): void {
     h.commits.push({
       who,
       personalThreshold: t,
       at: e.time,
       txId: e.txId,
       ...(chat ? { chat } : {}),
+      ...(after ? { after } : {}),
     });
-    if (h.activatedAt === undefined && this.retainedGroup(h).retainedThreshold !== null) {
-      h.activatedAt = e.time;
-      h.activationRank = h.commits.length;
+    this.tryActivate(h, e.time);
+  }
+
+  /**
+   * Déclenche la chasse si un groupe retenu existe ; puis, en chaîne, les
+   * chasses ouvertes dont des engagements attendaient celle-ci.
+   */
+  private tryActivate(h: LedgerHunt, time: number): void {
+    if (h.activatedAt !== undefined || this.retainedGroup(h).retainedThreshold === null) return;
+    h.activatedAt = time;
+    h.activationRank = h.commits.length;
+    for (const next of this.hunts.values()) {
+      if (next.activatedAt !== undefined || time > next.deadline) continue;
+      if (next.commits.some((c) => c.after === h.id)) this.tryActivate(next, time);
     }
+  }
+
+  /**
+   * Retrait d'un engagement, avant le déclenchement seulement : une fois la
+   * chasse déclenchée, tout le groupe s'est engagé en même temps.
+   */
+  private async applyWithdraw(m: WithdrawMessage, e: ChainEvent): Promise<ApplyResult> {
+    const h = this.hunts.get(m.hunt);
+    if (!h) return { ok: false, reason: "unknown_hunt" };
+    if (e.time > h.deadline) return { ok: false, reason: "closed" };
+    if (h.activatedAt !== undefined) return { ok: false, reason: "activated" };
+    let who = byAddress(e.sender);
+    if (m.proof) {
+      if (!(await this.proofOk(m.proof, huntScope(h.id), withdrawDigest(h.id)))) {
+        return { ok: false, reason: "invalid_proof" };
+      }
+      who = byPass(m.proof.nullifier);
+    } else if (m.place) {
+      if (!m.sig || !verifyPlaceWithdraw(h.id, m.place, m.sig)) {
+        return { ok: false, reason: "invalid_signature" };
+      }
+      who = byPlace(m.place);
+    }
+    const i = h.commits.findIndex((c) => c.who === who);
+    if (i < 0) return { ok: false, reason: "not_committed" };
+    h.commits.splice(i, 1);
+    return { ok: true, type: "withdraw" };
   }
 
   /** Pass de groupe : l'association inscrit des places pour une chasse ouverte. */

@@ -59,13 +59,19 @@ function scenario(seed: number): ChainEvent[] {
         progressVisibility: pick(["visible", "hidden"] as const),
       };
       payload = encodeMessage(m);
-    } else if (kind < 0.9) {
+    } else if (kind < 0.8) {
       const m: Message = {
         t: "commit",
         hunt: pick(ids),
         ...(r() < 0.5 ? { threshold: 1 + Math.floor(r() * 6) } : {}),
       };
       payload = encodeMessage(m);
+    } else if (kind < 0.85) {
+      // Engagement conditionnel (chasses enchaînées), parfois invalide.
+      payload = encodeMessage({ t: "commit", hunt: pick(ids), after: pick(ids) });
+    } else if (kind < 0.9) {
+      // Retrait (avant le déclenchement seulement).
+      payload = encodeMessage({ t: "withdraw", hunt: pick(ids) });
     } else if (kind < 0.92) {
       // Versions du site : acceptées seulement depuis l'adresse de publication (p0).
       payload = encodeMessage({

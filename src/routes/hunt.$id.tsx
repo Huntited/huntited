@@ -5,6 +5,7 @@ import { ChatPanel } from "@/components/hunt/ChatPanel";
 import { P2PChatPanel } from "@/components/hunt/P2PChatPanel";
 import { HuntSettlementPanel } from "@/components/hunt/HuntSettlementPanel";
 import { HuntStatusBadge } from "@/components/hunt/HuntStatusBadge";
+import { AfterNote, WithdrawBox } from "@/components/hunt/CommitExtras";
 import { CommitModal } from "@/components/hunt/CommitModal";
 import { NotifyButton } from "@/components/hunt/NotifyButton";
 import { ReplyOnXButton } from "@/components/hunt/ReplyOnXButton";
@@ -22,6 +23,7 @@ import { placeLabel } from "@/lib/online";
 import { hasBackend } from "@/lib/api-client";
 import { fetchHuntPreview, huntPreviewMeta } from "@/lib/hunt-preview";
 import { getDataMode, getMyPersonalThreshold, settleHunt } from "@/lib/hunt-repository";
+import { getMyCommitment } from "@/lib/my-commitments";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { markRead } from "@/lib/inbox";
 import { commitRefundShort } from "@/lib/terms";
@@ -69,7 +71,7 @@ function HuntDetailPage() {
   } = useHunt(id);
   // Wallet + engagement (un seul engagement par wallet et par chasse).
   const wallet = useWallet();
-  const commitment = useCommitment(id, commitsOpen);
+  const commitment = useCommitment(id, commitsOpen, status === "activated" || status === "settled");
 
   if (isLoading) {
     return (
@@ -255,6 +257,8 @@ function HuntDetailPage() {
           (() => {
             const mine = getMyPersonalThreshold(hunt, wallet.address);
             if (mine === undefined) return null;
+            // Engagement conditionnel : son état est donné par AfterNote.
+            if (getMyCommitment(wallet.address, hunt.id)?.after) return null;
             const met = retainedThreshold !== null && mine <= retainedThreshold;
             return (
               <p className="mt-3 text-sm" role="status">
@@ -271,6 +275,21 @@ function HuntDetailPage() {
               </p>
             );
           })()}
+
+        {/* Engagement conditionnel : il attend une autre chasse */}
+        {commitment.isCommitted &&
+          wallet.address &&
+          (() => {
+            const after = getMyCommitment(wallet.address, hunt.id)?.after;
+            return after ? <AfterNote afterId={after} /> : null;
+          })()}
+        {/* Changer d'avis : retrait possible jusqu'au déclenchement */}
+        <WithdrawBox commitment={commitment} />
+        {commitment.error && commitment.isCommitted && (
+          <p role="alert" className="mt-2 text-sm text-destructive">
+            {commitment.error}
+          </p>
+        )}
 
         {/* Être prévenu·e du résultat, sans compte ni wallet */}
         {status === "active" && <NotifyButton huntId={hunt.id} />}

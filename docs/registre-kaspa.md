@@ -26,6 +26,8 @@ Décisions (2026-10-07) :
    index indépendants obtiennent exactement le même état.
 4. Issue calculée, sans transaction de clôture : déclenchée avant la date
    limite = succès, sinon échec.
+5. On peut retirer son engagement tant que la chasse n'est pas déclenchée,
+   et un engagement peut dépendre d'une autre chasse (docs/chasses-enchainees.md).
 
 Code : `backend/src/chain/protocol.ts` (format), `backend/src/chain/ledger.ts`
 (règles), testés dans `ledger.test.ts`.

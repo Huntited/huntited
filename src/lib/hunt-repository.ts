@@ -26,7 +26,7 @@ import {
   type SettlementOutcome,
 } from "./hunt-state-store";
 import { getMockPersonalThreshold, hasMockCommitment } from "./mock-zk";
-import { getMyCommitment, rememberCommitment } from "./my-commitments";
+import { forgetCommitment, getMyCommitment, rememberCommitment } from "./my-commitments";
 import { getLocale, translate, type MessageKey } from "./i18n";
 import { getPassConfig, hasPass, proveWithPass } from "./pass";
 import { isRetained } from "./retained-group";
@@ -350,6 +350,8 @@ export async function commit(
   huntId: string,
   address: string,
   personalThreshold?: number,
+  /** Mode chaîne : ne compte que si cette autre chasse se déclenche (chasses enchaînées). */
+  after?: string,
 ): Promise<void> {
   if (getDataMode() === "local") {
     await localCommit(huntId, address, personalThreshold);
@@ -367,12 +369,14 @@ export async function commit(
         hunt: huntId,
         ...(personalThreshold === undefined ? {} : { threshold: personalThreshold }),
         ...(chat ? { chat } : {}),
+        ...(after ? { after } : {}),
       },
       "err.commit",
     );
     rememberCommitment(address, huntId, {
       committedAt: Date.now(),
       ...(personalThreshold === undefined ? {} : { personalThreshold }),
+      ...(after ? { after } : {}),
     });
     notify();
     return;
@@ -412,6 +416,19 @@ export async function commit(
     }
     throw actionError(e, "err.commit");
   }
+}
+
+/**
+ * Retire l'engagement de ce wallet (mode chaîne), tant que la chasse n'est
+ * pas déclenchée : on peut changer d'avis jusqu'au dernier moment.
+ */
+export async function withdraw(huntId: string, address: string): Promise<void> {
+  if (getDataMode() !== "chain") {
+    throw new HuntActionError(translate(getLocale(), "err.withdrawUnavailable"));
+  }
+  await publishOrThrow({ t: "withdraw", hunt: huntId }, "err.withdraw");
+  forgetCommitment(address, huntId);
+  notify();
 }
 
 /** Chasses dans lesquelles ce wallet est (connu comme) engagé. */
