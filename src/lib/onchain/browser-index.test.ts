@@ -138,3 +138,33 @@ describe("pass d'organisation", () => {
     ).toEqual([]);
   });
 });
+
+describe("premier chargement", () => {
+  it("deux lectures en même temps attendent toutes deux le réseau (pas l'archive seule)", async () => {
+    const payload = archiveWithHunt("Arrivée par le réseau").entries[0]!.payload;
+    const json = (body: unknown) => new Response(JSON.stringify(body));
+    vi.stubEnv("VITE_KASPA_API_URL", "https://api.test");
+    vi.stubEnv("VITE_CHAIN_ARCHIVES", "");
+    vi.stubGlobal("fetch", async (url: string) => {
+      if (url.includes("transactions-count")) return json({ total: 1 });
+      if (url.includes("virtual-chain-blue-score")) return json({ blueScore: 100_000 });
+      if (url.includes("full-transactions")) {
+        await new Promise((r) => setTimeout(r, 50)); // réseau lent
+        return json([
+          {
+            transaction_id: "cd".repeat(32),
+            is_accepted: true,
+            accepting_block_blue_score: 10,
+            accepting_block_time: Date.now(),
+            payload,
+            inputs: [{ previous_outpoint_address: "kaspatest:alice" }],
+          },
+        ]);
+      }
+      return json([]);
+    });
+    const [a, b] = await Promise.all([listChainHunts(), getChainHunt("ab".repeat(12))]);
+    expect(a.map((h) => h.title)).toEqual(["Arrivée par le réseau"]);
+    expect(b?.title).toBe("Arrivée par le réseau");
+  });
+});

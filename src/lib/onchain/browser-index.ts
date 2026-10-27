@@ -163,21 +163,30 @@ function getIndexer(): ChainIndexer {
   return indexer;
 }
 
+/** Lecture du réseau en cours : les autres appels l'attendent (sinon, au premier
+ * chargement, ils liraient l'archive seule, en retard de plusieurs minutes). */
+let syncing: Promise<void> | null = null;
+
 /** Index à jour (une lecture du réseau au plus toutes les 10 s). */
 async function synced(): Promise<Ledger> {
   const idx = getIndexer();
   archives ??= loadArchives(idx);
   await archives;
-  if (Date.now() - lastSync >= MIN_SYNC_INTERVAL_MS) {
+  if (!syncing && Date.now() - lastSync >= MIN_SYNC_INTERVAL_MS) {
     lastSync = Date.now();
-    try {
-      await idx.sync();
-    } catch (e) {
-      lastSync = 0; // nouvel essai au prochain appel
-      // Rien n'a jamais été lu : on signale l'indisponibilité.
-      if (idx.ledger.allHunts().length === 0) throw e;
-    }
+    syncing = idx
+      .sync()
+      .then(() => undefined)
+      .catch((e: unknown) => {
+        lastSync = 0; // nouvel essai au prochain appel
+        // Rien n'a jamais été lu : on signale l'indisponibilité.
+        if (idx.ledger.allHunts().length === 0) throw e;
+      })
+      .finally(() => {
+        syncing = null;
+      });
   }
+  if (syncing) await syncing;
   return idx.ledger;
 }
 
@@ -285,6 +294,7 @@ export async function getChainReleases(): Promise<LedgerRelease[]> {
 
 /** Tests : repartir d'un index vide. */
 export function resetBrowserIndex(): void {
+  syncing = null;
   indexer = null;
   lastSync = 0;
   archives = null;
