@@ -454,7 +454,7 @@ export const fr = {
     "en attente. Si elle n'est pas remplie, tes {amount} KAS te sont rendus.",
   "hunt.banner.activated": "C'est parti ! L'action aura lieu.",
   "hunt.banner.stillOpen": "On peut encore te rejoindre jusqu'à la date limite.",
-  "hunt.banner.expired": "Pas assez de monde. Si rien ne se passe, chacun récupère son dépôt.",
+  "hunt.banner.expired": "Pas assez de monde : si rien ne se passe, chacun récupère son dépôt.",
   "hunt.chat.title": "Salon des participants",
   "hunt.chat.expired":
     "Cette action a expiré avant d'atteindre son seuil : aucun chat n'a été ouvert.",
