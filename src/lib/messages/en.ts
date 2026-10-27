@@ -266,7 +266,7 @@ export const en: Messages = {
   // Home
   "home.title": "Act together, never alone",
   "home.lead":
-    "You'd like to act, but not alone. Here you commit without waiting for others to show up, and the action only happens if enough people join.",
+    "Taking a stand, switching apps, launching a project, speaking up… Alone, it's risky. Here you commit without waiting for others to show up, and it only happens if enough people join.",
   "hunt.hidden.title": "Hidden hunt",
   "hunt.hidden.text":
     "Huntited hid this hunt ({reason}). It remains written on the blockchain, which nobody can change, but the site no longer shows it.",
@@ -374,7 +374,7 @@ export const en: Messages = {
   "home.example.cardLabel": "Example hunt",
   "home.example.cardTitle": "Council meeting: save the park",
   "home.example.cardMeta": "Town hall · before 12 March",
-  "home.example.cardProgress": "14 of 20 committed",
+  "home.example.cardProgress": "Threshold: 20 people · progress hidden",
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Do I need a wallet?",
   "home.faq.wallet.a":
@@ -708,11 +708,9 @@ export const en: Messages = {
   "form.threshold": "Participant threshold",
   "form.threshold.placeholder": "E.g. 50",
   "form.threshold.help": "People needed for the action to happen. Minimum {min}.",
-  "form.hide": "Hide progress",
+  "form.hide": "Progress hidden",
   "form.hide.help":
-    "The site doesn't show the number of commitments before the end. It stays readable on the blockchain for anyone who knows how.",
-  "form.hide.recommended":
-    "Recommended: with no counter on the site, nobody waits to see the others before joining.",
+    "The site never shows the number of commitments before the trigger: nobody waits to see the others before joining. Note: commitments stay on the blockchain, and someone well equipped can count them.",
   "form.caution": "Your deposit",
   "form.caution.label": "Your deposit (KAS)",
   "form.caution.short": "Minimum {min} KAS. Part of it pays participants and Huntited.",
@@ -983,6 +981,23 @@ export const en: Messages = {
   "err.unavailable": "The service is temporarily unavailable. Please try again.",
   "err.create": "Creating the hunt failed. Please try again.",
   "err.commit": "The commitment failed. Please try again.",
+  "err.withdraw": "Withdrawing failed. Please try again.",
+  "err.withdrawUnavailable": "Withdrawing is only possible with the blockchain registry.",
+  "withdraw.button": "Withdraw my commitment",
+  "withdraw.confirmText":
+    "You withdraw your commitment: it no longer counts toward the trigger. Your wallet sends 0.2 test KAS to the registry. You can commit again while the hunt is open.",
+  "withdraw.confirm": "Yes, withdraw",
+  "withdraw.sending": "Sending…",
+  "withdraw.hint":
+    "Possible until the trigger. Once the hunt triggers, the whole group committed at the same time: no more withdrawing.",
+  "after.label": "Only if another hunt triggers first",
+  "after.select": "Hunt that must trigger first",
+  "after.alreadyOn": "already triggered",
+  "after.help":
+    'Your commitment only counts once this other hunt has triggered. If it never triggers, it doesn\'t count. Example: "I join step 2 if step 1 succeeded".',
+  "after.mine": "Your commitment only counts if this hunt triggers:",
+  "after.met": "done, it counts.",
+  "after.waiting": "waiting.",
   "err.sync": "Sync failed. Please try again.",
   "err.needPass": "You need a Huntited pass to commit: ask a member for an invitation.",
 };

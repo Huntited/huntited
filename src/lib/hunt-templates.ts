@@ -9,8 +9,6 @@ export interface HuntTemplate {
   threshold: number;
   /** Durée conseillée avant la date limite, en jours. */
   days: number;
-  /** Progression masquée conseillée (protège les premiers engagés). */
-  hideProgress: boolean;
   /** Action en ligne (ni ville ni pays). */
   online?: boolean;
 }
@@ -24,15 +22,19 @@ export interface TemplateText {
 }
 
 export const HUNT_TEMPLATES: HuntTemplate[] = [
-  { id: "cleanup", threshold: 10, days: 14, hideProgress: false },
-  { id: "rally", threshold: 50, days: 21, hideProgress: true },
-  { id: "boycott", threshold: 200, days: 30, hideProgress: true },
-  { id: "letter", threshold: 30, days: 14, hideProgress: false },
-  { id: "shop", threshold: 25, days: 21, hideProgress: false },
-  { id: "work", threshold: 7, days: 14, hideProgress: true },
-  { id: "repair", threshold: 8, days: 10, hideProgress: false },
-  { id: "post", threshold: 100, days: 14, hideProgress: false, online: true },
-  { id: "email", threshold: 30, days: 10, hideProgress: false, online: true },
+  { id: "cleanup", threshold: 10, days: 14 },
+  { id: "rally", threshold: 50, days: 21 },
+  { id: "boycott", threshold: 200, days: 30 },
+  { id: "letter", threshold: 30, days: 14 },
+  { id: "shop", threshold: 25, days: 21 },
+  { id: "work", threshold: 7, days: 14 },
+  { id: "repair", threshold: 8, days: 10 },
+  { id: "post", threshold: 100, days: 14, online: true },
+  { id: "email", threshold: 30, days: 10, online: true },
+  { id: "switch", threshold: 50, days: 30, online: true },
+  { id: "together", threshold: 20, days: 21 },
+  { id: "speak", threshold: 7, days: 21 },
+  { id: "launch", threshold: 30, days: 30 },
 ];
 
 const TEXTS: Record<Locale, Record<string, TemplateText>> = {
@@ -100,6 +102,34 @@ const TEXTS: Record<Locale, Record<string, TemplateText>> = {
         "Le [date], chaque personne engagée envoie un courriel à [destinataire] pour demander [demande précise]. Le modèle de texte sera partagé dans le chat. Un message poli, une seule fois par personne.",
       why: "une trentaine de courriels le même jour obligent à répondre.",
     },
+    switch: {
+      name: "Changer d'appli ensemble",
+      title: "On quitte [appli ou plateforme] pour [autre appli] ensemble",
+      description:
+        "Beaucoup voudraient quitter [appli ou plateforme], mais personne ne part seul : on perdrait le contact avec les autres. Si on est assez, on passe tous à [autre appli] le [date], et on s'y retrouve.",
+      why: "assez pour que la nouvelle appli soit vivante dès le premier jour.",
+    },
+    together: {
+      name: "Achat ou abonnement groupé",
+      title: "On s'abonne à [service, producteur, panier…] si on est assez",
+      description:
+        "[Service ou producteur] peut démarrer à [lieu] s'il a au moins [nombre] clients. Chaque personne engagée s'abonne le [date] ; si on n'est pas assez, personne ne s'abonne.",
+      why: "le minimum dont le service a besoin pour démarrer.",
+    },
+    speak: {
+      name: "Prendre la parole",
+      title: "Témoignons ensemble sur [sujet] si on est assez",
+      description:
+        "Parler seul·e de [sujet] expose trop. Si on est assez, chaque personne engagée témoigne le [date] [où et comment]. Tant que le seuil n'est pas atteint, personne ne sait qui s'est engagé.",
+      why: "le minimum suffit souvent : on n'est plus seul·e.",
+    },
+    launch: {
+      name: "Lancer un projet",
+      title: "Je lance [projet ou service] si [nombre] personnes suivent",
+      description:
+        "Je suis prêt·e à lancer [projet ou service] à [lieu] le [date], à condition d'avoir au moins [nombre] premiers participants ou clients. Engage-toi : si on n'est pas assez, rien ne démarre et personne n'est engagé.",
+      why: "le nombre dont le projet a besoin pour tenir.",
+    },
   },
   en: {
     cleanup: {
@@ -164,6 +194,34 @@ const TEXTS: Record<Locale, Record<string, TemplateText>> = {
       description:
         "On [date], everyone who committed sends an email to [recipient] asking for [specific request]. The template will be shared in the chat. A polite message, once per person.",
       why: "thirty emails on the same day call for an answer.",
+    },
+    switch: {
+      name: "Switch apps together",
+      title: "Let's leave [app or platform] for [other app] together",
+      description:
+        "Many would like to leave [app or platform], but nobody leaves alone: we'd lose touch with everyone else. If there are enough of us, we all move to [other app] on [date] and meet there.",
+      why: "enough for the new app to feel alive on day one.",
+    },
+    together: {
+      name: "Group purchase or subscription",
+      title: "We subscribe to [service, producer, box…] if there are enough of us",
+      description:
+        "[Service or producer] can start in [place] with at least [number] customers. Everyone who committed subscribes on [date]; if there aren't enough of us, nobody subscribes.",
+      why: "the minimum the service needs to start.",
+    },
+    speak: {
+      name: "Speak up",
+      title: "Let's speak up together about [topic] if there are enough of us",
+      description:
+        "Speaking alone about [topic] is too risky. If there are enough of us, everyone who committed speaks up on [date] [where and how]. Until the threshold is reached, nobody knows who committed.",
+      why: "the minimum is often enough: you're no longer alone.",
+    },
+    launch: {
+      name: "Launch a project",
+      title: "I'll launch [project or service] if [number] people follow",
+      description:
+        "I'm ready to launch [project or service] in [place] on [date], as long as at least [number] first participants or customers join. Commit: if there aren't enough of us, nothing starts and nobody is bound.",
+      why: "the number the project needs to last.",
     },
   },
 };

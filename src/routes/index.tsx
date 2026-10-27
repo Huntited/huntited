@@ -284,10 +284,7 @@ function ExampleCard() {
     >
       <p className="font-medium">{t("home.example.cardTitle")}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{t("home.example.cardMeta")}</p>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-        <div className="h-full w-[70%] rounded-full bg-green-500" />
-      </div>
-      <p className="mt-1.5 text-xs text-muted-foreground">{t("home.example.cardProgress")}</p>
+      <p className="mt-3 text-xs text-muted-foreground">{t("home.example.cardProgress")}</p>
     </figure>
   );
 }

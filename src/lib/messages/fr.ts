@@ -267,7 +267,7 @@ export const fr = {
   // Accueil
   "home.title": "Agir ensemble, sans y aller seul",
   "home.lead":
-    "Tu voudrais agir, mais pas seul·e. Ici, tu t'engages sans attendre que les autres se montrent, et l'action n'a lieu que si assez de monde suit.",
+    "Se mobiliser, changer d'appli, lancer un projet, prendre la parole… Seul·e, c'est risqué. Ici, tu t'engages sans attendre que les autres se montrent, et ça n'a lieu que si assez de monde suit.",
   "hunt.hidden.title": "Chasse masquée",
   "hunt.hidden.text":
     "Huntited a masqué cette chasse ({reason}). Elle reste inscrite sur la blockchain, que personne ne peut modifier, mais le site ne l'affiche plus.",
@@ -378,7 +378,7 @@ export const fr = {
   "home.example.cardLabel": "Exemple de chasse",
   "home.example.cardTitle": "Conseil municipal : sauvons le parc",
   "home.example.cardMeta": "Mairie · avant le 12 mars",
-  "home.example.cardProgress": "14 sur 20 engagés",
+  "home.example.cardProgress": "Seuil : 20 personnes · progression masquée",
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Il faut un wallet ?",
   "home.faq.wallet.a":
@@ -722,11 +722,9 @@ export const fr = {
   "form.threshold": "Seuil de participants",
   "form.threshold.placeholder": "Ex. 50",
   "form.threshold.help": "Personnes nécessaires pour que l'action ait lieu. Minimum {min}.",
-  "form.hide": "Masquer la progression",
+  "form.hide": "Progression masquée",
   "form.hide.help":
-    "Le site n'affiche pas le nombre d'engagés avant la fin. Il reste lisible sur la blockchain pour qui sait la lire.",
-  "form.hide.recommended":
-    "Recommandé : sans compteur visible sur le site, personne n'attend de voir les autres pour se lancer.",
+    "Le site n'affiche jamais le nombre d'engagés avant le déclenchement : personne n'attend de voir les autres pour se lancer. Attention : les engagements restent inscrits sur la blockchain, et quelqu'un d'équipé peut les compter.",
   "form.caution": "Ta caution",
   "form.caution.label": "Ta caution (KAS)",
   "form.caution.short": "Minimum {min} KAS. Une partie paie les engagé·es et Huntited.",
@@ -1001,6 +999,23 @@ export const fr = {
   "err.unavailable": "Le service est temporairement indisponible. Réessaie.",
   "err.create": "La création de la chasse a échoué. Réessaie.",
   "err.commit": "L'engagement a échoué. Réessaie.",
+  "err.withdraw": "Le retrait a échoué. Réessaie.",
+  "err.withdrawUnavailable": "Le retrait n'est possible qu'avec le registre sur la blockchain.",
+  "withdraw.button": "Retirer mon engagement",
+  "withdraw.confirmText":
+    "Tu retires ton engagement : il ne compte plus pour le déclenchement. Ton wallet envoie 0,2 KAS de test au registre. Tu pourras te réengager tant que la chasse est ouverte.",
+  "withdraw.confirm": "Oui, me retirer",
+  "withdraw.sending": "Envoi…",
+  "withdraw.hint":
+    "Possible jusqu'au déclenchement. Une fois la chasse déclenchée, tout le groupe s'est engagé en même temps : plus de retrait.",
+  "after.label": "Seulement si une autre chasse se déclenche d'abord",
+  "after.select": "Chasse qui doit se déclencher d'abord",
+  "after.alreadyOn": "déjà déclenchée",
+  "after.help":
+    "Ton engagement ne comptera que lorsque cette autre chasse se sera déclenchée. Si elle ne se déclenche jamais, il ne compte pas. Exemple : « je participe à l'étape 2 si l'étape 1 a réussi ».",
+  "after.mine": "Ton engagement compte seulement si cette chasse se déclenche :",
+  "after.met": "c'est fait, il compte.",
+  "after.waiting": "en attente.",
   "err.sync": "La synchronisation a échoué. Réessaie.",
   "err.needPass":
     "Il te faut un pass Huntited pour t'engager : demande une invitation à un membre.",

@@ -16,7 +16,7 @@ vi.stubGlobal(
 import { CreateHuntForm } from "@/components/hunt/CreateHuntForm";
 
 describe("modèles dans le formulaire de création", () => {
-  it("préremplit titre, description, seuil et masquage, puis annule", () => {
+  it("préremplit titre, description et seuil, puis annule", () => {
     render(<CreateHuntForm />);
     const title = screen.getByLabelText("Titre") as HTMLInputElement;
     fireEvent.change(title, { target: { value: "Mon idée" } });
@@ -27,7 +27,8 @@ describe("modèles dans le formulaire de création", () => {
       "Rassemblement pacifique",
     );
     expect((screen.getByLabelText(/Seuil/) as HTMLInputElement).value).toBe("50");
-    expect(screen.getByRole("checkbox")).toHaveAttribute("data-state", "checked");
+    // Progression toujours masquée : plus de case à cocher.
+    expect(screen.queryByRole("checkbox")).toBeNull();
     expect(screen.getByRole("status")).toHaveTextContent("Exemple « Rassemblement » chargé");
     expect(screen.getByText(/Conseillé pour cet exemple/)).toBeInTheDocument();
     // Seuil modifié : l'explication de l'exemple disparaît.

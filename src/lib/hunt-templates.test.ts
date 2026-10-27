@@ -29,7 +29,7 @@ describe("modèles de chasse", () => {
             threshold: tpl.threshold,
             deposit: 30,
             commitDeposit: 5,
-            progressVisibility: tpl.hideProgress ? "hidden" : "visible",
+            progressVisibility: "hidden",
           },
           locale,
         );

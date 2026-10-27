@@ -42,7 +42,6 @@ interface CreateHuntFormValues {
   deadline: string;
   threshold: string;
   deposit: string;
-  hideProgress: boolean;
   /** Action en ligne : ni ville ni pays. */
   online: boolean;
 }
@@ -63,7 +62,6 @@ export function CreateHuntForm() {
     deadline: "",
     threshold: "",
     deposit: String(CREATE_DEPOSIT_KAS),
-    hideProgress: false,
     online: false,
   });
   // Noms des pays : calculés dans le navigateur seulement (ceux du serveur,
@@ -90,7 +88,8 @@ export function CreateHuntForm() {
     threshold: Number(values.threshold),
     deposit: Number(values.deposit),
     commitDeposit: COMMIT_DEPOSIT_KAS,
-    progressVisibility: values.hideProgress ? "hidden" : "visible",
+    // Progression toujours masquée sur le site avant le déclenchement (opacité).
+    progressVisibility: "hidden",
   });
 
   // Villes de la base qui correspondent exactement au lieu saisi (une par pays) ;
@@ -156,7 +155,6 @@ export function CreateHuntForm() {
       deadline: draft.deadline,
       threshold: String(draft.threshold),
       deposit: String(draft.deposit),
-      hideProgress: draft.progressVisibility === "hidden",
       online,
     });
   }, []);
@@ -176,7 +174,6 @@ export function CreateHuntForm() {
       description: text.description,
       deadline: suggestedDeadline(template.days),
       threshold: String(Math.max(template.threshold, minHuntThreshold())),
-      hideProgress: template.hideProgress,
       online: template.online ?? false,
     }));
   };
@@ -364,23 +361,10 @@ export function CreateHuntForm() {
             </p>
           </div>
 
-          {/* Visibilité de la progression */}
-          <div className="space-y-2">
-            <label className="flex cursor-pointer items-start gap-3 text-sm">
-              <Checkbox
-                id="hide-progress"
-                checked={values.hideProgress}
-                onCheckedChange={(checked) =>
-                  setValues((prev) => ({ ...prev, hideProgress: checked === true }))
-                }
-                className="mt-0.5"
-              />
-              <span>{t("form.hide")}</span>
-            </label>
-            <p className="text-xs text-muted-foreground">{t("form.hide.help")}</p>
-            <p className="text-xs font-medium text-green-700 dark:text-green-400">
-              {t("form.hide.recommended")}
-            </p>
+          {/* Progression : jamais affichée avant le déclenchement */}
+          <div className="space-y-1 text-xs">
+            <p className="font-medium">{t("form.hide")}</p>
+            <p className="text-muted-foreground">{t("form.hide.help")}</p>
           </div>
         </fieldset>
 
