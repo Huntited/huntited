@@ -46,7 +46,7 @@ describe("chat chiffré entre membres", () => {
     expect(await openMessage(HUNT, bob, members, e)).toBeNull();
   });
 
-  it("ignore un message modifié ou destiné à une autre chasse", async () => {
+  it("ignore un message modifié ou destiné à une autre action", async () => {
     const e = await sealMessage(HUNT, alice, members, "bonjour", DEADLINE);
     expect(
       await openMessage(HUNT, bob, members, { ...e, content: tamperBody(e.content) }),
@@ -66,7 +66,7 @@ describe("chat chiffré entre membres", () => {
 describe("clé de chat du navigateur", () => {
   beforeEach(() => localStorage.clear());
 
-  it("créée une fois par chasse, puis réutilisée", () => {
+  it("créée une fois par action, puis réutilisée", () => {
     const pub = ensureChatKey(HUNT);
     expect(pub).toMatch(/^[0-9a-f]{64}$/);
     expect(ensureChatKey(HUNT)).toBe(pub);
@@ -95,7 +95,7 @@ describe("pseudo du chat", () => {
     expect((await openMessage(HUNT, bob, members, e))?.name).toBe("Renard bleu");
   });
 
-  it("au hasard au départ, propre à chaque chasse, modifiable", () => {
+  it("au hasard au départ, propre à chaque action, modifiable", () => {
     localStorage.clear();
     const name = getChatName(HUNT, "fr");
     expect(name).toMatch(/^\S.+ \S+$/);

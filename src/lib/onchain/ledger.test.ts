@@ -108,7 +108,7 @@ describe("grand livre : wallets (par défaut)", () => {
   const BOB = "kaspatest:bob";
   const CAROL = "kaspatest:carol";
 
-  it("n'importe quel wallet crée et rejoint une chasse", async () => {
+  it("n'importe quel wallet crée et rejoint une action", async () => {
     const { ledger, publish, replay } = setup();
     const content = huntContent();
     const id = content.id;
@@ -153,7 +153,7 @@ describe("grand livre : wallets (par défaut)", () => {
     expect((await replay()).allHunts()).toEqual(ledger.allHunts());
   });
 
-  it("règles du registre et chasse ratée", async () => {
+  it("règles du registre et action ratée", async () => {
     const { ledger, publish } = setup();
     const low = huntContent({ threshold: 1 });
     expect(await publish({ t: "hunt", ...low }, T0, ALICE)).toEqual({
@@ -180,7 +180,7 @@ describe("grand livre : wallets (par défaut)", () => {
   });
 });
 
-describe("grand livre : retrait et chasses enchaînées", () => {
+describe("grand livre : retrait et actions enchaînées", () => {
   const ALICE = "kaspatest:alice";
   const BOB = "kaspatest:bob";
   const CAROL = "kaspatest:carol";
@@ -230,7 +230,7 @@ describe("grand livre : retrait et chasses enchaînées", () => {
     expect(ledger.place(place)?.used).toBe(false);
   });
 
-  it("un engagement conditionnel compte quand l'autre chasse se déclenche", async () => {
+  it("un engagement conditionnel compte quand l'autre action se déclenche", async () => {
     const { ledger, publish, replay } = setup();
     const a = huntContent({ threshold: 2 });
     const b = huntContent({ threshold: 2 });
@@ -261,7 +261,7 @@ describe("grand livre : retrait et chasses enchaînées", () => {
 });
 
 describe("grand livre : remise à zéro", () => {
-  it("ignore les chasses créées avant la date, et leurs engagements", async () => {
+  it("ignore les actions créées avant la date, et leurs engagements", async () => {
     const { ledger, publish } = setup({ huntsSince: T0 + DAY });
     const old = huntContent();
     const fresh = huntContent();
@@ -378,7 +378,7 @@ describe("grand livre : pass de groupe", () => {
 });
 
 describe("grand livre : modération", () => {
-  it("seule l'adresse de publication masque ou réaffiche une chasse", async () => {
+  it("seule l'adresse de publication masque ou réaffiche une action", async () => {
     const { ledger, publish } = setup();
     const id = "ab".repeat(12);
     const hide = { t: "hide", hunt: id, reason: "spam" } as const;
@@ -407,7 +407,7 @@ describe("grand livre : modération", () => {
 
 describe("grand livre : pass (en réserve)", () => {
   it(
-    "anonymat complet : invitations, chasse et engagements par preuves",
+    "anonymat complet : invitations, action et engagements par preuves",
     { timeout: 60_000 },
     async () => {
       const { ledger, genesisCodes, publish, prove, join, replay } = setup({ passRequired: true });

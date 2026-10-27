@@ -14,15 +14,15 @@ import type { HuntFormData } from "@/lib/types";
 export const Route = createFileRoute("/create-review")({
   head: () => ({
     meta: [
-      { title: "Vérifier ma chasse — Huntited" },
+      { title: "Vérifier mon action — Huntited" },
       {
         name: "description",
-        content: "Relis ta chasse avant de la créer et de verrouiller le dépôt.",
+        content: "Relis ton action avant de la créer et de verrouiller le dépôt.",
       },
-      { property: "og:title", content: "Vérifier ma chasse — Huntited" },
+      { property: "og:title", content: "Vérifier mon action — Huntited" },
       {
         property: "og:description",
-        content: "Relis ta chasse avant de la créer et de verrouiller le dépôt.",
+        content: "Relis ton action avant de la créer et de verrouiller le dépôt.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

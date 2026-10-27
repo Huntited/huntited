@@ -5,7 +5,7 @@ import { HUNT_TEMPLATES, hasPlaceholder, suggestedDeadline, templateText } from 
 import { ONLINE_LOCATION } from "./online";
 import { validateHuntForm } from "./validation";
 
-describe("modèles de chasse", () => {
+describe("modèles d'action", () => {
   it("chaque modèle a un texte dans les deux langues, valide une fois rempli", () => {
     const ids = new Set<string>();
     for (const tpl of HUNT_TEMPLATES) {
@@ -38,7 +38,7 @@ describe("modèles de chasse", () => {
     }
   });
 
-  it("refuse de créer une chasse avec des passages [à remplacer]", () => {
+  it("refuse de créer une action avec des passages [à remplacer]", () => {
     const errors = validateHuntForm({
       title: "Nettoyons [le parc] ensemble",
       description: "Rendez-vous à [lieu]",

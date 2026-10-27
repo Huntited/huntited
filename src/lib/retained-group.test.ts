@@ -25,7 +25,7 @@ describe("computeRetainedGroup", () => {
     });
   });
 
-  it("tous au seuil de la chasse : comportement actuel (activation à T)", () => {
+  it("tous au seuil de l'action : comportement actuel (activation à T)", () => {
     expect(computeRetainedGroup([5, 5, 5, 5], 5).retainedCount).toBe(0);
     expect(computeRetainedGroup([5, 5, 5, 5, 5], 5)).toEqual({
       retainedThreshold: 5,

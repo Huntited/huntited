@@ -177,7 +177,7 @@ describe("caution au choix (proportionnelle)", () => {
     expect(() => calculateSettlement(7, "success", kas(29n))).toThrow("Caution insuffisante.");
   });
 
-  it("les textes d'une chasse suivent sa caution", () => {
+  it("les textes d'une action suivent sa caution", () => {
     expect(commitRefundShort(60)).toContain("jusqu'à 2 KAS");
     expect(createDepositTerms(60)).toContain("28,5 KAS au plus");
     expect(createDepositTerms(60)).toContain("58 KAS lui sont rendus");

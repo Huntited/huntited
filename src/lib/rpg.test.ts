@@ -36,7 +36,7 @@ function hunt(over: Partial<LedgerHunt> & { id: string }): LedgerHunt {
 const commit = (who: string, at: number) => ({ who, personalThreshold: 2, at, txId: "c" });
 
 describe("XP et niveaux", () => {
-  it("aucune XP tant que la chasse ne s'est pas déclenchée", () => {
+  it("aucune XP tant que l'action ne s'est pas déclenchée", () => {
     const h = hunt({ id: "a", commits: [commit("me", MONDAY + DAY)] });
     expect(computeXp(chainDeeds([h], "me", MONDAY + 2 * DAY)).total).toBe(0);
   });
@@ -62,7 +62,7 @@ describe("XP et niveaux", () => {
     expect(computeXp(deeds).success).toBe(XP_RULES.successCreator);
   });
 
-  it("quêtes de la semaine : seulement des chasses déclenchées", () => {
+  it("quêtes de la semaine : seulement des actions déclenchées", () => {
     const hunts = [
       hunt({ id: "a", commits: [commit("me", MONDAY + DAY)], activatedAt: MONDAY + DAY }),
       hunt({ id: "b", commits: [commit("me", MONDAY + 2 * DAY)], activatedAt: MONDAY + 2 * DAY }),

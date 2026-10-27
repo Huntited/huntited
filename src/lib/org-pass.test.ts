@@ -34,14 +34,14 @@ describe("pass d'organisation", () => {
     expect(importOrg(backup)?.members).toHaveLength(5);
   });
 
-  it("une place différente par chasse : impossible de relier les engagements d'un adhérent", () => {
+  it("une place différente par action : impossible de relier les engagements d'un adhérent", () => {
     const { secret } = createOrg("Asso", 1).members[0]!;
     expect(memberPlaceKey(secret, A)).toBe(memberPlaceKey(secret, A)); // stable
     expect(memberPlaceKey(secret, A)).not.toBe(memberPlaceKey(secret, B));
     expect(placePublic(memberPlaceKey(secret, A))).not.toBe(placePublic(memberPlaceKey(secret, B)));
   });
 
-  it("l'organisation ouvre une chasse et lit la demande signée de l'adhérent", async () => {
+  it("l'organisation ouvre une action et lit la demande signée de l'adhérent", async () => {
     let org = createOrg("Collectif", 2);
     org = openHunt(org, A, "Grève du 12");
     expect(org.hunts).toEqual([{ hunt: A, title: "Grève du 12" }]);

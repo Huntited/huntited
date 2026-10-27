@@ -27,7 +27,7 @@ type Meta =
 
 /** Balises <head> d'une page de chasse (génériques si la chasse est inconnue). */
 export function huntPreviewMeta(p: HuntPreview | null, id: string): Meta[] {
-  const title = p ? `${p.title} — Huntited` : "Chasse — Huntited";
+  const title = p ? `${p.title} — Huntited` : "Action — Huntited";
   const description = p
     ? huntPreviewDescription(p)
     : "Une action collective sur Huntited : tout le monde ou personne. Sinon, chacun est remboursé.";

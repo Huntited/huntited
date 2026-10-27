@@ -26,7 +26,7 @@ describe("parseTweetId", () => {
 });
 
 describe("xReplyIntentUrl", () => {
-  it("ouvre une réponse préremplie au tweet, avec le lien de la chasse", () => {
+  it("ouvre une réponse préremplie au tweet, avec le lien de l'action", () => {
     const text = huntReplyText({ title: "Rassemblement & co", threshold: 7 });
     const u = new URL(xReplyIntentUrl("42", text, "https://huntited.test/hunt/h1"));
     expect(u.origin + u.pathname).toBe("https://x.com/intent/tweet");

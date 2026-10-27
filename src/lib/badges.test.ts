@@ -34,7 +34,7 @@ describe("badges", () => {
     expect(computeBadges(activity())).toEqual([]);
   });
 
-  it("Pionnier·ère : 10 % premiers engagés d'une chasse réussie, au moins le premier", () => {
+  it("Pionnier·ère : 10 % premiers engagés d'une action réussie, au moins le premier", () => {
     expect(ids(activity({ participations: [part({ rank: 1, threshold: 10 })] }))).toContain(
       "pionnier",
     );
@@ -61,7 +61,7 @@ describe("badges", () => {
     );
   });
 
-  it("Habitué·e : bronze à 1, argent à 5, or à 25 chasses réussies", () => {
+  it("Habitué·e : bronze à 1, argent à 5, or à 25 actions réussies", () => {
     const tierFor = (n: number) =>
       computeBadges(
         activity({
@@ -90,7 +90,7 @@ describe("badges", () => {
     ).not.toContain("serie");
   });
 
-  it("Persévérant·e : 3 chasses échouées", () => {
+  it("Persévérant·e : 3 actions échouées", () => {
     const fails = (n: number) =>
       Array.from({ length: n }, (_, i) => part({ huntId: `f${i}`, result: "failure" }));
     expect(ids(activity({ participations: fails(2) }))).not.toContain("perseverant");
@@ -109,7 +109,7 @@ describe("badges", () => {
     expect(ids(activity({ creations: [{ ...c(80, "hidden"), result: "failure" }] }))).toEqual([]);
   });
 
-  it("Messager·ère : une chasse partagée qui a réussi", () => {
+  it("Messager·ère : une action partagée qui a réussi", () => {
     expect(ids(activity({ sharedResults: ["pending", "failure"] }))).toEqual([]);
     expect(ids(activity({ sharedResults: ["success"] }))).toEqual(["messager"]);
   });

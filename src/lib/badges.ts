@@ -45,19 +45,19 @@ export const BADGES: readonly BadgeDefinition[] = [
   {
     id: "pionnier",
     name: "Pionnier·ère",
-    description: "Parmi les 10 % premiers engagés d'une chasse qui a réussi.",
+    description: "Parmi les 10 % premiers engagés d'une action qui a réussi.",
     category: "participation",
   },
   {
     id: "declencheur",
     name: "Déclencheur·se",
-    description: "Ton engagement a fait franchir le seuil d'une chasse.",
+    description: "Ton engagement a fait franchir le seuil d'une action.",
     category: "participation",
   },
   {
     id: "habitue",
     name: "Habitué·e",
-    description: "Engagé·e dans 1, 5 puis 25 chasses réussies (bronze, argent, or).",
+    description: "Engagé·e dans 1, 5 puis 25 actions réussies (bronze, argent, or).",
     category: "participation",
   },
   {
@@ -69,31 +69,31 @@ export const BADGES: readonly BadgeDefinition[] = [
   {
     id: "perseverant",
     name: "Persévérant·e",
-    description: "Engagé·e dans 3 chasses qui n'ont pas atteint leur seuil.",
+    description: "Engagé·e dans 3 actions qui n'ont pas atteint leur seuil.",
     category: "participation",
   },
   {
     id: "batisseur",
     name: "Bâtisseur·se",
-    description: "Tu as créé une chasse qui a réussi.",
+    description: "Tu as créé une action qui a réussi.",
     category: "creation",
   },
   {
     id: "rassembleur",
     name: "Rassembleur·se",
-    description: "Tu as créé une chasse réussie avec au moins 50 engagés.",
+    description: "Tu as créé une action réussie avec au moins 50 engagés.",
     category: "creation",
   },
   {
     id: "visionnaire",
     name: "Visionnaire",
-    description: "Tu as créé une chasse réussie à progression masquée.",
+    description: "Tu as créé une action réussie à progression masquée.",
     category: "creation",
   },
   {
     id: "messager",
     name: "Messager·ère",
-    description: "Tu as partagé une chasse qui a ensuite réussi.",
+    description: "Tu as partagé une action qui a ensuite réussi.",
     category: "propagation",
   },
 ];

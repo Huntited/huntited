@@ -37,7 +37,7 @@ describe("mode chaîne", () => {
     expect(getDataMode()).toBe("local");
   });
 
-  it("crée une chasse par une transaction au registre, visible « en cours » avant l'index", async () => {
+  it("crée une action par une transaction au registre, visible « en cours » avant l'index", async () => {
     const id = await createHunt(
       {
         title: " Conseil ",

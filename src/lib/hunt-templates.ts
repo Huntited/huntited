@@ -64,7 +64,7 @@ const TEXTS: Record<Locale, Record<string, TemplateText>> = {
       name: "Lettre collective",
       title: "Lettre collective à [élu·e ou institution] sur [sujet]",
       description:
-        "Le [date], chaque personne engagée envoie la même lettre à [destinataire] pour demander [demande précise]. Le texte sera partagé dans le chat dès que la chasse se déclenche.",
+        "Le [date], chaque personne engagée envoie la même lettre à [destinataire] pour demander [demande précise]. Le texte sera partagé dans le chat dès que l'action se déclenche.",
       why: "trente lettres le même jour, ça se remarque.",
     },
     shop: {
@@ -92,7 +92,7 @@ const TEXTS: Record<Locale, Record<string, TemplateText>> = {
       name: "Publication collective",
       title: "Publions tous le même message sur [réseau] pour [cause]",
       description:
-        "Le [date et heure], chaque personne engagée publie le même message sur [réseau] pour [objectif]. Le texte sera partagé dans le chat dès que la chasse se déclenche. Un message respectueux, une seule fois : jamais de harcèlement.",
+        "Le [date et heure], chaque personne engagée publie le même message sur [réseau] pour [objectif]. Le texte sera partagé dans le chat dès que l'action se déclenche. Un message respectueux, une seule fois : jamais de harcèlement.",
       why: "une centaine de messages au même moment, ça se remarque.",
     },
     email: {
@@ -157,7 +157,7 @@ const TEXTS: Record<Locale, Record<string, TemplateText>> = {
       name: "Collective letter",
       title: "Collective letter to [official or institution] about [topic]",
       description:
-        "On [date], everyone who committed sends the same letter to [recipient] asking for [specific request]. The text will be shared in the chat as soon as the hunt triggers.",
+        "On [date], everyone who committed sends the same letter to [recipient] asking for [specific request]. The text will be shared in the chat as soon as the action triggers.",
       why: "thirty letters on the same day get noticed.",
     },
     shop: {
@@ -185,7 +185,7 @@ const TEXTS: Record<Locale, Record<string, TemplateText>> = {
       name: "Collective post",
       title: "Let's all post the same message on [network] for [cause]",
       description:
-        "On [date and time], everyone who committed posts the same message on [network] for [goal]. The text will be shared in the chat as soon as the hunt triggers. A respectful message, once: never harassment.",
+        "On [date and time], everyone who committed posts the same message on [network] for [goal]. The text will be shared in the chat as soon as the action triggers. A respectful message, once: never harassment.",
       why: "a hundred messages at the same moment get noticed.",
     },
     email: {

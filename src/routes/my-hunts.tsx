@@ -20,10 +20,10 @@ import { getUserHunts } from "@/lib/user-hunts";
 export const Route = createFileRoute("/my-hunts")({
   head: () => ({
     meta: [
-      { title: "Mes chasses — Huntited" },
+      { title: "Mes actions — Huntited" },
       {
         name: "description",
-        content: "Retrouve les chasses que tu as créées et celles où tu t'es engagé·e.",
+        content: "Retrouve les actions que tu as créées et celles où tu t'es engagé·e.",
       },
       { name: "robots", content: "noindex" },
     ],

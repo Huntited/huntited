@@ -10,7 +10,7 @@ const wallet = () => `kaspatest:qq_wallet_${(n += 1)}`;
 
 async function createHunt(threshold: number) {
   const { huntId } = await createHuntCovenant({
-    title: "Chasse",
+    title: "Action",
     description: "D",
     location: "L",
     deadline: new Date(Date.now() + 86_400_000).toISOString(),
@@ -67,7 +67,7 @@ describe("seuil personnel (mode local)", () => {
     expect(isRetainedHere(id, exigeant)).toBe(true);
   });
 
-  it("refuse un seuil personnel inférieur au seuil de la chasse", async () => {
+  it("refuse un seuil personnel inférieur au seuil de l'action", async () => {
     const id = await createHunt(3);
     await expect(commit(id, wallet(), 2)).rejects.toThrow("au moins 3");
   });

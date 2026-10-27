@@ -12,7 +12,7 @@ const content = (meta: ReturnType<typeof huntPreviewMeta>, key: string) =>
   meta.find((m) => ("property" in m && m.property === key) || ("name" in m && m.name === key)) as
     { content: string } | undefined;
 
-describe("aperçu riche d'une chasse", () => {
+describe("aperçu riche d'une action", () => {
   it("annonce le titre, le seuil et la date limite, sans lieu ni compteur", () => {
     const meta = huntPreviewMeta(preview, "h1");
     expect(meta).toContainEqual({ title: "Rassemblement — Huntited" });
@@ -33,7 +33,7 @@ describe("aperçu riche d'une chasse", () => {
     expect(content(meta, "og:url")?.content).toBe("https://huntited.test/hunt/h1");
   });
 
-  it("reste générique pour une chasse inconnue", () => {
-    expect(huntPreviewMeta(null, "h1")).toContainEqual({ title: "Chasse — Huntited" });
+  it("reste générique pour une action inconnue", () => {
+    expect(huntPreviewMeta(null, "h1")).toContainEqual({ title: "Action — Huntited" });
   });
 });

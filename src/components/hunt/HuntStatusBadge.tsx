@@ -10,13 +10,11 @@ const STATUS_STYLES: Record<HuntStatus, { label: MessageKey; className: string }
   },
   active: {
     label: "status.active",
-    className:
-      "bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800",
+    className: "bg-accent text-accent-foreground border-transparent",
   },
   activated: {
     label: "status.activated",
-    className:
-      "bg-green-100 text-green-900 border-green-300 dark:bg-green-950 dark:text-green-200 dark:border-green-800",
+    className: "bg-primary text-primary-foreground border-transparent",
   },
   expired: {
     label: "status.expired",

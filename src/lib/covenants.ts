@@ -236,13 +236,13 @@ export async function commitToHunt(
   const hunt = getHunt(huntId);
 
   if (!hunt) {
-    throw new Error("Chasse introuvable.");
+    throw new Error("Action introuvable.");
   }
 
   // Engagements ouverts jusqu'à la date limite, même après l'activation
   // (seuil personnel, option B), sauf si la chasse est déjà résolue.
   if (!commitsOpen(hunt)) {
-    throw new Error("Les engagements sont fermés pour cette chasse.");
+    throw new Error("Les engagements sont fermés pour cette action.");
   }
 
   const t = personalThreshold ?? hunt.threshold;

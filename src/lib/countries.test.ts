@@ -24,7 +24,7 @@ describe("pays", () => {
     expect(names).toEqual(["Allemagne", "Belgique", "Espagne"]);
   });
 
-  it("le filtre par pays ne garde que les chasses de ce pays", () => {
+  it("le filtre par pays ne garde que les actions de ce pays", () => {
     const view = (id: string, country?: string) =>
       ({
         hunt: {

@@ -9,8 +9,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("partage d'une chasse", () => {
-  it("le lien ne contient que l'identifiant de la chasse", () => {
+describe("partage d'une action", () => {
+  it("le lien ne contient que l'identifiant de l'action", () => {
     expect(huntShareUrl("abc123", "https://huntited.example")).toBe(
       "https://huntited.example/hunt/abc123",
     );

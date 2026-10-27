@@ -80,7 +80,7 @@ export function useHunt(huntId: string): UseHuntResult {
         });
       })
       .catch(() => {
-        if (!cancelled) setError("Impossible de charger la chasse. Réessaie plus tard.");
+        if (!cancelled) setError("Impossible de charger l'action. Réessaie plus tard.");
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);

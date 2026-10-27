@@ -6,13 +6,13 @@ import { useI18n } from "@/lib/i18n";
 export const Route = createFileRoute("/create")({
   head: () => ({
     meta: [
-      { title: "Créer une chasse — Huntited" },
+      { title: "Créer une action — Huntited" },
       {
         name: "description",
         content:
           "Créez une action collective coordonnée : caution de 30 KAS, engagements rendus à la fin, tout le monde ou personne.",
       },
-      { property: "og:title", content: "Créer une chasse — Huntited" },
+      { property: "og:title", content: "Créer une action — Huntited" },
       {
         property: "og:description",
         content:

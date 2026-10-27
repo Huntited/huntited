@@ -7,8 +7,8 @@ const B = "cd".repeat(12);
 
 beforeEach(() => localStorage.clear());
 
-describe("activité de tes chasses (cloche)", () => {
-  it("les messages non lus d'une chasse ne font qu'une ligne", () => {
+describe("activité de tes actions (cloche)", () => {
+  it("les messages non lus d'une action ne font qu'une ligne", () => {
     addInboxItem({ huntId: A, kind: "message", title: "Conseil", at: 1 });
     addInboxItem({ huntId: A, kind: "message", title: "Conseil", at: 2 });
     addInboxItem({ huntId: B, kind: "activated", title: "Marche", at: 3 });
@@ -19,7 +19,7 @@ describe("activité de tes chasses (cloche)", () => {
     expect(unreadCount()).toBe(2);
   });
 
-  it("ouvrir une chasse marque ses nouveautés comme lues", () => {
+  it("ouvrir une action marque ses nouveautés comme lues", () => {
     addInboxItem({ huntId: A, kind: "message", title: "Conseil", at: 1 });
     addInboxItem({ huntId: B, kind: "failed", title: "Marche", at: 2 });
     markRead({ huntId: A });

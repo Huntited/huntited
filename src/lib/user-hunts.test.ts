@@ -5,7 +5,7 @@ import { addUserHunt, creatorFingerprint, getUserHunts } from "./user-hunts";
 const ADDRESS = "kaspatest:qq_creator_address_aaaa";
 const ref = (huntId: string) => ({
   huntId,
-  title: "Chasse",
+  title: "Action",
   location: "Lieu",
   deadline: "2026-12-01T00:00:00.000Z",
   threshold: 2,

@@ -2,9 +2,9 @@
 // Chaque clé doit exister aussi dans en.ts (vérifié par le typage).
 export const fr = {
   // En-tête et navigation
-  "nav.hunts": "Chasses",
+  "nav.hunts": "Actions",
   "nav.create": "Créer",
-  "nav.myHunts": "Mes chasses",
+  "nav.myHunts": "Mes actions",
   "nav.wallet": "Mon wallet",
   "mission.title": "Missions",
   "mission.new": "Nouvelle mission",
@@ -95,7 +95,7 @@ export const fr = {
   "ios.step2":
     "puis « Sur l'écran d'accueil ». Huntited s'ouvre alors comme une app, sans App Store.",
   "ios.note":
-    "Chasses, wallet, salons chiffrés, vocaux et notifications marchent. Le Bluetooth (sans internet) n'existe que dans l'app Android.",
+    "Actions, wallet, salons chiffrés, vocaux et notifications marchent. Le Bluetooth (sans internet) n'existe que dans l'app Android.",
   "nav.progress": "Ma progression",
   "rpg.level": "Niveau {n}",
   "rpg.levelShort": "Niv. {n}",
@@ -114,16 +114,16 @@ export const fr = {
   "rpg.classDesc.stratege": "Lance les actions : +25 % d'XP de création.",
   "rpg.classDesc.gardien": "Tient jusqu'au bout : +25 % d'XP de réussite.",
   "rpg.classDesc.rallieur": "Entraîne les autres : +25 % d'XP de quêtes.",
-  "rpg.quest.twoCommits": "S'engager dans 2 chasses qui se déclenchent",
-  "rpg.quest.createTriggered": "Créer une chasse qui se déclenche",
-  "rpg.quest.triggered": "Voir une de tes chasses se déclencher",
+  "rpg.quest.twoCommits": "S'engager dans 2 actions qui se déclenchent",
+  "rpg.quest.createTriggered": "Créer une action qui se déclenche",
+  "rpg.quest.triggered": "Voir une de tes actions se déclencher",
   "rpg.xp.engage": "Engagements : {n} XP",
   "rpg.xp.create": "Créations : {n} XP",
   "rpg.xp.success": "Actions réussies : {n} XP",
   "rpg.xp.quests": "Quêtes : {n} XP",
   "rpg.page.title": "Ma progression",
   "rpg.page.lead":
-    "Ton expérience vient seulement de tes actions réelles inscrites sur la blockchain : t'engager, lancer des chasses, aller jusqu'au bout. Personne ne peut tricher : chacun peut la recalculer.",
+    "Ton expérience vient seulement de tes actions réelles inscrites sur la blockchain : t'engager, lancer des actions, aller jusqu'au bout. Personne ne peut tricher : chacun peut la recalculer.",
   "rpg.page.connect": "Connecte ton wallet pour voir ta progression.",
   "rpg.page.rank": "Ton rang",
   "rpg.page.xp": "{xp} XP · prochain niveau à {next} XP",
@@ -132,10 +132,10 @@ export const fr = {
     "Elle donne un bonus de 25 % sur un type d'action. Tu peux en changer quand tu veux ; les membres de tes salons la voient à côté de ton pseudo.",
   "rpg.page.quests": "Quêtes de la semaine",
   "rpg.page.questsNote":
-    "Nouvelles quêtes chaque lundi. Seules les chasses qui se déclenchent comptent : s'engager partout pour gagner de l'XP ne sert à rien.",
+    "Nouvelles quêtes chaque lundi. Seules les actions qui se déclenchent comptent : s'engager partout pour gagner de l'XP ne sert à rien.",
   "rpg.page.done": "Fait",
   "rpg.page.privacy":
-    "Ton niveau n'apparaît que dans les salons de tes chasses, à côté de ton pseudo, pour leurs membres. Il est calculé à partir de données déjà publiques sur la blockchain.",
+    "Ton niveau n'apparaît que dans les salons de tes actions, à côté de ton pseudo, pour leurs membres. Il est calculé à partir de données déjà publiques sur la blockchain.",
   "nav.menu": "Menu",
   "nav.home": "Accueil Huntited",
   "lang.switch": "Langue",
@@ -215,7 +215,7 @@ export const fr = {
   "wallet.page.balance": "Solde",
   "wallet.page.refresh": "Actualiser",
   "wallet.page.inUse": "Ce wallet est utilisé pour tes engagements sur Huntited.",
-  "wallet.page.seeHunts": "Voir les chasses",
+  "wallet.page.seeHunts": "Voir les actions",
   "wallet.page.use": "Utiliser ce wallet sur Huntited",
   "wallet.page.receive": "Recevoir des KAS",
   "wallet.page.qr": "QR code de l'adresse du wallet",
@@ -247,9 +247,9 @@ export const fr = {
 
   // Pages d'erreur
   "notFound.title": "Cette page n'existe pas",
-  "notFound.text": "Le lien est peut-être incomplet, ou la chasse a été retirée.",
-  "notFound.home": "Voir les chasses",
-  "notFound.create": "Créer une chasse",
+  "notFound.text": "Le lien est peut-être incomplet, ou l'action a été retirée.",
+  "notFound.home": "Voir les actions",
+  "notFound.create": "Créer une action",
   "error.title": "Cette page n'a pas pu s'afficher",
   "error.text":
     "Un problème est survenu de notre côté. Réessaie, ou reviens à l'accueil. Rien n'a été envoyé ni engagé.",
@@ -261,18 +261,18 @@ export const fr = {
   // Statuts d'une chasse
   "status.draft": "Brouillon",
   "status.active": "En cours",
-  "status.activated": "Seuil atteint",
-  "status.expired": "Expirée",
-  "status.settled": "Résolue",
+  "status.activated": "C'est parti",
+  "status.expired": "Terminée",
+  "status.settled": "Terminée",
   "status.aria": "Statut : {label}",
 
   // Accueil
   "home.title": "Agir ensemble, sans y aller seul",
   "home.lead":
     "Se mobiliser, changer d'appli, lancer un projet, prendre la parole… Seul·e, c'est risqué. Ici, tu t'engages sans attendre que les autres se montrent, et ça n'a lieu que si assez de monde suit.",
-  "hunt.hidden.title": "Chasse masquée",
+  "hunt.hidden.title": "Action masquée",
   "hunt.hidden.text":
-    "Huntited a masqué cette chasse ({reason}). Elle reste inscrite sur la blockchain, que personne ne peut modifier, mais le site ne l'affiche plus.",
+    "Huntited a masqué cette action ({reason}). Elle reste inscrite sur la blockchain, que personne ne peut modifier, mais le site ne l'affiche plus.",
   "hunt.hidden.rules": "Voir les usages interdits",
   "hide.reason.illegal": "action illégale",
   "hide.reason.violence": "appel à la violence",
@@ -282,11 +282,11 @@ export const fr = {
   "hide.reason.spam": "spam",
   "moderation.title": "Modération",
   "moderation.lead":
-    "Les chasses contraires aux usages interdits peuvent être masquées sur le site par la clé qui possède huntited.kas. Elles restent sur la blockchain ; chaque masquage est lui aussi public, et listé ici.",
-  "moderation.none": "Aucune chasse masquée.",
-  "moderation.target": "Lien ou identifiant de la chasse",
+    "Les actions contraires aux usages interdits peuvent être masquées sur le site par la clé qui possède huntited.kas. Elles restent sur la blockchain ; chaque masquage est lui aussi public, et listé ici.",
+  "moderation.none": "Aucune action masquée.",
+  "moderation.target": "Lien ou identifiant de l'action",
   "moderation.reason": "Raison",
-  "moderation.hide": "Masquer cette chasse",
+  "moderation.hide": "Masquer cette action",
   "moderation.unhide": "Réafficher",
   "moderation.publicNote":
     "Ton wallet va envoyer 0,2 KAS de test au registre : la décision est publique et définitive (on peut la défaire en réaffichant).",
@@ -299,23 +299,23 @@ export const fr = {
   "place.done": "Ton engagement est inscrit sur la blockchain ✓",
   "place.notRegistered":
     "Cette place n'est pas encore inscrite par l'association. Réessaie un peu plus tard.",
-  "place.closed": "Les engagements sont fermés pour cette chasse.",
+  "place.closed": "Les engagements sont fermés pour cette action.",
   "place.sent": "Envoyé à ton association le {date}. Il sera inscrit lors de son prochain lot.",
   "place.accept": "J'accepte les conditions d'engagement.",
   "place.commit": "Je m'engage",
   "place.error": "Envoi impossible : aucun relais n'a répondu. Réessaie.",
-  "place.seeHunt": "Voir la chasse",
+  "place.seeHunt": "Voir l'action",
   "group.title": "Pass de groupe",
   "group.lead":
     "Pour une association ou un collectif : offre des places à tes membres. Ils s'engagent sans wallet ni KAS, et la blockchain ne voit que l'association.",
-  "group.step1": "Crée les places pour une chasse, puis inscris-les sur la blockchain.",
+  "group.step1": "Crée les places pour une action, puis inscris-les sur la blockchain.",
   "group.step2": "Envoie un lien à chaque membre (un lien = une place).",
   "group.step3": "Reviens inscrire les engagements reçus, par lots, avant la date limite.",
   "group.count": "Nombre de places",
   "group.create": "Créer les places",
   "group.cost":
     "Coût : 0,2 KAS de test pour inscrire jusqu'à 100 places, puis 0,2 KAS par lot de 40 engagements au plus. Les places restent dans ce navigateur : télécharge la sauvegarde.",
-  "group.invalid": "Indique le lien de la chasse et un nombre de places.",
+  "group.invalid": "Indique le lien de l'action et un nombre de places.",
   "group.badBackup": "Sauvegarde illisible.",
   "group.restore": "Restaurer une sauvegarde d'organisation",
   "group.status": "{total} places · {registered} inscrites · {used} utilisées",
@@ -330,17 +330,17 @@ export const fr = {
   "group.backup": "Télécharger la sauvegarde",
   "group.backupNote": "sans elle, perdre ce navigateur fait perdre l'accès aux places.",
   "group.sent": "Envoyé. L'état se met à jour dans une minute environ.",
-  "group.offer": "Un syndicat, une association ? Ouvre cette chasse à tes adhérents",
+  "group.offer": "Un syndicat, une association ? Ouvre cette action à tes adhérents",
   "data.group.group": "Pass d'organisation",
   "data.group.group.text":
     "Ton organisation et les liens de ses adhérents, ou la place qu'on t'a offerte. Secret : qui a ces clés peut utiliser les places.",
   "org.title": "Pass d'organisation",
   "org.lead":
-    "Pour un syndicat, une association ou un collectif : chaque adhérent reçoit un lien personnel, une fois pour toutes. Ensuite, tu ouvres des chasses à tes adhérents : ils s'engagent sans wallet ni KAS, et la blockchain ne voit que l'organisation. D'une chasse à l'autre, on ne peut pas relier leurs engagements.",
+    "Pour un syndicat, une association ou un collectif : chaque adhérent reçoit un lien personnel, une fois pour toutes. Ensuite, tu ouvres des actions à tes adhérents : ils s'engagent sans wallet ni KAS, et la blockchain ne voit que l'organisation. D'une action à l'autre, on ne peut pas relier leurs engagements.",
   "org.step1":
     "Crée l'organisation et ses adhérents, puis envoie à chacun son lien personnel (par un canal privé).",
   "org.step2":
-    "Pour chaque chasse : colle son lien ici, ouvre-la à tes adhérents et inscris leurs places sur la blockchain.",
+    "Pour chaque action : colle son lien ici, ouvre-la à tes adhérents et inscris leurs places sur la blockchain.",
   "org.step3": "Reviens inscrire les engagements reçus, par lots, avant la date limite.",
   "org.name": "Nom de l'organisation",
   "org.nameNote": "Seulement pour toi : il n'est jamais publié.",
@@ -349,35 +349,35 @@ export const fr = {
   "org.members": "{n} adhérent(s)",
   "org.links": "Liens des adhérents ({n})",
   "org.linksNote":
-    "Un lien par adhérent, valable pour toutes les chasses que tu leur ouvriras. C'est un billet : envoie-le à une seule personne, par un canal privé.",
+    "Un lien par adhérent, valable pour toutes les actions que tu leur ouvriras. C'est un billet : envoie-le à une seule personne, par un canal privé.",
   "org.addCount": "Nombre d'adhérents à ajouter",
   "org.add": "Ajouter",
-  "org.openHunt": "Ouvrir une chasse à tes adhérents (lien de la chasse)",
+  "org.openHunt": "Ouvrir une action à tes adhérents (lien de l'action)",
   "org.open": "Ouvrir",
   "org.backupNote":
     "garde-la en lieu sûr : sans elle, perdre ce navigateur fait perdre l'accès à l'organisation.",
   "member.kicker": "Pass d'organisation",
-  "member.title": "Les chasses ouvertes par ton organisation",
+  "member.title": "Les actions ouvertes par ton organisation",
   "member.lead":
-    "Ton organisation (syndicat, association, collectif) t'ouvre ces chasses : tu t'engages sans wallet ni KAS. Sur la blockchain, seule l'organisation apparaît, jamais ton nom ni ton wallet. Ce lien est personnel : ne le partage pas.",
+    "Ton organisation (syndicat, association, collectif) t'ouvre ces actions : tu t'engages sans wallet ni KAS. Sur la blockchain, seule l'organisation apparaît, jamais ton nom ni ton wallet. Ce lien est personnel : ne le partage pas.",
   "member.none":
-    "Aucune chasse ouverte pour l'instant. Garde ce lien : les prochaines chasses apparaîtront ici.",
+    "Aucune action ouverte pour l'instant. Garde ce lien : les prochaines actions apparaîtront ici.",
   "member.join": "M'engager",
-  "member.joined": "Inscrit ✓ — voir la chasse",
+  "member.joined": "Inscrit ✓ — voir l'action",
   "member.keep":
-    "Ajoute cette page à tes favoris : c'est ton pass pour toutes les chasses de ton organisation.",
+    "Ajoute cette page à tes favoris : c'est ton pass pour toutes les actions de ton organisation.",
   "hunt.explain":
     "Ici, personne n'y va seul·e : ton engagement ne compte que si au moins {threshold} personnes s'engagent avant la date limite. Sinon, ton dépôt t'est rendu.",
   "hunt.explain.link": "Comment ça marche ?",
-  "home.browse": "Voir les chasses",
+  "home.browse": "Voir les actions",
   "home.example.title": "Comment ça marche, avec un exemple",
   "home.example.1":
-    "Léa en a marre des déchets sur la plage. Mais ramasser seule ne sert à rien. Elle crée une chasse : « On nettoie la plage samedi si on est au moins 15 ».",
+    "Léa en a marre des déchets sur la plage. Mais ramasser seule ne sert à rien. Elle crée une action : « On nettoie la plage samedi si on est au moins 15 ».",
   "home.example.2":
     "Chacun s'engage de son côté, avec un dépôt de 5 KAS. Personne ne voit qui s'est engagé, pas même Léa.",
   "home.example.3":
-    "Au 15e engagement, la chasse se déclenche : tout le monde est prévenu et un chat chiffré s'ouvre pour s'organiser. Si on n'arrive pas à 15, rien ne se passe : chacun récupère son dépôt.",
-  "home.example.cardLabel": "Exemple de chasse",
+    "Au 15e engagement, l'action se déclenche : tout le monde est prévenu et un chat chiffré s'ouvre pour s'organiser. Si on n'arrive pas à 15, rien ne se passe : chacun récupère son dépôt.",
+  "home.example.cardLabel": "Exemple d'action",
   "home.example.cardTitle": "On nettoie la plage samedi",
   "home.example.cardMeta": "Plage du Prado · avant samedi",
   "home.example.cardProgress": "Seuil : 15 personnes · progression masquée",
@@ -391,27 +391,27 @@ export const fr = {
   "home.faq.who.q": "Qui sait que je me suis engagé·e ?",
   "home.faq.who.a":
     "Le site ne l'affiche jamais, pas même au créateur. Mais ton engagement est inscrit sur la blockchain Kaspa avec l'adresse de ton wallet : c'est public et permanent, et quelqu'un qui lit la blockchain peut le voir. Pour plus de discrétion, utilise un wallet qui n'est pas relié à ton identité.",
-  "home.faq.after.q": "Et si la chasse se déclenche ?",
+  "home.faq.after.q": "Et si l'action se déclenche ?",
   "home.faq.after.a":
     "Tu restes libre : Huntited ne force personne. Mais tu sais que tu ne seras pas seul·e, et le chat permet de s'organiser.",
   "home.faq.cost.q": "Ça coûte quelque chose ?",
   "home.faq.cost.a":
-    "S'engager coûte 0,2 KAS, non rendus : c'est ce qui inscrit ton engagement sur la blockchain. Ton dépôt de 5 KAS, lui, est rendu. Créer une chasse coûte aussi 0,2 KAS, et la caution n'est pas rendue en entier : une partie paie les participants si l'action a lieu, une petite partie revient à Huntited pour financer le service. Pour l'instant, tout se fait en KAS de test.",
-  "home.create": "Créer une chasse",
-  "home.search": "Rechercher une chasse…",
+    "S'engager coûte 0,2 KAS, non rendus : c'est ce qui inscrit ton engagement sur la blockchain. Ton dépôt de 5 KAS, lui, est rendu. Créer une action coûte aussi 0,2 KAS, et la caution n'est pas rendue en entier : une partie paie les participants si l'action a lieu, une petite partie revient à Huntited pour financer le service. Pour l'instant, tout se fait en KAS de test.",
+  "home.create": "Créer une action",
+  "home.search": "Rechercher une action…",
   "home.filter": "Filtrer par statut",
   "home.filter.all": "Toutes",
   "home.filter.active": "En cours",
   "home.filter.activated": "Déclenchées",
   "home.filter.expired": "Terminées",
-  "home.section.all": "Toutes les chasses",
-  "home.section.active": "Chasses en cours",
-  "home.section.activated": "Chasses déclenchées",
-  "home.section.expired": "Chasses terminées",
+  "home.section.all": "Toutes les actions",
+  "home.section.active": "Actions en cours",
+  "home.section.activated": "Actions déclenchées",
+  "home.section.expired": "Actions terminées",
   "home.section.results": "Résultats",
-  "home.loadError": "Impossible de charger les chasses pour le moment. Réessaie plus tard.",
-  "home.noMatch": "Aucune chasse ne correspond à ces filtres.",
-  "home.empty": "Aucune chasse pour le moment. Lance la première !",
+  "home.loadError": "Impossible de charger les actions pour le moment. Réessaie plus tard.",
+  "home.noMatch": "Aucune action ne correspond à ces filtres.",
+  "home.empty": "Aucune action pour le moment. Lance la première !",
   "home.card.before": "avant le {date}",
   "home.card.progress": "{count} sur {threshold} engagés",
   "home.card.hidden": "Seuil : {threshold} · progression masquée",
@@ -421,15 +421,15 @@ export const fr = {
   "countdown.days": "j",
 
   // Page d'une chasse
-  "hunt.loadError": "Impossible de charger la chasse. Réessaie plus tard.",
-  "hunt.notFound.title": "Chasse introuvable",
-  "hunt.notFound.text": "La chasse que tu cherches n'existe pas ou a été supprimée.",
+  "hunt.loadError": "Impossible de charger l'action. Réessaie plus tard.",
+  "hunt.notFound.title": "Action introuvable",
+  "hunt.notFound.text": "L'action que tu cherches n'existe pas ou a été supprimée.",
   "hunt.location": "Lieu",
   "hunt.deadline": "Date limite",
   "hunt.threshold": "Seuil",
   "hunt.thresholdValue": "{count} participants",
-  "hunt.commitDeposit": "Dépôt d'engagement (rendu à la fin)",
-  "hunt.caution": "Caution du créateur",
+  "hunt.commitDeposit": "Ton dépôt (rendu à la fin)",
+  "hunt.caution": "Caution de l'organisateur",
   "hunt.progress.label": "Participants engagés",
   "hunt.progress.of": "sur {threshold} requis",
   "hunt.progress.retained":
@@ -437,40 +437,50 @@ export const fr = {
   "hunt.progress.hidden": "Progression masquée",
   "hunt.progress.hiddenText":
     "Seuil : {threshold} participants. Le nombre d'engagés sera révélé au déclenchement ou à la date limite.",
-  "hunt.cta.closed": "Engagements fermés",
-  "hunt.cta.committed": "Déjà engagé·e",
-  "hunt.cta.commit": "S'engager — {amount} KAS",
+  "hunt.cta.closed": "C'est fermé",
+  "hunt.cta.committed": "Tu en es",
+  "hunt.timeLeft": "Encore",
+  "hunt.before": "Avant le {date}",
+  "hunt.big.needed": "personnes nécessaires",
+  "hunt.big.otherwise": "Sinon, rien ne se passe.",
+  "hunt.big.count": "{count} déjà",
+  "hunt.reassure":
+    "Personne ne voit que tu t'es engagé. Si on n'est pas {threshold}, tu récupères tout.",
+  "hunt.more": "Plus d'infos",
+  "hunt.cta.commit": "J'en suis",
   "hunt.condition": "Ta condition : au moins {count} personnes —",
   "hunt.condition.met": "remplie, tu fais partie du groupe.",
   "hunt.condition.pending":
     "en attente. Si elle n'est pas remplie, tes {amount} KAS te sont rendus.",
-  "hunt.banner.activated":
-    "Cette chasse a atteint son seuil ({count} / {threshold}) : l'action aura lieu.",
-  "hunt.banner.stillOpen":
-    "Les engagements restent ouverts jusqu'à la date limite : le groupe peut encore grandir.",
-  "hunt.banner.expired":
-    "Cette chasse est expirée sans avoir atteint son seuil ({count} / {threshold}).",
-  "hunt.chat.title": "Chat de coordination",
+  "hunt.banner.activated": "C'est parti ! L'action aura lieu.",
+  "hunt.banner.stillOpen": "On peut encore te rejoindre jusqu'à la date limite.",
+  "hunt.banner.expired": "Pas assez de monde : rien ne se passe. Chacun récupère son dépôt.",
+  "hunt.chat.title": "Salon des participants",
   "hunt.chat.expired":
-    "Cette chasse a expiré avant d'atteindre son seuil : aucun chat n'a été ouvert.",
+    "Cette action a expiré avant d'atteindre son seuil : aucun chat n'a été ouvert.",
   "hunt.chat.later": "Le chat s'ouvrira si le seuil est atteint.",
 
   // Fenêtre d'engagement
   "common.cancel": "Annuler",
-  "commit.title": "Engagement de {amount} KAS",
-  "commit.already": "Tu es déjà engagé·e dans cette chasse.",
+  "commit.point.deposit": "Tu bloques {amount} KAS, rendus à la fin.",
+  "commit.point.secret": "Personne ne voit que tu t'es engagé.",
+  "commit.point.threshold": "Si on n'est pas {threshold}, rien ne se passe.",
+  "commit.point.fee":
+    "Réseau de test : ton wallet envoie aussi 0,2 KAS de test (non rendus) pour inscrire ton engagement.",
+  "commit.options": "Options",
+  "commit.title": "Tu en es ?",
+  "commit.already": "Tu es déjà engagé·e dans cette action.",
   "commit.testNote": "Version de test : aucun vrai KAS n'est utilisé.",
   "commit.personal.before": "Je viens si au moins",
   "commit.personal.after": "personnes viennent",
   "commit.personal.help":
-    "Facultatif. Laisse {threshold} si tu viens dès que la chasse se déclenche. Si tu mets plus et que ce nombre n'est pas atteint, tu ne viens pas et tes {amount} KAS te sont rendus. Personne d'autre ne voit ce chiffre.",
+    "Facultatif. Laisse {threshold} si tu viens dès que l'action se déclenche. Si tu mets plus et que ce nombre n'est pas atteint, tu ne viens pas et tes {amount} KAS te sont rendus. Personne d'autre ne voit ce chiffre.",
   "commit.personal.invalid": "Indique un nombre entier d'au moins {threshold}.",
-  "commit.keyTerms": "Conditions clés",
+  "commit.keyTerms": "Conditions",
   "commit.fullTerms": "Voir les conditions complètes",
-  "commit.accept":
-    "J'ai compris que mon dépôt reste bloqué jusqu'au déclenchement ou à la date limite de la chasse.",
+  "commit.accept": "J'ai lu et j'accepte les conditions.",
   "commit.submitting": "Engagement… (preuve en cours)",
-  "commit.confirm": "Confirmer l'engagement",
+  "commit.confirm": "J'en suis",
 
   // Résolution
   "settle.title": "Résolution",
@@ -490,8 +500,8 @@ export const fr = {
   // Chat
   "common.retry": "Réessayer",
   "chat.soon":
-    "La chasse est déclenchée. Le chat chiffré entre participants arrive bientôt : en attendant, organisez-vous par vos moyens habituels.",
-  "chat.p2p.secure": "Chiffré : seuls les membres de la chasse peuvent lire.",
+    "L'action est déclenchée. Le chat chiffré entre participants arrive bientôt : en attendant, organisez-vous par vos moyens habituels.",
+  "chat.p2p.secure": "Chiffré : seuls les membres de l'action peuvent lire.",
   "chat.p2p.creator": "Créateur·rice",
   "chat.p2p.failed": "Non envoyé",
   "chat.p2p.keyHint": "Entrée pour envoyer, Maj+Entrée pour aller à la ligne",
@@ -505,17 +515,17 @@ export const fr = {
   "chat.notify.title": "Nouveau message",
   "chat.notify.body": "Dans le chat de « {title} »",
   "inbox.title": "Activité",
-  "inbox.open": "Activité de tes chasses",
-  "inbox.openUnread": "Activité de tes chasses : {n} nouveauté(s)",
+  "inbox.open": "Activité de tes actions",
+  "inbox.openUnread": "Activité de tes actions : {n} nouveauté(s)",
   "inbox.empty":
-    "Rien de nouveau. Ici apparaîtront les messages et les résultats des chasses que tu as créées ou rejointes.",
+    "Rien de nouveau. Ici apparaîtront les messages et les résultats des actions que tu as créées ou rejointes.",
   "inbox.message": "Nouveau message dans « {title} »",
   "inbox.activated": "« {title} » est déclenchée : l'action a lieu.",
   "inbox.failed": "« {title} » n'a pas atteint son seuil.",
   "inbox.markRead": "Tout marquer comme lu",
   "data.group.inbox": "Activité",
   "data.group.inbox.text":
-    "Les nouveautés de tes chasses (cloche de l'en-tête), et leur dernier état connu.",
+    "Les nouveautés de tes actions (cloche de l'en-tête), et leur dernier état connu.",
   "chat.p2p.as": "Tu écris en tant que",
   "chat.p2p.rename": "Modifier",
   "chat.p2p.nameLabel": "Ton pseudo dans ce chat",
@@ -539,7 +549,7 @@ export const fr = {
   "sim.creator.ifYesShort": "rendus · {per} par engagé·e",
   "sim.creator.ifNoShort": "rendus",
   "sim.creator.noteChain":
-    "Montants simulés pour l'instant. Seul coût réel : {fee} pour inscrire la chasse.",
+    "Montants simulés pour l'instant. Seul coût réel : {fee} pour inscrire l'action.",
   "sim.part.deposit": "Ton dépôt",
   "sim.part.back": "Rendu à toi",
   "sim.part.always": "dans tous les cas",
@@ -548,7 +558,7 @@ export const fr = {
   "sim.part.onlyIf": "seulement si l'action a lieu",
   "sim.part.notRetained": "ton seuil ({n}) n'est pas atteint : tu n'y vas pas",
   "sim.fee.create":
-    "Seul coût réel : {fee} de test pour inscrire la chasse sur la blockchain (non rendus).",
+    "Seul coût réel : {fee} de test pour inscrire l'action sur la blockchain (non rendus).",
   "sim.fee.commit":
     "Seul coût réel : {fee} de test pour inscrire ton engagement sur la blockchain (non rendus).",
   "sim.simulated": "Pour l'instant, caution et dépôts sont simulés : aucun KAS n'est bloqué.",
@@ -572,7 +582,7 @@ export const fr = {
   "chat.app.install": "Installer Huntited Chat",
   "chat.p2p.loading": "Connexion au chat…",
   "chat.p2p.noKey":
-    "Ce navigateur n'a pas de clé de chat pour cette chasse. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé la chasse) : ouvre le chat depuis celui-ci.",
+    "Ce navigateur n'a pas de clé de chat pour cette action. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé l'action) : ouvre le chat depuis celui-ci.",
   "chat.p2p.notMember":
     "Le chat est réservé aux personnes engagées et au créateur ou à la créatrice.",
   "chat.p2p.empty": "Aucun message pour l'instant.",
@@ -611,11 +621,11 @@ export const fr = {
   "chat.p2p.talkie.listen": "Écouter",
   "chat.p2p.talkie.listening": "À l'écoute",
   "chat.p2p.talkie.hint":
-    "Réservé aux membres de la chasse. Maintiens le bouton pour parler (15 s au plus) : ton message part dès que tu relâches, par Bluetooth sans internet, et se joue tout de suite chez les membres à l'écoute (salon ouvert, écran allumé).",
+    "Réservé aux membres de l'action. Maintiens le bouton pour parler (15 s au plus) : ton message part dès que tu relâches, par Bluetooth sans internet, et se joue tout de suite chez les membres à l'écoute (salon ouvert, écran allumé).",
   "chat.p2p.talkie.hold": "Maintenir pour parler",
   "chat.p2p.talkie.talking": "Je parle… relâche pour envoyer",
   "chat.p2p.presence.title": "Présence sur place",
-  "chat.p2p.presence.around": "Membres de la chasse autour de toi (toi compris) : {n}",
+  "chat.p2p.presence.around": "Membres de l'action autour de toi (toi compris) : {n}",
   "chat.p2p.presence.app":
     "Le jour J, ouvre ce salon dans l'app Huntited Chat : elle compte par Bluetooth les membres présents autour de toi, sans dire qui.",
   "chat.p2p.presence.threshold": "Seuil sur place fixé par le créateur : {onsite} personnes.",
@@ -639,7 +649,7 @@ export const fr = {
   "x.tweetUrl": "Adresse du tweet",
   "x.invalid": "Colle l'adresse d'un tweet, par exemple https://x.com/nom/status/123…",
   "x.help":
-    "X s'ouvre avec une réponse déjà rédigée et le lien de la chasse. Tu peux la modifier avant de publier, depuis ton compte.",
+    "X s'ouvre avec une réponse déjà rédigée et le lien de l'action. Tu peux la modifier avant de publier, depuis ton compte.",
   "x.open": "Ouvrir la réponse sur X",
 
   // Badges
@@ -649,33 +659,33 @@ export const fr = {
   "badges.locked": "À débloquer ({count})",
   "badges.public": "Badges visibles publiquement",
   "badges.publicHelp":
-    "Réglage propre à ce wallet. Désactivé, tes badges ne sont visibles que par toi : ils pourraient sinon révéler les chasses auxquelles tu as participé. Aucun profil public n'existe encore dans ce prototype ; ce choix sera appliqué dès qu'il y en aura un.",
+    "Réglage propre à ce wallet. Désactivé, tes badges ne sont visibles que par toi : ils pourraient sinon révéler les actions auxquelles tu as participé. Aucun profil public n'existe encore dans ce prototype ; ce choix sera appliqué dès qu'il y en aura un.",
   "badge.tier.bronze": "bronze",
   "badge.tier.argent": "argent",
   "badge.tier.or": "or",
   "badge.pionnier.name": "Pionnier·ère",
-  "badge.pionnier.text": "Parmi les 10 % premiers engagés d'une chasse qui a réussi.",
+  "badge.pionnier.text": "Parmi les 10 % premiers engagés d'une action qui a réussi.",
   "badge.declencheur.name": "Déclencheur·se",
-  "badge.declencheur.text": "Ton engagement a fait franchir le seuil d'une chasse.",
+  "badge.declencheur.text": "Ton engagement a fait franchir le seuil d'une action.",
   "badge.habitue.name": "Habitué·e",
-  "badge.habitue.text": "Engagé·e dans 1, 5 puis 25 chasses réussies (bronze, argent, or).",
+  "badge.habitue.text": "Engagé·e dans 1, 5 puis 25 actions réussies (bronze, argent, or).",
   "badge.serie.name": "Série",
   "badge.serie.text": "Engagé·e au moins une fois par mois, 3 mois de suite.",
   "badge.perseverant.name": "Persévérant·e",
-  "badge.perseverant.text": "Engagé·e dans 3 chasses qui n'ont pas atteint leur seuil.",
+  "badge.perseverant.text": "Engagé·e dans 3 actions qui n'ont pas atteint leur seuil.",
   "badge.batisseur.name": "Bâtisseur·se",
-  "badge.batisseur.text": "Tu as créé une chasse qui a réussi.",
+  "badge.batisseur.text": "Tu as créé une action qui a réussi.",
   "badge.rassembleur.name": "Rassembleur·se",
-  "badge.rassembleur.text": "Tu as créé une chasse réussie avec au moins 50 engagés.",
+  "badge.rassembleur.text": "Tu as créé une action réussie avec au moins 50 engagés.",
   "badge.visionnaire.name": "Visionnaire",
-  "badge.visionnaire.text": "Tu as créé une chasse réussie à progression masquée.",
+  "badge.visionnaire.text": "Tu as créé une action réussie à progression masquée.",
   "badge.messager.name": "Messager·ère",
-  "badge.messager.text": "Tu as partagé une chasse qui a ensuite réussi.",
+  "badge.messager.text": "Tu as partagé une action qui a ensuite réussi.",
 
   // Création
-  "create.title": "Créer une chasse",
+  "create.title": "Créer une action",
   "create.lead":
-    "Définis l'action collective et le seuil de participants. Aucun organisateur central : la chasse se déclenche d'elle-même quand le seuil est atteint.",
+    "Définis l'action collective et le seuil de participants. Aucun organisateur central : l'action se déclenche d'elle-même quand le seuil est atteint.",
   "form.title": "Titre",
   "form.title.placeholder": "Ex. Rassemblement place de la République",
   "form.description": "Description",
@@ -697,7 +707,7 @@ export const fr = {
   "form.commitDeposit": "Dépôt d'engagement (par participant)",
   "form.commitDeposit.help": "Rendu au participant à la fin, que l'action réussisse ou non.",
   "form.draftError": "Impossible d'enregistrer le brouillon. Réessaie.",
-  "form.submit": "Vérifier ma chasse",
+  "form.submit": "Vérifier mon action",
   "val.title.required": "Le titre est requis.",
   "val.title.long": "Le titre ne doit pas dépasser 80 caractères.",
   "val.placeholder": "Remplace les passages [entre crochets] par tes informations.",
@@ -717,18 +727,18 @@ export const fr = {
     "Le secret qui prouve que tu as été invité·e. Si tu le perds, il faudra une nouvelle invitation.",
   "data.group.chat": "Tes clés de chat",
   "data.group.chat.text":
-    "Une clé par chasse, pour lire et écrire dans son chat chiffré. Si tu les effaces, tu ne pourras plus lire ces chats depuis cet appareil.",
-  "data.group.hunts": "Tes chasses et engagements",
+    "Une clé par action, pour lire et écrire dans son chat chiffré. Si tu les effaces, tu ne pourras plus lire ces chats depuis cet appareil.",
+  "data.group.hunts": "Tes actions et engagements",
   "data.group.hunts.text":
-    "Les chasses que tu as créées ou rejointes, et ton seuil personnel, pour les retrouver dans « Mes chasses ».",
+    "Les actions que tu as créées ou rejointes, et ton seuil personnel, pour les retrouver dans « Mes actions ».",
   "data.group.draft": "Brouillon",
-  "data.group.draft.text": "La chasse que tu étais en train de créer.",
-  "data.group.notify": "Chasses suivies",
-  "data.group.notify.text": "Les chasses pour lesquelles tu as demandé à être prévenu·e.",
+  "data.group.draft.text": "L'action que tu étais en train de créer.",
+  "data.group.notify": "Actions suivies",
+  "data.group.notify.text": "Les actions pour lesquelles tu as demandé à être prévenu·e.",
   "data.group.prefs": "Préférences",
   "data.group.prefs.text": "Langue, thème et affichage des badges.",
   "data.group.demo": "Démonstration",
-  "data.group.demo.text": "Chasses de démonstration, quand le site tourne sans serveur.",
+  "data.group.demo.text": "Actions de démonstration, quand le site tourne sans serveur.",
   "data.group.other": "Autres",
   "data.group.other.text": "Données techniques de Huntited.",
   "data.export": "Exporter",
@@ -737,12 +747,12 @@ export const fr = {
   "data.erase": "Tout effacer",
   "data.erase.title": "Effacer les données de cet appareil ?",
   "data.erase.text":
-    "Ton pass, tes chasses suivies et tes préférences seront supprimés de ce navigateur. Tes engagements, eux, restent valables : ils sont sur le serveur. Exporte d'abord si tu veux garder ton pass.",
+    "Ton pass, tes actions suivies et tes préférences seront supprimés de ce navigateur. Tes engagements, eux, restent valables : ils sont sur le serveur. Exporte d'abord si tu veux garder ton pass.",
   "data.erase.confirm": "Effacer",
   "data.server": "Sur le serveur",
-  "data.server.hunts": "Les chasses elles-mêmes, publiques : titre, lieu, date, seuil.",
+  "data.server.hunts": "Les actions elles-mêmes, publiques : titre, lieu, date, seuil.",
   "data.server.commits":
-    "Pour chaque engagement, une empreinte propre à la chasse, qui ne permet pas de retrouver ton wallet. Effacée 24 h après une chasse ratée.",
+    "Pour chaque engagement, une empreinte propre à l'action, qui ne permet pas de retrouver ton wallet. Effacée 24 h après une action ratée.",
   "data.server.never": "Jamais ton adresse de wallet en clair, ton IP, ton nom ou ton e-mail.",
   "data.server.more": "Le détail dans la politique de vie privée",
   "footer.legalShort": "Conditions et vie privée",
@@ -770,13 +780,13 @@ export const fr = {
   "chain.commitNote":
     "Réseau de test. Ton wallet envoie 0,2 KAS de test au registre Huntited, après ton accord : c'est ce qui inscrit ton engagement sur la blockchain, de façon publique (ton adresse y est visible). Le dépôt de 5 KAS reste simulé pour l'instant.",
   "chain.createNote":
-    "Réseau de test. Ton wallet envoie 0,2 KAS de test au registre Huntited, après ton accord : c'est ce qui inscrit la chasse sur la blockchain, pour toujours et de façon publique (ton adresse y est visible). La caution reste simulée pour l'instant.",
+    "Réseau de test. Ton wallet envoie 0,2 KAS de test au registre Huntited, après ton accord : c'est ce qui inscrit l'action sur la blockchain, pour toujours et de façon publique (ton adresse y est visible). La caution reste simulée pour l'instant.",
   "hunt.cta.pending": "Inscription en cours…",
   "hunt.outcomePending":
     "Date limite passée : vérification du résultat en cours. Les derniers engagements peuvent mettre quelques minutes à apparaître.",
   "hunt.pending":
-    "Inscription sur la blockchain en cours : la chasse sera visible par tous dans environ une minute.",
-  "err.alreadyCommitted": "Tu es déjà engagé·e dans cette chasse.",
+    "Inscription sur la blockchain en cours : l'action sera visible par tous dans environ une minute.",
+  "err.alreadyCommitted": "Tu es déjà engagé·e dans cette action.",
   "wallet.err.needKastle": "Il faut le wallet Kastle pour publier sur la blockchain.",
   "wallet.err.noFunds":
     "Ton compte Kastle n'a pas assez de KAS de test. Alimente-le avec le faucet du réseau de test (testnet-10), puis réessaie.",
@@ -824,33 +834,32 @@ export const fr = {
   "val.caution.max": "La caution est trop élevée.",
 
   // Récapitulatif
-  "review.title": "Récapitulatif de ta chasse",
-  "review.lead":
-    "Vérifie les informations. Une fois créée, la chasse ne pourra plus être modifiée.",
+  "review.title": "Récapitulatif de ton action",
+  "review.lead": "Vérifie les informations. Une fois créée, l'action ne pourra plus être modifiée.",
   "review.progress": "Progression",
   "review.hidden": "Masquée jusqu'à la fin",
   "review.visible": "Visible par tous",
   "review.needWallet":
-    "Connecte ton wallet pour créer la chasse : il t'identifie comme créateur·rice et te permettra d'ouvrir le chat une fois le seuil atteint.",
+    "Connecte ton wallet pour créer l'action : il t'identifie comme créateur·rice et te permettra d'ouvrir le chat une fois le seuil atteint.",
   "review.back": "Retour",
   "review.creating": "Création en cours…",
-  "review.confirm": "Confirmer et créer la chasse",
-  "review.createError": "Une erreur est survenue lors de la création de la chasse. Réessaie.",
+  "review.confirm": "Confirmer et créer l'action",
+  "review.createError": "Une erreur est survenue lors de la création de l'action. Réessaie.",
 
   // Mon pass
 
   // Mes chasses
-  "my.connect": "Connecte ton wallet pour voir les chasses que tu as créées.",
-  "my.leadLocal": "Les chasses créées avec ce wallet, sur cet appareil.",
-  "my.noHunts": "Tu n'as pas encore créé de chasse.",
+  "my.connect": "Connecte ton wallet pour voir les actions que tu as créées.",
+  "my.leadLocal": "Les actions créées avec ce wallet, sur cet appareil.",
+  "my.noHunts": "Tu n'as pas encore créé d'action.",
   "my.threshold": "seuil {threshold}",
   "my.commitments": "Mes engagements",
   "my.noCommitments": "Aucun engagement pour l'instant.",
 
   // Encadré du créateur
-  "creator.title": "C'est ta chasse : fais-la connaître",
+  "creator.title": "C'est ton action : fais-la connaître",
   "creator.text":
-    "Une chasse ne se déclenche que si assez de monde est au courant. Partage le lien là où ton action compte.",
+    "Une action ne se déclenche que si assez de monde est au courant. Partage le lien là où ton action compte.",
   "creator.tip1": "Envoie-le dans tes groupes (Signal, WhatsApp, Telegram…).",
   "creator.tip2": "Réponds aux tweets qui parlent du sujet avec « Répondre à un tweet ».",
   "creator.tip3":
@@ -871,7 +880,7 @@ export const fr = {
   "form.country.placeholder": "Choisis un pays",
   "val.country.required": "Le pays est requis.",
   "home.country": "Filtrer par pays",
-  "home.country.withHunts": "Avec des chasses",
+  "home.country.withHunts": "Avec des actions",
   "home.country.others": "Autres pays",
   "home.country.all": "Tous les pays",
   "hunt.country": "Pays",
@@ -889,8 +898,8 @@ export const fr = {
   // Cartes, sections, étapes
   "card.endsIn": "Se termine {when}",
   "card.ended": "Terminée {when}",
-  "my.created": "Chasses créées",
-  "my.browse": "Voir les chasses",
+  "my.created": "Actions créées",
+  "my.browse": "Voir les actions",
   "form.section.action": "L'action",
   "form.section.people": "Les participants",
   "form.section.money": "Les dépôts",
@@ -904,23 +913,23 @@ export const fr = {
   "wallet.err.notConnected": "Wallet non connecté.",
   "wallet.err.generic": "Connexion au wallet impossible. Réessaie.",
   "err.unavailable": "Le service est temporairement indisponible. Réessaie.",
-  "err.create": "La création de la chasse a échoué. Réessaie.",
+  "err.create": "La création de l'action a échoué. Réessaie.",
   "err.commit": "L'engagement a échoué. Réessaie.",
   "err.withdraw": "Le retrait a échoué. Réessaie.",
   "err.withdrawUnavailable": "Le retrait n'est possible qu'avec le registre sur la blockchain.",
   "withdraw.button": "Retirer mon engagement",
   "withdraw.confirmText":
-    "Tu retires ton engagement : il ne compte plus pour le déclenchement. Ton wallet envoie 0,2 KAS de test au registre. Tu pourras te réengager tant que la chasse est ouverte.",
+    "Tu retires ton engagement : il ne compte plus pour le déclenchement. Ton wallet envoie 0,2 KAS de test au registre. Tu pourras te réengager tant que l'action est ouverte.",
   "withdraw.confirm": "Oui, me retirer",
   "withdraw.sending": "Envoi…",
   "withdraw.hint":
-    "Possible jusqu'au déclenchement. Une fois la chasse déclenchée, tout le groupe s'est engagé en même temps : plus de retrait.",
-  "after.label": "Seulement si une autre chasse se déclenche d'abord",
-  "after.select": "Chasse qui doit se déclencher d'abord",
+    "Possible jusqu'au déclenchement. Une fois l'action déclenchée, tout le groupe s'est engagé en même temps : plus de retrait.",
+  "after.label": "Seulement si une autre action se déclenche d'abord",
+  "after.select": "Action qui doit se déclencher d'abord",
   "after.alreadyOn": "déjà déclenchée",
   "after.help":
-    "Ton engagement ne comptera que lorsque cette autre chasse se sera déclenchée. Si elle ne se déclenche jamais, il ne compte pas. Exemple : « je participe à l'étape 2 si l'étape 1 a réussi ».",
-  "after.mine": "Ton engagement compte seulement si cette chasse se déclenche :",
+    "Ton engagement ne comptera que lorsque cette autre action se sera déclenchée. Si elle ne se déclenche jamais, il ne compte pas. Exemple : « je participe à l'étape 2 si l'étape 1 a réussi ».",
+  "after.mine": "Ton engagement compte seulement si cette action se déclenche :",
   "after.met": "c'est fait, il compte.",
   "after.waiting": "en attente.",
 } as const;

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Check, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AfterPicker } from "@/components/hunt/CommitExtras";
 import { SettlementSimulator } from "@/components/hunt/SettlementSimulator";
@@ -13,10 +14,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { getDataMode } from "@/lib/hunt-repository";
 import { useI18n } from "@/lib/i18n";
-import { commitRefundHighlight, termsFullFor, termsShortFor } from "@/lib/terms";
+import { termsFullFor, termsShortFor } from "@/lib/terms";
 import type { Hunt } from "@/lib/types";
 import type { UseCommitmentResult } from "@/lib/useCommitment";
 
@@ -58,7 +58,7 @@ export function CommitModal({
   walletLoading = false,
   onCommitted,
 }: CommitModalProps) {
-  const { t, date, locale } = useI18n();
+  const { t, locale } = useI18n();
   const [accepted, setAccepted] = useState(false);
   // Seuil personnel : « je viens si au moins N personnes viennent » (N ≥ seuil de la chasse).
   const [personal, setPersonal] = useState(String(hunt.threshold));
@@ -92,106 +92,119 @@ export function CommitModal({
         onOpenChange(next);
       }}
     >
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
+      <DialogContent className="max-h-[85vh] overflow-y-auto rounded-2xl sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{t("commit.title", { amount: hunt.commitDeposit })}</DialogTitle>
+          <DialogTitle className="text-xl">{t("commit.title")}</DialogTitle>
           <DialogDescription>{hunt.title}</DialogDescription>
         </DialogHeader>
 
         {isCommitted ? (
-          <p role="status" className="rounded-lg border bg-muted/40 p-4 text-sm">
+          <p role="status" className="rounded-xl border bg-muted/40 p-4 text-sm">
             {t("commit.already")}
           </p>
         ) : (
           <>
-            <p className="rounded-lg border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950 p-3 text-sm font-medium text-green-700 dark:text-green-400">
-              {commitRefundHighlight(hunt.deposit, locale)}
+            {/* L'essentiel, en trois lignes */}
+            <ul className="space-y-3">
+              {[
+                t("commit.point.deposit", { amount: hunt.commitDeposit }),
+                t("commit.point.secret"),
+                t("commit.point.threshold", { threshold: hunt.threshold }),
+              ].map((line) => (
+                <li key={line} className="flex items-start gap-3">
+                  <Check className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-muted-foreground">
+              {getDataMode() === "chain" ? t("commit.point.fee") : t("commit.testNote")}
             </p>
-            <div className="space-y-2 rounded-lg border bg-muted/40 p-4 text-sm">
-              <p className="text-xs text-muted-foreground">
-                {getDataMode() === "chain" ? t("chain.commitNote") : t("commit.testNote")}
-              </p>
-              <div className="flex justify-between gap-4">
-                <span className="text-muted-foreground">{t("hunt.deadline")}</span>
-                <span className="font-medium">
-                  {date(hunt.deadline, { dateStyle: "long", timeStyle: "short" })}
-                </span>
-              </div>
-              {walletAddress && (
-                <div className="flex justify-between gap-4">
-                  <span className="text-muted-foreground">Wallet</span>
-                  <code className="text-xs">{shortAddress(walletAddress)}</code>
-                </div>
-              )}
-            </div>
 
-            {/* Seuil personnel (facultatif) */}
-            <div className="space-y-2 rounded-lg border p-4 text-sm">
-              <label htmlFor="personal-threshold" className="flex items-center gap-2">
-                <span>{t("commit.personal.before")}</span>
-                <Input
-                  id="personal-threshold"
-                  type="number"
-                  min={hunt.threshold}
-                  step={1}
-                  value={personal}
-                  onChange={(e) => setPersonal(e.target.value)}
-                  className="h-8 w-24"
-                  aria-invalid={!personalValid}
+            {/* Options : seuil personnel, action enchaînée, simulation */}
+            <details className="group rounded-xl border p-3 text-sm">
+              <summary className="flex cursor-pointer list-none items-center justify-between rounded-md font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                {t("commit.options")}
+                <ChevronDown
+                  className="size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                  aria-hidden
                 />
-                <span>{t("commit.personal.after")}</span>
-              </label>
-              <p className="text-xs text-muted-foreground">
-                {t("commit.personal.help", {
-                  threshold: hunt.threshold,
-                  amount: hunt.commitDeposit,
-                })}
-              </p>
-              {!personalValid && (
-                <p className="text-xs text-destructive" role="alert">
-                  {t("commit.personal.invalid", { threshold: hunt.threshold })}
-                </p>
-              )}
-            </div>
-            {getDataMode() === "chain" && (
-              <AfterPicker huntId={hunt.id} value={after} onChange={setAfter} />
-            )}
-            <SettlementSimulator
-              role="participant"
-              cautionKas={hunt.deposit}
-              threshold={hunt.threshold}
-              {...(personalValid && personalValue > hunt.threshold
-                ? { personalThreshold: personalValue }
-                : {})}
-            />
+              </summary>
+              <div className="mt-3 space-y-3">
+                <div className="space-y-2">
+                  <label htmlFor="personal-threshold" className="flex flex-wrap items-center gap-2">
+                    <span>{t("commit.personal.before")}</span>
+                    <Input
+                      id="personal-threshold"
+                      type="number"
+                      min={hunt.threshold}
+                      step={1}
+                      value={personal}
+                      onChange={(e) => setPersonal(e.target.value)}
+                      className="h-8 w-24"
+                      aria-invalid={!personalValid}
+                    />
+                    <span>{t("commit.personal.after")}</span>
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    {t("commit.personal.help", {
+                      threshold: hunt.threshold,
+                      amount: hunt.commitDeposit,
+                    })}
+                  </p>
+                  {!personalValid && (
+                    <p className="text-xs text-destructive" role="alert">
+                      {t("commit.personal.invalid", { threshold: hunt.threshold })}
+                    </p>
+                  )}
+                </div>
+                {getDataMode() === "chain" && (
+                  <AfterPicker huntId={hunt.id} value={after} onChange={setAfter} />
+                )}
+                <SettlementSimulator
+                  role="participant"
+                  cautionKas={hunt.deposit}
+                  threshold={hunt.threshold}
+                  {...(personalValid && personalValue > hunt.threshold
+                    ? { personalThreshold: personalValue }
+                    : {})}
+                />
+                {walletAddress && (
+                  <p className="text-xs text-muted-foreground">
+                    Wallet <code>{shortAddress(walletAddress)}</code>
+                  </p>
+                )}
+              </div>
+            </details>
           </>
         )}
 
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold">{t("commit.keyTerms")}</h3>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+        {/* Conditions : résumé, texte complet replié */}
+        <details className="group rounded-xl border p-3 text-sm">
+          <summary className="flex cursor-pointer list-none items-center justify-between rounded-md font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            {t("commit.keyTerms")}
+            <ChevronDown
+              className="size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+              aria-hidden
+            />
+          </summary>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-muted-foreground">
             {termsShortFor(hunt.deposit, locale).map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
-        </div>
-
-        <details className="text-xs text-muted-foreground">
-          <summary className="cursor-pointer font-medium">{t("commit.fullTerms")}</summary>
-          <div className="mt-2 max-h-40 overflow-auto whitespace-pre-line rounded border p-2">
+          <div className="mt-3 max-h-40 overflow-auto whitespace-pre-line rounded border p-2 text-xs text-muted-foreground">
             {termsFullFor(hunt.deposit, locale)}
           </div>
           <Link
             to="/legal"
             hash="conditions"
             target="_blank"
-            className="mt-2 inline-block font-medium underline"
+            className="mt-2 inline-block text-xs font-medium underline"
           >
             {t("commit.legalLink")}
           </Link>
         </details>
-
-        <Separator />
 
         {/* Acceptation toujours obligatoire */}
         <label className="flex cursor-pointer items-start gap-3 text-sm">
@@ -210,7 +223,7 @@ export function CommitModal({
           </p>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("common.cancel")}
           </Button>
@@ -219,7 +232,11 @@ export function CommitModal({
               {walletLoading ? t("wallet.connecting") : t("wallet.connect")}
             </Button>
           ) : (
-            <Button onClick={handleConfirm} disabled={!accepted || !canCommit || !personalValid}>
+            <Button
+              className="h-11 rounded-xl text-base"
+              onClick={handleConfirm}
+              disabled={!accepted || !canCommit || !personalValid}
+            >
               {isSubmitting ? t("commit.submitting") : t("commit.confirm")}
             </Button>
           )}

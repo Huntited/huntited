@@ -57,7 +57,7 @@ function serve(files: Record<string, unknown>) {
 }
 
 describe("index du navigateur et archives", () => {
-  it("retrouve une chasse que l'API a oubliée, grâce à l'archive en ligne signée", async () => {
+  it("retrouve une action que l'API a oubliée, grâce à l'archive en ligne signée", async () => {
     const a = archiveWithHunt("Conseil municipal");
     serve({
       "https://absente.test/a.json": null,
@@ -67,7 +67,7 @@ describe("index du navigateur et archives", () => {
   });
 
   it("refuse une archive en ligne non signée, ou modifiée après signature", async () => {
-    const a = archiveWithHunt("Fausse chasse");
+    const a = archiveWithHunt("Fausse action");
     const signed = { ...a, ...signArchive(a.entries, ARCHIVER) };
     const tampered = { ...signed, entries: archiveWithHunt("Autre").entries };
     serve({ "https://pirate.test/a.json": a, "https://pirate.test/b.json": tampered });
@@ -81,9 +81,9 @@ describe("index du navigateur et archives", () => {
 });
 
 describe("modération", () => {
-  it("une chasse masquée par la clé de publication disparaît de la liste ; sa page dit pourquoi", async () => {
+  it("une action masquée par la clé de publication disparaît de la liste ; sa page dit pourquoi", async () => {
     vi.stubEnv("VITE_RELEASE_PUBLISHERS", "kaspatest:publication");
-    const a = archiveWithHunt("Chasse illégale");
+    const a = archiveWithHunt("Action illégale");
     const hide = (sender: string, txId: string) => ({
       txId,
       score: 20,
@@ -98,7 +98,7 @@ describe("modération", () => {
         entries: [...a.entries, hide("kaspatest:alice", "ee".repeat(32))],
       },
     });
-    expect((await listChainHunts()).map((h) => h.title)).toEqual(["Chasse illégale"]);
+    expect((await listChainHunts()).map((h) => h.title)).toEqual(["Action illégale"]);
     resetBrowserIndex();
     serve({
       "./registry-snapshot.json": {
@@ -112,7 +112,7 @@ describe("modération", () => {
 });
 
 describe("pass d'organisation", () => {
-  it("l'adhérent retrouve les chasses où son organisation lui a ouvert une place", async () => {
+  it("l'adhérent retrouve les actions où son organisation lui a ouvert une place", async () => {
     const secret = bytesToHex(schnorr.utils.randomSecretKey());
     const hunt = "ab".repeat(12);
     const place = bytesToHex(schnorr.getPublicKey(hexToBytes(memberPlaceKey(secret, hunt))));

@@ -47,9 +47,9 @@ export function getMockHunt(id: string): Hunt {
 
   return {
     id,
-    title: "Chasse (brouillon de démonstration)",
+    title: "Action (brouillon de démonstration)",
     description:
-      "Ceci est une chasse de démonstration : les données réelles viendront du contrat Kaspa.",
+      "Ceci est une action de démonstration : les données réelles viendront du contrat Kaspa.",
     location: "Lieu à définir",
     deadline: "2026-11-01T12:00:00Z",
     threshold: 25,

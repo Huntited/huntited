@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { CalendarClock, Check, ChevronDown, MapPin } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { P2PChatPanel } from "@/components/hunt/P2PChatPanel";
@@ -121,126 +122,116 @@ function HuntDetailPage() {
   const isCreator =
     wallet.address !== null && getUserHunts(wallet.address).some((h) => h.huntId === hunt.id);
 
+  // Bouton principal : un seul, selon la situation.
+  const cta = pending ? (
+    <Button size="lg" className="h-12 w-full rounded-xl text-base" disabled>
+      {t("hunt.cta.pending")}
+    </Button>
+  ) : !commitsOpen ? (
+    <Button size="lg" className="h-12 w-full rounded-xl text-base" disabled>
+      {t("hunt.cta.closed")}
+    </Button>
+  ) : !wallet.isConnected ? (
+    <Button
+      size="lg"
+      className="h-12 w-full rounded-xl text-base"
+      onClick={() => wallet.connectWallet()}
+      disabled={wallet.isLoading}
+    >
+      {wallet.isLoading ? t("wallet.connecting") : t("hunt.cta.commit")}
+    </Button>
+  ) : commitment.isCommitted ? (
+    <Button size="lg" variant="secondary" className="h-12 w-full rounded-xl text-base" disabled>
+      <Check aria-hidden /> {t("hunt.cta.committed")}
+    </Button>
+  ) : (
+    <Button
+      size="lg"
+      className="h-12 w-full rounded-xl text-base"
+      onClick={() => setCommitOpen(true)}
+    >
+      {t("hunt.cta.commit")}
+    </Button>
+  );
+
   return (
-    <div className="mx-auto max-w-xl px-4 py-8">
+    <div className="mx-auto max-w-xl px-4 py-6">
       <Link to="/" className="text-sm text-muted-foreground hover:underline">
         {t("common.back")}
       </Link>
 
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight">{hunt.title}</h1>
-
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+      {/* L'essentiel : état, titre, lieu, date */}
+      <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
         <HuntStatusBadge status={status} />
-        {/* Pour le créateur, ces boutons sont dans son encadré (plus bas). */}
-        {!(isCreator && commitsOpen) && (
-          <div className="flex flex-wrap justify-end gap-2">
-            <ReplyOnXButton hunt={hunt} />
-            <ShareHuntButton hunt={hunt} />
-          </div>
+        {commitsOpen && !isExpired && (
+          <span>
+            {t("hunt.timeLeft")} <Countdown targetDate={hunt.deadline} onExpire={refresh} />
+          </span>
         )}
       </div>
+      <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight">{hunt.title}</h1>
+      <p className="mt-3 flex items-start gap-2 text-muted-foreground">
+        <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <span>
+          {placeLabel(hunt, t)}
+          {hunt.country && ` · ${countryName(hunt.country, locale)}`}
+        </span>
+      </p>
+      <p className="mt-1 flex items-start gap-2 text-muted-foreground">
+        <CalendarClock className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <span>
+          {t("hunt.before", {
+            date: date(hunt.deadline, { dateStyle: "long", timeStyle: "short" }),
+          })}
+        </span>
+      </p>
 
       {/* Mode chaîne : transaction envoyée, pas encore vue par l'index */}
       {pending && (
-        <p role="status" className="mt-4 rounded-md border bg-muted p-3 text-sm">
+        <p role="status" className="mt-4 rounded-xl border bg-muted p-3 text-sm">
           {t("hunt.pending")}
         </p>
       )}
-
       {/* Mode chaîne : date limite passée, résultat pas encore confirmé */}
       {outcomePending && (
-        <p role="status" className="mt-4 rounded-md border bg-muted p-3 text-sm">
+        <p role="status" className="mt-4 rounded-xl border bg-muted p-3 text-sm">
           {t("hunt.outcomePending")}
         </p>
       )}
 
-      {/* Pour qui découvre Huntited (souvent via un lien partagé) */}
-      {commitsOpen && !commitment.isCommitted && !isCreator && (
-        <p className="mt-4 text-sm text-muted-foreground">
-          {t("hunt.explain", { threshold: hunt.threshold })}{" "}
-          <Link
-            to="/"
-            hash="how"
-            className="whitespace-nowrap text-foreground underline underline-offset-2"
-          >
-            {t("hunt.explain.link")}
-          </Link>
-        </p>
+      {/* Bannières d'état */}
+      {isActivated && (
+        <div className="mt-4 rounded-xl bg-primary p-4 text-primary-foreground">
+          <p className="font-semibold">{t("hunt.banner.activated")}</p>
+          {commitsOpen && <p className="mt-1 text-sm opacity-90">{t("hunt.banner.stillOpen")}</p>}
+        </div>
+      )}
+      {isExpired && !isActivated && (
+        <div className="mt-4 rounded-xl border bg-muted p-4 text-sm text-muted-foreground">
+          {t("hunt.banner.expired")}
+        </div>
       )}
 
-      {/* Infos de la chasse */}
-      <dl className="mt-6 space-y-3 rounded-lg border p-5 text-sm">
-        <Info label={t("hunt.location")}>{placeLabel(hunt, t)}</Info>
-        {hunt.country && <Info label={t("hunt.country")}>{countryName(hunt.country, locale)}</Info>}
-        <Info label={t("hunt.deadline")}>
-          {date(hunt.deadline, { dateStyle: "long", timeStyle: "short" })}{" "}
-          <span className="text-muted-foreground">
-            (<Countdown targetDate={hunt.deadline} onExpire={refresh} />)
-          </span>
-        </Info>
-        <Info label={t("hunt.threshold")}>
-          {t("hunt.thresholdValue", { count: hunt.threshold })}
-        </Info>
-        <Info label={t("hunt.commitDeposit")}>{hunt.commitDeposit} KAS</Info>
-        <Info label={t("hunt.caution")}>{hunt.deposit} KAS</Info>
-      </dl>
-
-      <p className="mt-6 whitespace-pre-line text-sm leading-relaxed">{hunt.description}</p>
-
-      {/* Progression et engagement : l'action principale de la page */}
-      <section className="mt-8 rounded-lg border bg-card p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          {isProgressVisible(hunt, status) ? (
-            <div>
-              <p className="text-sm text-muted-foreground">{t("hunt.progress.label")}</p>
-              <p className="text-3xl font-semibold">
-                {commitCount}
-                <span className="text-base font-normal text-muted-foreground">
-                  {" "}
-                  {t("hunt.progress.of", { threshold: hunt.threshold })}
-                </span>
-              </p>
-              <ProgressBar value={retainedCount ?? commitCount} max={hunt.threshold} />
-              {retainedCount !== null && retainedCount !== commitCount && (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t("hunt.progress.retained", { count: retainedCount })}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="max-w-xs">
-              <p className="text-sm text-muted-foreground">{t("hunt.progress.hidden")}</p>
-              <p className="text-sm">
-                {t("hunt.progress.hiddenText", { threshold: hunt.threshold })}
-              </p>
-            </div>
-          )}
-          {/* Engagements ouverts jusqu'à la date limite, même après l'activation */}
-          {pending ? (
-            <Button size="lg" disabled>
-              {t("hunt.cta.pending")}
-            </Button>
-          ) : !commitsOpen ? (
-            <Button size="lg" disabled>
-              {t("hunt.cta.closed")}
-            </Button>
-          ) : !wallet.isConnected ? (
-            <Button size="lg" onClick={() => wallet.connectWallet()} disabled={wallet.isLoading}>
-              {wallet.isLoading ? t("wallet.connecting") : t("wallet.connect")}
-            </Button>
-          ) : commitment.isCommitted ? (
-            <Button size="lg" variant="secondary" disabled>
-              {t("hunt.cta.committed")}
-            </Button>
-          ) : (
-            <Button size="lg" onClick={() => setCommitOpen(true)}>
-              {t("hunt.cta.commit", { amount: hunt.commitDeposit })}
-            </Button>
-          )}
-        </div>
+      {/* Le chiffre qui compte, et le bouton */}
+      <section className="mt-6 rounded-2xl border bg-card p-5 text-center">
+        <p className="text-5xl font-bold tracking-tight text-primary">{hunt.threshold}</p>
+        <p className="mt-1 font-medium">{t("hunt.big.needed")}</p>
+        {isProgressVisible(hunt, status) ? (
+          <div className="mx-auto mt-3 max-w-xs">
+            <ProgressBar value={retainedCount ?? commitCount} max={hunt.threshold} />
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("hunt.big.count", { count: retainedCount ?? commitCount })}
+            </p>
+          </div>
+        ) : (
+          commitsOpen && (
+            <p className="mt-1 text-sm text-muted-foreground">{t("hunt.big.otherwise")}</p>
+          )
+        )}
+        <div className="mt-5">{cta}</div>
         {commitsOpen && !commitment.isCommitted && (
-          <p className="mt-3 text-sm font-medium text-green-700 dark:text-green-400">
-            {commitRefundShort(hunt.deposit, locale)}
+          <p className="mt-3 text-sm text-muted-foreground">
+            {t("hunt.reassure", { threshold: hunt.threshold })}
           </p>
         )}
 
@@ -249,7 +240,7 @@ function HuntDetailPage() {
           wallet.address &&
           (() => {
             const mine = getMyPersonalThreshold(hunt, wallet.address);
-            if (mine === undefined) return null;
+            if (mine === undefined || mine === hunt.threshold) return null;
             // Engagement conditionnel : son état est donné par AfterNote.
             if (getMyCommitment(wallet.address, hunt.id)?.after) return null;
             const met = retainedThreshold !== null && mine <= retainedThreshold;
@@ -257,9 +248,7 @@ function HuntDetailPage() {
               <p className="mt-3 text-sm" role="status">
                 {t("hunt.condition", { count: mine })}{" "}
                 {met ? (
-                  <span className="font-medium text-green-700 dark:text-green-400">
-                    {t("hunt.condition.met")}
-                  </span>
+                  <span className="font-medium text-primary">{t("hunt.condition.met")}</span>
                 ) : (
                   <span className="text-muted-foreground">
                     {t("hunt.condition.pending", { amount: hunt.commitDeposit })}
@@ -268,8 +257,7 @@ function HuntDetailPage() {
               </p>
             );
           })()}
-
-        {/* Engagement conditionnel : il attend une autre chasse */}
+        {/* Engagement conditionnel : il attend une autre action */}
         {commitment.isCommitted &&
           wallet.address &&
           (() => {
@@ -283,34 +271,23 @@ function HuntDetailPage() {
             {commitment.error}
           </p>
         )}
-
-        {/* Pass de groupe : une association offre des places (mode chaîne). */}
-        {commitsOpen && getDataMode() === "chain" && (
-          <Link
-            to="/group"
-            search={{ hunt: hunt.id }}
-            className="mt-3 inline-block text-sm text-muted-foreground underline underline-offset-2"
-          >
-            {t("group.offer")}
-          </Link>
-        )}
       </section>
 
-      {/* Encadré du créateur : mobiliser pendant que la chasse est ouverte */}
+      {/* Faire venir du monde */}
+      {!(isCreator && commitsOpen) && (
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <ShareHuntButton hunt={hunt} />
+          <ReplyOnXButton hunt={hunt} />
+        </div>
+      )}
+
+      {/* Encadré du créateur : mobiliser pendant que l'action est ouverte */}
       {isCreator && commitsOpen && (
-        <section
-          aria-labelledby="creator-box"
-          className="mt-4 rounded-lg border border-l-4 border-l-green-500 bg-card p-5"
-        >
-          <h2 id="creator-box" className="font-semibold">
+        <section aria-labelledby="creator-box" className="mt-4 rounded-2xl border bg-accent p-5">
+          <h2 id="creator-box" className="font-semibold text-accent-foreground">
             {t("creator.title")}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">{t("creator.text")}</p>
-          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>{t("creator.tip1")}</li>
-            <li>{t("creator.tip2")}</li>
-            <li>{t("creator.tip3")}</li>
-          </ul>
+          <p className="mt-1 text-sm">{t("creator.text")}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             <ShareHuntButton hunt={hunt} />
             <ReplyOnXButton hunt={hunt} />
@@ -318,39 +295,26 @@ function HuntDetailPage() {
         </section>
       )}
 
-      {/* Bannières d'état */}
-      {isActivated && (
-        <div className="mt-4 rounded-md border border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950 p-3 text-sm text-green-700 dark:text-green-400">
-          {t("hunt.banner.activated", {
-            count: retainedCount ?? commitCount,
-            threshold: hunt.threshold,
-          })}
-          {commitsOpen && ` ${t("hunt.banner.stillOpen")}`}
-        </div>
-      )}
-      {isExpired && !isActivated && (
-        <div className="mt-4 rounded-md border bg-muted p-3 text-sm text-muted-foreground">
-          {t("hunt.banner.expired", { count: commitCount, threshold: hunt.threshold })}
-        </div>
-      )}
+      {/* Ce qu'on fera */}
+      <p className="mt-8 whitespace-pre-line leading-relaxed">{hunt.description}</p>
 
       {/* Salon chiffré des membres : n'existe qu'après l'activation (jamais avant). */}
-      <div className="mt-6">
+      <div className="mt-8">
         {canOpenChat(status, outcome) && getDataMode() === "chain" ? (
-          // Chasse sur la chaîne : chat chiffré entre membres, sans serveur.
+          // Action sur la chaîne : chat chiffré entre membres, sans serveur.
           <P2PChatPanel
             huntId={hunt.id}
             title={hunt.title}
             {...(search.code ? { prefillCode: search.code } : {})}
           />
         ) : canOpenChat(status, outcome) ? (
-          // Mode démo (chasses de ce navigateur) : pas de membres sur la chaîne.
-          <section className="rounded-lg border bg-card p-4 text-sm">
+          // Mode démo (actions de ce navigateur) : pas de membres sur la chaîne.
+          <section className="rounded-2xl border bg-card p-4 text-sm">
             <h2 className="mb-1 font-semibold">{t("hunt.chat.title")}</h2>
             <p className="text-muted-foreground">{t("chat.soon")}</p>
           </section>
         ) : (
-          <section className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
+          <section className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
             <h2 className="mb-1 font-semibold text-foreground">{t("hunt.chat.title")}</h2>
             {isExpired || (status === "settled" && outcome === "failure")
               ? t("hunt.chat.expired")
@@ -359,24 +323,59 @@ function HuntDetailPage() {
         )}
       </div>
 
-      {/* Résolution économique (mock, aucun transfert) */}
-      <div className="mt-6">
-        <HuntSettlementPanel
-          hunt={hunt}
-          commitCount={commitCount}
-          retainedCount={retainedCount ?? commitCount}
-          status={status}
-          outcome={outcome}
-          {...(import.meta.env.DEV && canSettle(status)
-            ? {
-                onSettle: () => {
-                  const o = getSettlementOutcome(status);
-                  if (o) void settleHunt(hunt.id, o).finally(refresh);
-                },
-              }
-            : {})}
-        />
-      </div>
+      {/* Le reste, pour qui veut les détails */}
+      <details className="group mt-6 rounded-2xl border bg-card p-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between rounded-md font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          {t("hunt.more")}
+          <ChevronDown
+            className="size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+            aria-hidden
+          />
+        </summary>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {t("hunt.explain", { threshold: hunt.threshold })}{" "}
+          <Link to="/" hash="how" className="underline underline-offset-2">
+            {t("hunt.explain.link")}
+          </Link>
+        </p>
+        {commitsOpen && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            {commitRefundShort(hunt.deposit, locale)}
+          </p>
+        )}
+        <dl className="mt-4 space-y-2 text-sm">
+          <Info label={t("hunt.commitDeposit")}>{hunt.commitDeposit} KAS</Info>
+          <Info label={t("hunt.caution")}>{hunt.deposit} KAS</Info>
+        </dl>
+        {/* Pass de groupe : une association offre des places (mode chaîne). */}
+        {commitsOpen && getDataMode() === "chain" && (
+          <Link
+            to="/group"
+            search={{ hunt: hunt.id }}
+            className="mt-4 inline-block text-sm text-muted-foreground underline underline-offset-2"
+          >
+            {t("group.offer")}
+          </Link>
+        )}
+        {/* Résolution économique (simulée, aucun transfert) */}
+        <div className="mt-4">
+          <HuntSettlementPanel
+            hunt={hunt}
+            commitCount={commitCount}
+            retainedCount={retainedCount ?? commitCount}
+            status={status}
+            outcome={outcome}
+            {...(import.meta.env.DEV && canSettle(status)
+              ? {
+                  onSettle: () => {
+                    const o = getSettlementOutcome(status);
+                    if (o) void settleHunt(hunt.id, o).finally(refresh);
+                  },
+                }
+              : {})}
+          />
+        </div>
+      </details>
 
       {/* Modal de confirmation d'engagement */}
       <CommitModal
@@ -410,12 +409,9 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
 function ProgressBar({ value, max }: { value: number; max: number }) {
   const percent = Math.min(100, Math.round((value / Math.max(1, max)) * 100));
   return (
-    <div
-      className="mt-2 h-2 w-48 max-w-full overflow-hidden rounded-full bg-muted"
-      aria-hidden="true"
-    >
+    <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
       <div
-        className="h-full rounded-full bg-green-500 transition-[width] duration-500 motion-reduce:transition-none"
+        className="h-full rounded-full bg-primary transition-[width] duration-500 motion-reduce:transition-none"
         style={{ width: `${percent}%` }}
       />
     </div>

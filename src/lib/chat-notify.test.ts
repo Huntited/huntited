@@ -48,7 +48,7 @@ describe("notifications du chat", () => {
     expect(followedChats()).toEqual({});
   });
 
-  it("ne montre jamais le texte du message, seulement la chasse", async () => {
+  it("ne montre jamais le texte du message, seulement l'action", async () => {
     await enableChatNotify(HUNT, "Conseil municipal");
     await showChatNotification(HUNT, "Conseil municipal", "https://huntited.test/", () => {});
     expect(shown).toHaveLength(1);

@@ -81,13 +81,13 @@ export const termsShortFor = (cautionKas: number, locale: Locale = "fr"): string
   locale === "fr"
     ? [
         createDepositTerms(cautionKas, locale),
-        "Tes KAS restent bloqués jusqu'à la fin de la chasse.",
+        "Tes KAS restent bloqués jusqu'à la fin de l'action.",
         "Tout le monde ou personne : l'action n'a lieu que si le seuil est atteint.",
         "Public : ton engagement est inscrit sur la blockchain avec l'adresse de ton wallet (0,2 KAS d'inscription, non rendus).",
       ]
     : [
         createDepositTerms(cautionKas, locale),
-        "Your KAS stay locked until the end of the hunt.",
+        "Your KAS stay locked until the end of the action.",
         "Everyone or no one: the action only happens if the threshold is reached.",
         "Public: your commitment is written on the blockchain with your wallet address (0.2 KAS to register, not returned).",
       ];

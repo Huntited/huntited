@@ -43,14 +43,14 @@ beforeEach(() => {
   navigate.mockReset();
 });
 
-describe("lieu d'une chasse", () => {
+describe("lieu d'une action", () => {
   it("une ville tapée en entier remplit le pays et prend son nom officiel", async () => {
     render(<CreateHuntForm />);
     await waitFor(() => expect(country().options.length).toBeGreaterThan(1));
     fireEvent.change(city(), { target: { value: "marseille" } });
     await waitFor(() => expect(country().value).toBe("FR"));
     fillRest();
-    fireEvent.click(screen.getByRole("button", { name: "Vérifier ma chasse" }));
+    fireEvent.click(screen.getByRole("button", { name: "Vérifier mon action" }));
     await waitFor(() => expect(navigate).toHaveBeenCalled());
     expect(getCreateHuntDraft()).toMatchObject({ location: "Marseille", country: "FR" });
   });
@@ -62,7 +62,7 @@ describe("lieu d'une chasse", () => {
     await waitFor(() => expect(country().value).toBe("GB"));
     fireEvent.change(country(), { target: { value: "CA" } });
     fillRest();
-    fireEvent.click(screen.getByRole("button", { name: "Vérifier ma chasse" }));
+    fireEvent.click(screen.getByRole("button", { name: "Vérifier mon action" }));
     await waitFor(() => expect(navigate).toHaveBeenCalled());
     expect(getCreateHuntDraft()).toMatchObject({ location: "London", country: "CA" });
   });
@@ -73,7 +73,7 @@ describe("lieu d'une chasse", () => {
     fireEvent.change(city(), { target: { value: "Nulleville" } });
     fireEvent.change(country(), { target: { value: "FR" } });
     fillRest();
-    fireEvent.click(screen.getByRole("button", { name: "Vérifier ma chasse" }));
+    fireEvent.click(screen.getByRole("button", { name: "Vérifier mon action" }));
     expect(await screen.findByText(/Ville introuvable/)).toBeInTheDocument();
     fireEvent.change(city(), { target: { value: "Marseille" } });
     fireEvent.change(country(), { target: { value: "BE" } });
@@ -87,7 +87,7 @@ describe("lieu d'une chasse", () => {
     expect(screen.queryByLabelText("Ville")).toBeNull();
     expect(screen.queryByLabelText("Pays")).toBeNull();
     fillRest();
-    fireEvent.click(screen.getByRole("button", { name: "Vérifier ma chasse" }));
+    fireEvent.click(screen.getByRole("button", { name: "Vérifier mon action" }));
     await waitFor(() => expect(navigate).toHaveBeenCalled());
     expect(getCreateHuntDraft()).toMatchObject({ location: ONLINE_LOCATION, country: "" });
   });

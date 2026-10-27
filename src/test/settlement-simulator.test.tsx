@@ -54,7 +54,7 @@ describe("simulation avant de créer ou de s'engager", () => {
     expect(cardValue("Ta récompense")).toBe("+ 1 KAS");
   });
 
-  it("engagé·e avec un seuil personnel plus haut : pas de récompense au seuil de la chasse", () => {
+  it("engagé·e avec un seuil personnel plus haut : pas de récompense au seuil de l'action", () => {
     render(
       <SettlementSimulator
         role="participant"
@@ -70,7 +70,7 @@ describe("simulation avant de créer ou de s'engager", () => {
   it("sur la blockchain : affiche le seul coût réel (inscription)", () => {
     mode.value = "chain";
     render(<SettlementSimulator role="creator" cautionKas={30} threshold={7} />);
-    expect(screen.getByText(/Seul coût réel : 0,2 KAS pour inscrire la chasse/)).toBeTruthy();
+    expect(screen.getByText(/Seul coût réel : 0,2 KAS pour inscrire l'action/)).toBeTruthy();
     mode.value = "local";
   });
 

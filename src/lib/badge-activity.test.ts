@@ -12,7 +12,7 @@ const B = "kaspatest:qq_participant_b_cccc";
 
 async function createHunt(threshold: number, progressVisibility: "visible" | "hidden" = "visible") {
   const { huntId } = await createHuntCovenant({
-    title: "Chasse",
+    title: "Action",
     description: "Test",
     location: "Lieu",
     deadline: new Date(Date.now() + 86_400_000).toISOString(),
@@ -23,7 +23,7 @@ async function createHunt(threshold: number, progressVisibility: "visible" | "hi
   });
   addUserHunt(CREATOR, {
     huntId,
-    title: "Chasse",
+    title: "Action",
     location: "Lieu",
     deadline: new Date(Date.now() + 86_400_000).toISOString(),
     threshold,
@@ -51,7 +51,7 @@ describe("badges calculés depuis l'activité locale", () => {
     expect(getWalletBadges(CREATOR).map((b) => b.id)).toEqual(["batisseur", "visionnaire"]);
   });
 
-  it("Messager·ère après le partage d'une chasse qui réussit", async () => {
+  it("Messager·ère après le partage d'une action qui réussit", async () => {
     const id = await createHunt(1);
     recordShare(B, id);
     expect(getWalletBadges(B)).toEqual([]);

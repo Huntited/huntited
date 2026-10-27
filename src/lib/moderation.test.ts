@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { huntIdFrom } from "./moderation";
 
-describe("modération : identifiant de chasse", () => {
+describe("modération : identifiant d'action", () => {
   it("accepte un lien du site ou l'identifiant seul", () => {
     const id = "f03353dffd6c40f72abfce44";
     expect(huntIdFrom(`https://huntited.com/#/hunt/${id}`)).toBe(id);

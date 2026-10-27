@@ -23,7 +23,7 @@ beforeEach(() => {
   window.localStorage.clear();
   disconnectWallet();
   setCreateHuntDraft({
-    title: "Chasse de test",
+    title: "Action de test",
     description: "Description de test.",
     location: "Lieu de test",
     deadline: new Date(Date.now() + 86_400_000).toISOString().slice(0, 16),
@@ -35,22 +35,22 @@ beforeEach(() => {
 
 afterEach(() => cleanup());
 
-describe("Création d'une chasse : wallet obligatoire", () => {
+describe("Création d'une action : wallet obligatoire", () => {
   it("sans wallet, la création n'est pas proposée", async () => {
     renderReview();
 
     // Le bouton de la page (l'en-tête en a un aussi).
     const main = await screen.findByRole("main");
     expect(await within(main).findByRole("button", { name: "Connecter le wallet" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Confirmer et créer la chasse" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Confirmer et créer l'action" })).toBeNull();
   });
 
-  it("avec un wallet, la chasse est rattachée à son créateur", async () => {
+  it("avec un wallet, l'action est rattachée à son créateur", async () => {
     await connectWallet();
     const address = getWalletState().address!;
     const router = renderReview();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Confirmer et créer la chasse" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Confirmer et créer l'action" }));
 
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/hunt\//));
     const huntId = router.state.location.pathname.split("/").pop();
@@ -63,7 +63,7 @@ describe("Création d'une chasse : wallet obligatoire", () => {
     const router = renderReview();
 
     expect(await screen.findByText("Masquée jusqu'à la fin")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Confirmer et créer la chasse" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmer et créer l'action" }));
 
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/hunt\//));
     const huntId = router.state.location.pathname.split("/").pop()!;
