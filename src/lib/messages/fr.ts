@@ -896,6 +896,7 @@ export const fr = {
   "commit.legalLink": "Conditions d'utilisation et vie privée",
 
   // Cartes, sections, étapes
+  "card.people": "personnes",
   "card.endsIn": "Se termine {when}",
   "card.ended": "Terminée {when}",
   "my.created": "Actions créées",

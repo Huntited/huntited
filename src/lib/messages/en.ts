@@ -886,6 +886,7 @@ export const en: Messages = {
   "commit.legalLink": "Terms of use and privacy",
 
   // Cards, sections, steps
+  "card.people": "people",
   "card.endsIn": "Ends {when}",
   "card.ended": "Ended {when}",
   "my.created": "Actions created",
