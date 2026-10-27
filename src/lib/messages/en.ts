@@ -450,7 +450,7 @@ export const en: Messages = {
   "hunt.condition.pending": "pending. If it isn't met, your {amount} KAS are returned.",
   "hunt.banner.activated": "It's on! The action will happen.",
   "hunt.banner.stillOpen": "People can still join you until the deadline.",
-  "hunt.banner.expired": "If nothing happens, everyone gets their deposit back.",
+  "hunt.banner.expired": "Not enough people. If nothing happens, everyone gets their deposit back.",
   "hunt.chat.title": "Participants' room",
   "hunt.chat.expired": "This action expired before reaching its threshold: no chat was opened.",
   "hunt.chat.later": "The chat opens if the threshold is reached.",
