@@ -34,6 +34,7 @@ import {
   lockBuiltin,
   protectBuiltin,
   removeBuiltinWallet,
+  takePagePass,
   unlockForPage,
   type CodeKind,
   type Protection,
@@ -218,7 +219,8 @@ function LockGate({ children }: { children: ReactNode }) {
   const ask = () => void unlockForPage().then(setOpen);
   useEffect(() => {
     // Déjà ouvert récemment (délai pas écoulé) : pas de nouvelle demande.
-    if (!isProtected() || !isLocked()) return setOpen(true);
+    // Code saisi à l'instant pour se connecter : pas besoin de le redemander.
+    if (!isProtected() || !isLocked() || takePagePass()) return setOpen(true);
     setOpen(false);
     // Après le montage de la fenêtre de déverrouillage (WalletUnlock).
     const timer = setTimeout(ask, 0);

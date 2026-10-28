@@ -230,6 +230,27 @@ export async function unlockBuiltin(code?: string): Promise<UnlockResult> {
 
 export function lockBuiltin(): void {
   session = null;
+  pagePass = false;
+}
+
+/**
+ * Code tout juste saisi pour se connecter (en-tête) : la prochaine ouverture
+ * de « Mon wallet » ne le redemande pas. Une seule fois, et perdu si l'on
+ * quitte l'écran (autre onglet, autre appli) ou si l'on se déconnecte.
+ */
+let pagePass = false;
+export function grantPagePass(): void {
+  pagePass = true;
+}
+export function takePagePass(): boolean {
+  const pass = pagePass;
+  pagePass = false;
+  return pass;
+}
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") pagePass = false;
+  });
 }
 
 /**
