@@ -57,12 +57,12 @@ describe("Création d'une action : wallet obligatoire", () => {
     expect(getUserHunts(address).map((h) => h.huntId)).toContain(huntId);
   });
 
-  it("conserve le choix « progression masquée » à la création", async () => {
+  it("crée l'action avec la progression masquée", async () => {
     setCreateHuntDraft({ ...getCreateHuntDraft()!, progressVisibility: "hidden" });
     await connectWallet();
     const router = renderReview();
 
-    expect(await screen.findByText("Masquée jusqu'à la fin")).toBeTruthy();
+    expect(await screen.findByText("Personnes nécessaires")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Confirmer et créer l'action" }));
 
     await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/hunt\//));

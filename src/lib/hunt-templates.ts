@@ -21,6 +21,16 @@ export interface TemplateText {
   why: string;
 }
 
+/** Idées montrées d'abord dans le formulaire (les autres sur demande). */
+export const FEATURED_TEMPLATES: readonly string[] = [
+  "cleanup",
+  "switch",
+  "together",
+  "speak",
+  "launch",
+  "letter",
+];
+
 export const HUNT_TEMPLATES: HuntTemplate[] = [
   { id: "cleanup", threshold: 10, days: 14 },
   { id: "rally", threshold: 50, days: 21 },

@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { CreateSteps } from "@/components/hunt/CreateSteps";
 import { Button } from "@/components/ui/button";
 import { COMMIT_DEPOSIT_KAS } from "@/lib/covenants";
 import { clearCreateHuntDraft, getCreateHuntDraft } from "@/lib/create-hunt-store";
@@ -101,20 +102,17 @@ function CreateReviewPage() {
         >)),
     [t("hunt.deadline"), date(draft.deadline, { dateStyle: "long", timeStyle: "short" })],
     [t("hunt.threshold"), t("hunt.thresholdValue", { count: draft.threshold })],
-    [
-      t("review.progress"),
-      draft.progressVisibility === "hidden" ? t("review.hidden") : t("review.visible"),
-    ],
     [t("form.caution"), `${draft.deposit} KAS`],
     [t("hunt.commitDeposit"), `${COMMIT_DEPOSIT_KAS} KAS`],
   ];
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight">{t("review.title")}</h1>
+      <CreateSteps current={3} />
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight">{t("review.title")}</h1>
       <p className="mt-1 text-sm text-muted-foreground">{t("review.lead")}</p>
 
-      <div className="mt-6 space-y-4 rounded-lg border p-5 text-sm">
+      <div className="mt-6 space-y-4 rounded-2xl border bg-card p-5 text-sm">
         <div>
           <div className="text-muted-foreground">{t("form.title")}</div>
           <div className="font-medium">{draft.title}</div>
