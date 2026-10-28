@@ -1,12 +1,20 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Menu, Moon, Sun, X } from "lucide-react";
+import { Check, Menu, Moon, Palette as PaletteIcon, Sun, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/Logo";
 import { VersionBadge } from "@/components/VersionBadge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useI18n, type Locale, type MessageKey } from "@/lib/i18n";
-import { useTheme } from "@/lib/theme";
+import { PALETTES, useTheme, type Palette } from "@/lib/theme";
 import { useWallet } from "@/lib/useWallet";
 import { NotificationBell } from "@/components/NotificationBell";
 import { getDataMode } from "@/lib/hunt-repository";
@@ -63,7 +71,7 @@ export function AppHeader() {
           </div>
           {/* Activité de tes chasses (sur la chaîne) : messages, résultats. */}
           {getDataMode() === "chain" && <NotificationBell />}
-          <ThemeToggle />
+          <ThemeMenu />
           {isConnected && address ? (
             <>
               <Link
@@ -145,20 +153,74 @@ export function AppHeader() {
   );
 }
 
-function ThemeToggle() {
+/** Aperçu de chaque palette dans le menu : couleur principale, chiffres. */
+const SWATCH: Record<Palette, [string, string]> = {
+  green: ["#1f7a4d", "#3ddc84"],
+  ocean: ["#0e6f8a", "#4cc9e6"],
+  coral: ["#c8432a", "#ff7a50"],
+  paper: ["#1a1a1a", "#c8231b"],
+  violet: ["#5b4bd6", "#a594ff"],
+};
+
+/** Menu « Thème » : la palette, puis clair ou sombre. */
+function ThemeMenu() {
   const { t } = useI18n();
-  const { theme, toggle } = useTheme();
-  const dark = theme === "dark";
+  const { theme, palette, setTheme, setPalette } = useTheme();
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggle}
-      aria-label={t(dark ? "theme.light" : "theme.dark")}
-      title={t(dark ? "theme.light" : "theme.dark")}
-    >
-      {dark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
-    </Button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label={t("theme.menu")} title={t("theme.menu")}>
+          <PaletteIcon aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuLabel>{t("theme.menu")}</DropdownMenuLabel>
+        {PALETTES.map((p) => (
+          <DropdownMenuItem
+            key={p}
+            onSelect={(e) => {
+              e.preventDefault();
+              setPalette(p);
+            }}
+            aria-checked={palette === p}
+            role="menuitemradio"
+          >
+            <span
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 rounded-full border"
+              style={{
+                background: `linear-gradient(135deg, ${SWATCH[p][0]} 50%, ${SWATCH[p][1]} 50%)`,
+              }}
+            />
+            <span className="flex-1">{t(`theme.palette.${p}`)}</span>
+            {palette === p ? <Check className="h-4 w-4" aria-hidden="true" /> : null}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <div role="group" aria-label={t("theme.mode")} className="grid grid-cols-2 gap-1 p-1">
+          {(["light", "dark"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setTheme(mode)}
+              aria-pressed={theme === mode}
+              className={`flex items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                theme === mode
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              {mode === "light" ? (
+                <Sun className="h-3.5 w-3.5" aria-hidden="true" />
+              ) : (
+                <Moon className="h-3.5 w-3.5" aria-hidden="true" />
+              )}
+              {t(mode === "light" ? "theme.mode.light" : "theme.mode.dark")}
+            </button>
+          ))}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

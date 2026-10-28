@@ -210,7 +210,7 @@ function HuntDetailPage() {
 
       {/* Le chiffre qui compte, et le bouton */}
       <section className="mt-5 rounded-2xl border bg-card p-4 text-center">
-        <p className="text-4xl font-semibold tracking-tight text-primary">{hunt.threshold}</p>
+        <p className="text-4xl font-semibold tracking-tight text-highlight">{hunt.threshold}</p>
         <p className="mt-1 font-medium">{t("hunt.big.needed")}</p>
         {isProgressVisible(hunt, status) ? (
           <div className="mx-auto mt-3 max-w-xs">

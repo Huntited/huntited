@@ -49,7 +49,7 @@ export function HuntCard({
       className="flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="w-14 shrink-0 text-center">
-        <p className="text-2xl font-semibold leading-none text-primary">{hunt.threshold}</p>
+        <p className="text-2xl font-semibold leading-none text-highlight">{hunt.threshold}</p>
         <p className="mt-1 text-xs text-muted-foreground">{t("card.people")}</p>
       </div>
       <div className="min-w-0 flex-1 border-l pl-4">

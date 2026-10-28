@@ -12,6 +12,10 @@ export function applyInitialTheme(): void {
       inApp === "dark" || inApp === "light" ? inApp : localStorage.getItem("huntited:theme");
     const dark = t ? t === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
     document.documentElement.classList.toggle("dark", dark);
+    // Palette choisie (menu « Thème ») ; vert sans attribut.
+    const palette = localStorage.getItem("huntited:palette");
+    if (palette && palette !== "green")
+      document.documentElement.setAttribute("data-palette", palette);
   } catch {
     /* stockage indisponible : thème clair */
   }
