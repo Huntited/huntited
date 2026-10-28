@@ -41,6 +41,30 @@ export function setCreateHuntDraft(data: HuntFormData): void {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
+const BACK_KEY = "huntited:create-back";
+
+/** Récapitulatif → « Retour » : le formulaire reprendra le brouillon (une fois). */
+export function markBackToForm(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(BACK_KEY, "1");
+  } catch {
+    /* sans stockage : le formulaire repartira vide */
+  }
+}
+
+/** true (une seule fois) si l'on revient du récapitulatif. */
+export function takeBackToForm(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const back = window.sessionStorage.getItem(BACK_KEY) === "1";
+    window.sessionStorage.removeItem(BACK_KEY);
+    return back;
+  } catch {
+    return false;
+  }
+}
+
 /** Efface le brouillon (après création ou abandon). */
 export function clearCreateHuntDraft(): void {
   if (typeof window === "undefined") return;

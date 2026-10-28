@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { HuntFormData } from "@/lib/types";
 import { COMMIT_DEPOSIT_KAS, CREATE_DEPOSIT_KAS } from "@/lib/covenants";
-import { getCreateHuntDraft, setCreateHuntDraft } from "@/lib/create-hunt-store";
+import { getCreateHuntDraft, setCreateHuntDraft, takeBackToForm } from "@/lib/create-hunt-store";
 import { CityInput } from "@/components/hunt/CityInput";
 import { TemplatePicker } from "@/components/hunt/TemplatePicker";
 import type { CitySuggestion } from "@/lib/cities";
@@ -156,9 +156,11 @@ export function CreateHuntForm() {
     }
   };
 
-  // Retour depuis le récapitulatif : on préremplit avec le brouillon.
+  // Retour depuis le récapitulatif (et seulement là) : on préremplit avec le
+  // brouillon. Sinon le formulaire arrive vide ; une idée le remplit.
   // Le pays n'est jamais deviné : il vient de la ville choisie, ou de la liste.
   useEffect(() => {
+    if (!takeBackToForm()) return;
     const draft = getCreateHuntDraft();
     if (!draft) return;
     const online = isOnlineHunt(draft);
@@ -217,10 +219,11 @@ export function CreateHuntForm() {
   const isSubmitDisabled =
     isSubmitting || step1Incomplete || !values.deadline || !Number(values.threshold);
   // Pays : en texte s'il est connu par la ville ; sinon (ou sur demande), la liste.
-  const showCountryList =
-    editCountry ||
-    !values.country ||
-    (cityMatches !== undefined && cityMatches !== null && cityMatches.length === 0);
+  // Rien tant qu'aucune ville n'est tapée ; la liste si la ville est inconnue,
+  // si on veut changer, ou s'il manque le pays après une tentative.
+  const cityUnknown =
+    !!values.location.trim() && Array.isArray(cityMatches) && cityMatches.length === 0;
+  const showCountryList = editCountry || cityUnknown || !!errors.country;
 
   // Message relié à son champ (aria-describedby) et annoncé par les lecteurs d'écran.
   const ErrorText = ({ id, msg }: { id: string; msg?: string | undefined }) =>
@@ -269,7 +272,6 @@ export function CreateHuntForm() {
                   aria-describedby={describe("title")}
                   value={values.title}
                   onChange={setField("title")}
-                  placeholder={t("form.title.placeholder")}
                 />
                 <ErrorText id="title" msg={errors.title} />
               </div>
@@ -282,7 +284,6 @@ export function CreateHuntForm() {
                   aria-describedby={describe("description")}
                   value={values.description}
                   onChange={setField("description")}
-                  placeholder={t("form.description.placeholder")}
                   rows={4}
                 />
                 <ErrorText id="description" msg={errors.description} />
@@ -327,7 +328,7 @@ export function CreateHuntForm() {
                       setValues((prev) => ({ ...prev, location: city.name, country: city.country }))
                     }
                     onResolve={resolveCity}
-                    placeholder={t("form.location.placeholder")}
+                    placeholder=""
                   />
                   <ErrorText id="location" msg={errors.location} />
                   {!errors.location && submitted && <ErrorText id="city" msg={cityError} />}
@@ -358,7 +359,7 @@ export function CreateHuntForm() {
                     </select>
                     <ErrorText id="country" msg={errors.country} />
                   </div>
-                ) : (
+                ) : values.country ? (
                   <p className="text-sm text-muted-foreground">
                     {t("form.country.auto", { name: countryName(values.country, locale) })}{" "}
                     <button
@@ -369,7 +370,7 @@ export function CreateHuntForm() {
                       {t("form.country.edit")}
                     </button>
                   </p>
-                ))}
+                ) : null)}
             </div>
 
             <Button type="submit" className="h-11 w-full rounded-xl" disabled={step1Incomplete}>
@@ -405,7 +406,6 @@ export function CreateHuntForm() {
                   min={minHuntThreshold()}
                   value={values.threshold}
                   onChange={setField("threshold")}
-                  placeholder={t("form.threshold.placeholder")}
                 />
                 <ErrorText id="threshold" msg={errors.threshold} />
                 <p className="text-xs text-muted-foreground">

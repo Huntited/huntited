@@ -23,7 +23,7 @@ vi.stubGlobal(
 );
 
 import { CreateHuntForm } from "@/components/hunt/CreateHuntForm";
-import { getCreateHuntDraft } from "@/lib/create-hunt-store";
+import { getCreateHuntDraft, markBackToForm, setCreateHuntDraft } from "@/lib/create-hunt-store";
 import { ONLINE_LOCATION } from "@/lib/online";
 
 const country = () => screen.getByLabelText("Pays") as HTMLSelectElement;
@@ -104,5 +104,29 @@ describe("lieu d'une action", () => {
     await fillStep2AndSubmit();
     await waitFor(() => expect(navigate).toHaveBeenCalled());
     expect(getCreateHuntDraft()).toMatchObject({ location: ONLINE_LOCATION, country: "" });
+  });
+
+  it("arrive vide malgré un ancien brouillon, et le reprend après « Retour »", async () => {
+    const draft = {
+      title: "Ancienne action",
+      description: "Brouillon",
+      location: "Marseille",
+      country: "FR",
+      deadline: "2030-01-01T20:00",
+      threshold: 10,
+      deposit: 30,
+      commitDeposit: 5,
+      progressVisibility: "hidden" as const,
+    };
+    setCreateHuntDraft(draft);
+    const { unmount } = render(<CreateHuntForm />);
+    expect((screen.getByLabelText("Titre") as HTMLInputElement).value).toBe("");
+    unmount();
+
+    markBackToForm();
+    render(<CreateHuntForm />);
+    await waitFor(() =>
+      expect((screen.getByLabelText("Titre") as HTMLInputElement).value).toBe("Ancienne action"),
+    );
   });
 });

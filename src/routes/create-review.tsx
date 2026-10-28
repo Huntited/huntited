@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { CreateSteps } from "@/components/hunt/CreateSteps";
 import { Button } from "@/components/ui/button";
 import { COMMIT_DEPOSIT_KAS } from "@/lib/covenants";
-import { clearCreateHuntDraft, getCreateHuntDraft } from "@/lib/create-hunt-store";
+import { clearCreateHuntDraft, getCreateHuntDraft, markBackToForm } from "@/lib/create-hunt-store";
 import { createHunt, getDataMode, HuntActionError } from "@/lib/hunt-repository";
 import { countryName } from "@/lib/countries";
 import { isOnlineHunt, placeLabel } from "@/lib/online";
@@ -146,7 +146,14 @@ function CreateReviewPage() {
       )}
 
       <div className="mt-6 flex justify-end gap-3">
-        <Button variant="outline" disabled={isCreating} onClick={() => navigate({ to: "/create" })}>
+        <Button
+          variant="outline"
+          disabled={isCreating}
+          onClick={() => {
+            markBackToForm();
+            navigate({ to: "/create" });
+          }}
+        >
           {t("review.back")}
         </Button>
         {address ? (
