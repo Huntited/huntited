@@ -195,6 +195,29 @@ export const fr = {
   "wallet.lock.lockNow": "Verrouiller maintenant",
   "wallet.lock.locked": "Wallet verrouillé.",
   "wallet.err.needWallet": "Crée d'abord ton wallet (page « Mon wallet »).",
+  "picker.title": "Connecter un wallet",
+  "picker.here": "Sur cet appareil",
+  "picker.others": "Autres wallets Kaspa",
+  "picker.builtin": "Wallet Huntited",
+  "picker.builtinNote": "Dans ce navigateur",
+  "picker.installed": "Installé",
+  "picker.install": "Installer",
+  "picker.installNote": "Une fois l'extension installée, recharge la page.",
+  "picker.what": "C'est quoi un wallet ?",
+  "picker.what1.title": "Ton compte sur Kaspa",
+  "picker.what1": "Il garde tes KAS et signe tes engagements, c'est toi qui as la clé.",
+  "picker.what2.title": "Pas de compte à créer",
+  "picker.what2": "Pas d'e-mail ni de mot de passe, tu te connectes avec ton wallet.",
+  "picker.none": "Pas encore de wallet ?",
+  "picker.create": "Créer mon wallet Huntited",
+  "picker.createNote": "En un clic, rien à installer.",
+  "picker.buy": "Acheter des KAS",
+  "picker.deskoin": "agréé AMF, virement ou carte",
+  "picker.kraken": "carte bancaire",
+  "picker.get": "Obtenir",
+  "picker.testnet": "Réseau de test : les KAS sont gratuits, pas besoin d'en acheter.",
+  "picker.faucet": "Recevoir des KAS de test",
+  "wallet.err.noExtension": "Extension introuvable. Installe-la puis recharge la page.",
   "wallet.err.node": "Le réseau Kaspa ne répond pas pour l'instant, réessaie dans un moment.",
   "wallet.page.title": "Mon wallet",
   "wallet.page.lead":
@@ -772,7 +795,7 @@ export const fr = {
   "guide.lead":
     "Tes engagements seront des transactions publiques.\nPour qu'on ne puisse pas les relier au reste de ton activité, utilise un compte rien que pour Huntited.",
   "guide.step1":
-    "Dans Kastle, crée un nouveau compte (par exemple « Huntited ») et sélectionne-le.",
+    "Dans ton wallet, crée un nouveau compte (par exemple « Huntited ») et sélectionne-le.",
   "guide.step2":
     "Mets-y des KAS directement depuis l'extérieur : le distributeur du réseau de test, une plateforme d'échange ou un ami.",
   "guide.step3":
@@ -791,15 +814,15 @@ export const fr = {
   "hunt.pending":
     "Inscription sur la blockchain en cours.\nTon action sera visible par tous d'ici une minute environ.",
   "err.alreadyCommitted": "Tu es déjà engagé·e dans cette action.",
-  "wallet.err.needKastle": "Il faut le wallet Kastle pour publier sur la blockchain.",
+  "wallet.err.needKastle": "Ce wallet ne peut pas faire ça, connecte Kastle pour continuer.",
   "wallet.err.noFunds":
     "Ton compte Kastle n'a pas assez de KAS de test. Alimente-le avec le faucet du réseau de test (testnet-10), puis réessaie.",
   "wallet.err.reconnect":
-    "Kastle n'est plus connecté à Huntited : déconnecte puis reconnecte ton wallet.",
+    "Ton wallet n'est plus connecté à Huntited : déconnecte puis reconnecte-le.",
   "wallet.err.compound":
-    "Ton compte contient trop de petites sommes pour une seule transaction : regroupe-les dans Kastle, puis réessaie.",
-  "wallet.err.sendFailed": "Kastle n'a pas pu envoyer la transaction :",
-  "wallet.err.sendRefused": "Transaction annulée ou refusée par Kastle.",
+    "Ton compte contient trop de petites sommes pour une seule transaction : regroupe-les dans ton wallet, puis réessaie.",
+  "wallet.err.sendFailed": "Ton wallet n'a pas pu envoyer la transaction :",
+  "wallet.err.sendRefused": "Transaction annulée ou refusée dans ton wallet.",
   "release.title": "Versions du site",
   "release.lead":
     "Chaque version officielle de Huntited est inscrite sur la blockchain Kaspa, avec l'empreinte de tous ses fichiers. N'importe qui peut vérifier qu'un site correspond bien à une version officielle.",
@@ -921,10 +944,10 @@ export const fr = {
 
   // Erreurs (wallet, actions)
   "wallet.err.noKastle": "Extension Kastle introuvable. Installe-la puis recharge la page.",
-  "wallet.err.refused": "Connexion refusée dans Kastle.",
-  "wallet.err.network": "Passe Kastle sur le réseau testnet-10 pour continuer.",
-  "wallet.err.noAccount": "Aucun compte disponible dans Kastle.",
-  "wallet.err.accountChanged": "Le compte Kastle a changé pendant la connexion. Réessaie.",
+  "wallet.err.refused": "Connexion refusée dans ton wallet.",
+  "wallet.err.network": "Passe ton wallet sur le réseau testnet-10 pour continuer.",
+  "wallet.err.noAccount": "Aucun compte disponible dans ton wallet.",
+  "wallet.err.accountChanged": "Le compte a changé pendant la connexion. Réessaie.",
   "wallet.err.notConnected": "Wallet non connecté.",
   "wallet.err.generic": "Connexion au wallet impossible. Réessaie.",
   "err.unavailable": "Le service est temporairement indisponible. Réessaie.",

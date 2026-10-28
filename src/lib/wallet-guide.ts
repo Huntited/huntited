@@ -45,8 +45,10 @@ function write(key: string, value: string) {
   }
 }
 
-/** Avant la première connexion de Kastle : montrer les conseils. */
-export function needsGuide(): boolean {
+/** Avant la première connexion d'une extension (Kastle, Kasperia) : montrer les conseils. */
+export function needsGuide(extension = false): boolean {
+  // Extension choisie dans la fenêtre « Connecter un wallet » : conseils.
+  if (extension) return getWalletMode() === "kastle" && read(SEEN_KEY) === null;
   // Wallet intégré, ou pas d'extension : pas de conseils Kastle.
   if (hasBuiltinWallet() || typeof window === "undefined" || !("kastle" in window)) return false;
   return getWalletMode() === "kastle" && read(SEEN_KEY) === null;

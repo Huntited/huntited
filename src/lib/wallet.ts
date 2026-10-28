@@ -1,11 +1,12 @@
 // Wallet Kaspa, choisi selon VITE_WALLET_MODE :
 //   "mock"   → adresse factice générée localement (par défaut, tests)
-//   "kastle" → wallet intégré (src/lib/builtin-wallet.ts) s'il existe, sinon
-//              l'extension Kastle (window.kastle) ; testnet uniquement
+//   "kastle" → au choix : wallet intégré (src/lib/builtin-wallet.ts), ou une
+//              extension (Kastle : window.kastle, Kasperia : window.kasperia) ;
+//              testnet uniquement
 // L'interface exportée est identique dans les deux modes.
 // Connexion et signature de message ; en mode « chain », envoi de messages au
 // registre (0,2 KAS de test, réseau de test uniquement, avec accord dans
-// Kastle). Confidentialité : aucun log ; Huntited n'affiche jamais l'adresse.
+// l'extension). Confidentialité : aucun log ; Huntited n'affiche jamais l'adresse.
 
 import { builtinAddress, builtinSend, hasBuiltinWallet } from "./builtin-wallet";
 import { getLocale, translate, type MessageKey } from "./i18n";
@@ -28,11 +29,14 @@ export function getWalletMode(): WalletMode {
   return import.meta.env["VITE_WALLET_MODE"] === "kastle" ? "kastle" : "mock";
 }
 
+/** Wallets proposés dans la fenêtre « Connecter un wallet ». */
+export type WalletChoice = "builtin" | "kastle" | "kasperia";
+
 export interface WalletState {
   isConnected: boolean;
   address: string | null;
-  /** Wallet intégré (src/lib/builtin-wallet.ts) plutôt que l'extension Kastle. */
-  kind?: "builtin";
+  /** Wallet utilisé ; absent = Kastle (sessions enregistrées avant Kasperia). */
+  kind?: "builtin" | "kasperia";
 }
 
 /** Erreur affichable telle quelle à l'utilisateur. */
@@ -71,6 +75,36 @@ function getKastle(): KastleProvider | undefined {
   return isBrowser() ? (window as unknown as { kastle?: KastleProvider }).kastle : undefined;
 }
 
+/** Sous-ensemble de l'API window.kasperia (https://kasperia-doc.github.io/docs.html). */
+interface KasperiaProvider {
+  requestAccounts(): Promise<string[]>;
+  getAccounts(): Promise<string[]>;
+  getNetwork(): Promise<string>;
+  switchNetwork(network: "mainnet" | "testnet-10"): Promise<unknown>;
+  /** Montant en sompi (texte) ; renvoie l'identifiant de la transaction. */
+  sendKaspa(to: string, sompi: string, options?: { payload?: string }): Promise<unknown>;
+  on(event: "accountsChanged", handler: (accounts: string[]) => void): unknown;
+  on(event: "networkChanged", handler: (network: string) => void): unknown;
+  request?(args: { method: string; params?: unknown }): Promise<unknown>;
+}
+
+function getKasperia(): KasperiaProvider | undefined {
+  return isBrowser() ? (window as unknown as { kasperia?: KasperiaProvider }).kasperia : undefined;
+}
+
+/** Kasperia nomme le réseau de test « testnet-10 » (variantes tolérées). */
+const isTestnet10 = (network: unknown) =>
+  typeof network === "string" && /testnet[-_]?10/i.test(network);
+
+/** Wallets présents sur cet appareil (wallet intégré, extensions). */
+export function detectWallets(): Record<WalletChoice, boolean> {
+  return {
+    builtin: hasBuiltinWallet(),
+    kastle: !!getKastle(),
+    kasperia: !!getKasperia(),
+  };
+}
+
 function requireKastle(): KastleProvider {
   const kastle = getKastle();
   if (!kastle) {
@@ -84,6 +118,7 @@ const listeners = new Set<(s: WalletState) => void>();
 let state: WalletState = DISCONNECTED;
 let loaded = false;
 let kastleBound = false;
+let kasperiaBound = false;
 /** Incrémenté à chaque événement Kastle (compte ou réseau). */
 let kastleEvents = 0;
 
@@ -125,8 +160,8 @@ function bindKastle() {
   if (!kastle) return;
   kastleBound = true;
 
-  // Les événements Kastle ne concernent pas le wallet intégré.
-  const usingKastle = () => load().isConnected && load().kind !== "builtin";
+  // Les événements Kastle ne concernent que les sessions Kastle.
+  const usingKastle = () => load().isConnected && load().kind === undefined;
   kastle.on("kas:account_changed", (address) => {
     kastleEvents += 1;
     if (!usingKastle()) return;
@@ -143,6 +178,37 @@ function bindKastle() {
         setState(
           network === KASTLE_NETWORK && account.address
             ? { isConnected: true, address: account.address }
+            : DISCONNECTED,
+        );
+      })
+      .catch(() => setState(DISCONNECTED));
+  }
+}
+
+/** Comme bindKastle, pour Kasperia. */
+function bindKasperia() {
+  if (kasperiaBound || getWalletMode() !== "kastle") return;
+  const kasperia = getKasperia();
+  if (!kasperia) return;
+  kasperiaBound = true;
+
+  const usingKasperia = () => load().isConnected && load().kind === "kasperia";
+  kasperia.on("accountsChanged", (accounts) => {
+    if (!usingKasperia()) return;
+    const address = accounts?.[0];
+    setState(address ? { isConnected: true, address, kind: "kasperia" } : DISCONNECTED);
+  });
+  kasperia.on("networkChanged", (network) => {
+    if (!isTestnet10(network) && usingKasperia()) setState(DISCONNECTED);
+  });
+
+  if (usingKasperia()) {
+    void Promise.all([kasperia.getNetwork(), kasperia.getAccounts()])
+      .then(([network, accounts]) => {
+        const address = accounts?.[0];
+        setState(
+          isTestnet10(network) && address
+            ? { isConnected: true, address, kind: "kasperia" }
             : DISCONNECTED,
         );
       })
@@ -200,9 +266,48 @@ async function connectKastle(): Promise<string> {
   }
 }
 
-/** Connecte le wallet et renvoie son adresse. */
-export async function connectWallet(): Promise<string> {
+async function connectKasperia(): Promise<string> {
+  const kasperia = getKasperia();
+  if (!kasperia) throw new WalletError(msg("wallet.err.noExtension"));
+  bindKasperia();
+
+  try {
+    let accounts: string[];
+    try {
+      accounts = await kasperia.requestAccounts();
+    } catch {
+      throw new WalletError(msg("wallet.err.refused"));
+    }
+    try {
+      if (!isTestnet10(await kasperia.getNetwork())) {
+        await kasperia.switchNetwork(KASTLE_NETWORK);
+        accounts = await kasperia.getAccounts();
+      }
+    } catch {
+      throw new WalletError(msg("wallet.err.network"));
+    }
+    if (!isTestnet10(await kasperia.getNetwork())) throw new WalletError(msg("wallet.err.network"));
+    const address = accounts?.[0];
+    if (!address) throw new WalletError(msg("wallet.err.noAccount"));
+    if (!address.startsWith("kaspatest:")) throw new WalletError(msg("wallet.err.network"));
+
+    setState({ isConnected: true, address, kind: "kasperia" });
+    return address;
+  } catch (e) {
+    setState(DISCONNECTED);
+    throw e;
+  }
+}
+
+/**
+ * Connecte le wallet et renvoie son adresse. `choice` vient de la fenêtre
+ * « Connecter un wallet » ; sans choix : wallet intégré, sinon Kastle.
+ */
+export async function connectWallet(choice?: WalletChoice): Promise<string> {
   if (getWalletMode() === "kastle") {
+    if (choice === "builtin") return connectBuiltin();
+    if (choice === "kastle") return connectKastle();
+    if (choice === "kasperia") return connectKasperia();
     // Wallet intégré s'il existe (marche partout), sinon l'extension Kastle,
     // sinon il faut en créer un.
     if (hasBuiltinWallet()) return connectBuiltin();
@@ -217,9 +322,13 @@ export async function connectWallet(): Promise<string> {
 
 /** Déconnecte le wallet. */
 export function disconnectWallet(): void {
-  if (getWalletMode() === "kastle" && load().kind !== "builtin")
+  if (getWalletMode() === "kastle" && load().kind === undefined)
     void getKastle()
       ?.disconnect()
+      .catch(() => undefined);
+  if (getWalletMode() === "kastle" && load().kind === "kasperia")
+    void getKasperia()
+      ?.request?.({ method: "kasperia_disconnect", params: {} })
       .catch(() => undefined);
   setState(DISCONNECTED);
 }
@@ -234,6 +343,7 @@ export function subscribeWallet(cb: (s: WalletState) => void): () => void {
   listeners.add(cb);
   cb(load());
   bindKastle();
+  bindKasperia();
   const onStorage = (e: StorageEvent) => {
     if (e.key !== STORAGE_KEY) return;
     loaded = false;
@@ -247,7 +357,7 @@ export function subscribeWallet(cb: (s: WalletState) => void): () => void {
 }
 
 /**
- * Publie un message du registre (docs/registre-kaspa.md) : Kastle envoie
+ * Publie un message du registre (docs/registre-kaspa.md) : le wallet envoie
  * `sompi` à l'adresse du registre, depuis le compte connecté, avec le message
  * en hexadécimal, après accord dans sa fenêtre. Réseau de test uniquement.
  * Le wallet factice ne peut rien publier.
@@ -266,6 +376,26 @@ export async function sendToRegistry(
     } catch (e) {
       throw new WalletError(builtinErrorMessage(e));
     }
+  }
+  if (load().kind === "kasperia") {
+    const kasperia = getKasperia();
+    if (!kasperia) throw new WalletError(msg("wallet.err.noExtension"));
+    if (!isTestnet10(await kasperia.getNetwork())) throw new WalletError(msg("wallet.err.network"));
+    let txid: string | undefined;
+    try {
+      const sent = await kasperia.sendKaspa(registryAddress, String(sompi), {
+        payload: payloadHex,
+      });
+      txid =
+        typeof sent === "string"
+          ? sent
+          : ((sent as { txid?: string; transactionId?: string } | null)?.txid ??
+            (sent as { transactionId?: string } | null)?.transactionId);
+    } catch (e) {
+      throw new WalletError(sendErrorMessage(e));
+    }
+    if (!txid) throw new WalletError(msg("wallet.err.sendFailed"));
+    return txid;
   }
   const kastle = requireKastle();
   if ((await kastle.getNetwork()) !== KASTLE_NETWORK) {
@@ -317,7 +447,7 @@ export function builtinErrorMessage(e: unknown): string {
 /** Signe un message (Kastle : signature réelle ; mock : aléatoire, non vérifiable). */
 export async function signMessage(message: string): Promise<string> {
   if (!load().isConnected) throw new WalletError(msg("wallet.err.notConnected"));
-  if (load().kind === "builtin") throw new WalletError(msg("wallet.err.needKastle"));
+  if (load().kind) throw new WalletError(msg("wallet.err.needKastle"));
   if (getWalletMode() === "kastle") return requireKastle().signMessage(message);
   await delay(300);
   return `mocksig_${randomHex(32)}`;

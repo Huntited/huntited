@@ -31,6 +31,7 @@ function SkipLink() {
 }
 import { Toaster } from "@/components/ui/sonner";
 import { WalletGuide } from "@/components/WalletGuide";
+import { WalletPicker } from "@/components/WalletPicker";
 import { WalletUnlock } from "@/components/WalletUnlock";
 import { IosInstallHint } from "@/components/IosInstallHint";
 
@@ -134,6 +135,7 @@ function RootComponent() {
       </div>
       <DevResetButton />
       <Toaster />
+      <WalletPicker />
       <WalletGuide />
       <WalletUnlock />
       <IosInstallHint />

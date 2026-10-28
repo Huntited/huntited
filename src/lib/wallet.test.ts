@@ -175,7 +175,76 @@ describe("wallet en mode Kastle", () => {
       "refusée",
     );
     expect(w.sendErrorMessage(new Error("storage mass exceeds limit"))).toBe(
-      "Kastle n'a pas pu envoyer la transaction : storage mass exceeds limit",
+      "Ton wallet n'a pas pu envoyer la transaction : storage mass exceeds limit",
     );
+  });
+});
+
+function fakeKasperia(opts: { network?: string; refuse?: boolean } = {}) {
+  let network = opts.network ?? "testnet-10";
+  const handlers: Record<string, ((v: unknown) => void)[]> = {};
+  const kasperia = {
+    requestAccounts: vi.fn(async () => {
+      if (opts.refuse) throw new Error("User rejected");
+      return [TEST_ADDRESS];
+    }),
+    getAccounts: vi.fn(async () => [TEST_ADDRESS]),
+    getNetwork: vi.fn(async () => network),
+    switchNetwork: vi.fn(async (id: string) => (network = id)),
+    sendKaspa: vi.fn(async (..._args: unknown[]) => "txid-kasperia"),
+    request: vi.fn(async () => undefined),
+    on: vi.fn((event: string, h: (v: unknown) => void) => {
+      (handlers[event] ??= []).push(h);
+    }),
+    emit: (event: string, value: unknown) => handlers[event]?.forEach((h) => h(value)),
+  };
+  Object.assign(window, { kasperia });
+  return kasperia;
+}
+
+describe("wallet Kasperia (choisi dans la fenêtre)", () => {
+  afterEach(() => {
+    delete (window as { kasperia?: unknown }).kasperia;
+  });
+
+  it("est détecté à côté de Kastle", async () => {
+    fakeKasperia();
+    const w = await loadWallet();
+    expect(w.detectWallets()).toEqual({ builtin: false, kastle: false, kasperia: true });
+  });
+
+  it("connecte sur testnet-10, en passant du réseau principal si besoin", async () => {
+    const k = fakeKasperia({ network: "mainnet" });
+    const w = await loadWallet();
+    expect(await w.connectWallet("kasperia")).toBe(TEST_ADDRESS);
+    expect(k.switchNetwork).toHaveBeenCalledWith("testnet-10");
+    expect(w.getWalletState()).toEqual({
+      isConnected: true,
+      address: TEST_ADDRESS,
+      kind: "kasperia",
+    });
+  });
+
+  it("connexion refusée : rien n'est connecté", async () => {
+    fakeKasperia({ refuse: true });
+    const w = await loadWallet();
+    await expect(w.connectWallet("kasperia")).rejects.toThrow("Connexion refusée");
+    expect(w.getWalletState().isConnected).toBe(false);
+  });
+
+  it("publie au registre avec le message, montant en sompi (texte)", async () => {
+    const k = fakeKasperia();
+    const w = await loadWallet();
+    await w.connectWallet("kasperia");
+    expect(await w.sendToRegistry("kaspatest:registre", 20_000_000, "48")).toBe("txid-kasperia");
+    expect(k.sendKaspa).toHaveBeenCalledWith("kaspatest:registre", "20000000", { payload: "48" });
+  });
+
+  it("se déconnecte si Kasperia quitte le réseau de test", async () => {
+    const k = fakeKasperia();
+    const w = await loadWallet();
+    await w.connectWallet("kasperia");
+    k.emit("networkChanged", "mainnet");
+    expect(w.getWalletState().isConnected).toBe(false);
   });
 });

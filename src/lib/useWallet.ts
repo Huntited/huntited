@@ -5,10 +5,12 @@ import { getLocale, translate } from "./i18n";
 import { toast } from "sonner";
 
 import { guideBeforeConnect, needsGuide } from "./wallet-guide";
+import { pickWallet } from "./wallet-picker";
 
 import {
   connectWallet as connect,
   disconnectWallet as disconnect,
+  getWalletMode,
   NeedWalletError,
   subscribeWallet,
   WalletError,
@@ -39,12 +41,17 @@ export function useWallet(): UseWalletResult {
   useEffect(() => subscribeWallet(setState), []);
 
   const connectWallet = useCallback(async () => {
-    // Première connexion de Kastle : conseils « compte dédié » d'abord.
-    if (needsGuide() && !(await guideBeforeConnect())) return;
+    // Réseau de test : la personne choisit son wallet. Wallet factice
+    // (démonstration, tests) : connexion directe.
+    const choice = getWalletMode() === "kastle" ? await pickWallet() : undefined;
+    if (choice === null) return;
+    // Première connexion d'une extension : conseils « compte dédié » d'abord.
+    const extension = choice === "kastle" || choice === "kasperia";
+    if (needsGuide(extension) && !(await guideBeforeConnect())) return;
     setIsLoading(true);
     setError(null);
     try {
-      await connect();
+      await connect(choice);
     } catch (e) {
       // Pas encore de wallet : page « Mon wallet » pour en créer un.
       if (e instanceof NeedWalletError) {
