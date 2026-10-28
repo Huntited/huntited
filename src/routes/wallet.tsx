@@ -40,7 +40,7 @@ import {
 } from "@/lib/builtin-wallet";
 import { REGISTRY_ADDRESS } from "@/lib/chain";
 import { useI18n, type MessageKey } from "@/lib/i18n";
-import { connectBuiltin, disconnectWallet, getWalletState } from "@/lib/wallet";
+import { connectBuiltin, disconnectWallet, getWalletState, subscribeWallet } from "@/lib/wallet";
 
 export const Route = createFileRoute("/wallet")({
   head: () => ({ meta: [{ title: "Mon wallet — Huntited" }] }),
@@ -225,6 +225,16 @@ function LockGate({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // « Déconnecter » (en-tête) : la page se referme aussi.
+  useEffect(() => {
+    if (!open) return;
+    let wasConnected = getWalletState().isConnected;
+    return subscribeWallet((s) => {
+      if (wasConnected && !s.isConnected && isProtected()) setOpen(false);
+      wasConnected = s.isConnected;
+    });
+  }, [open]);
+
   // Se referme au bout du délai choisi (5 min, 30 min…).
   useEffect(() => {
     if (!open || !isProtected()) return;
@@ -237,9 +247,10 @@ function LockGate({ children }: { children: ReactNode }) {
   // « À chaque opération » : quitter l'écran (autre onglet, autre appli)
   // referme la page ; au retour, le code est redemandé.
   useEffect(() => {
-    if (!open || !isProtected() || builtinProtection()?.lockAfterMs !== 0) return;
+    if (!open) return;
     const onHidden = () => {
       if (document.visibilityState !== "hidden") return;
+      if (!isProtected() || builtinProtection()?.lockAfterMs !== 0) return;
       lockBuiltin();
       setOpen(false);
       const onBack = () => {

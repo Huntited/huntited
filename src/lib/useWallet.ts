@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { guideBeforeConnect, needsGuide } from "./wallet-guide";
 import { pickWallet } from "./wallet-picker";
+import { isProtected, unlockForPage } from "./builtin-wallet";
 
 import {
   connectWallet as connect,
@@ -48,6 +49,8 @@ export function useWallet(): UseWalletResult {
     // Première connexion d'une extension : conseils « compte dédié » d'abord.
     const extension = choice === "kastle" || choice === "kasperia";
     if (needsGuide(extension) && !(await guideBeforeConnect())) return;
+    // Wallet intégré protégé : le code (ou l'empreinte) avant de se connecter.
+    if (choice === "builtin" && isProtected() && !(await unlockForPage())) return;
     setIsLoading(true);
     setError(null);
     try {

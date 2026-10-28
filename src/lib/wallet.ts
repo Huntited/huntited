@@ -8,7 +8,7 @@
 // registre (0,2 KAS de test, réseau de test uniquement, avec accord dans
 // l'extension). Confidentialité : aucun log ; Huntited n'affiche jamais l'adresse.
 
-import { builtinAddress, builtinSend, hasBuiltinWallet } from "./builtin-wallet";
+import { builtinAddress, builtinSend, hasBuiltinWallet, lockBuiltin } from "./builtin-wallet";
 import { getLocale, translate, type MessageKey } from "./i18n";
 
 /** Message d'erreur dans la langue active. */
@@ -320,8 +320,12 @@ export async function connectWallet(choice?: WalletChoice): Promise<string> {
   return address;
 }
 
-/** Déconnecte le wallet. */
+/**
+ * Déconnecte le wallet. Wallet intégré : la clé est aussi oubliée (verrouillé),
+ * le code sera redemandé pour se reconnecter ou s'engager.
+ */
 export function disconnectWallet(): void {
+  if (load().kind === "builtin") lockBuiltin();
   if (getWalletMode() === "kastle" && load().kind === undefined)
     void getKastle()
       ?.disconnect()
