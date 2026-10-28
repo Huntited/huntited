@@ -105,6 +105,6 @@ describe("chat chiffré (sans serveur)", () => {
   it("sans clé dans ce navigateur : explique où ouvrir le chat", async () => {
     chain.members = ["11".repeat(32)];
     render(<P2PChatPanel huntId={HUNT} title="Test" />);
-    await waitFor(() => expect(screen.getByText(/pas de clé de chat/)).toBeTruthy());
+    await waitFor(() => expect(screen.getByText(/pas la clé du salon/)).toBeTruthy());
   });
 });

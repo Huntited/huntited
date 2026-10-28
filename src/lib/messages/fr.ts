@@ -9,13 +9,13 @@ export const fr = {
   "mission.title": "Missions",
   "mission.new": "Nouvelle mission",
   "mission.placeholder":
-    "Ex. : être devant la mairie à 18 h ; écrire au député ; appeler le service client…",
+    "Ex. être devant la mairie à 18 h, écrire au député, appeler le service client…",
   "mission.kind.code": "Code de présence",
   "mission.kind.peer": "Vérifiée par 3 membres",
   "mission.kindHint.code":
-    "Pendant 10 min, tu montres un code (QR sur place, ou tu le dis en ligne). Ceux qui le saisissent à temps sont validés. Tout le monde peut vérifier, toi compris.",
+    "Pendant 10 min, tu montres un code (QR sur place, ou tu le dis en ligne).\nCeux qui le tapent à temps sont validés, et tout le monde peut vérifier, toi compris.",
   "mission.kindHint.peer":
-    "Chacun décrit ce qu'il a fait ; 3 autres membres tirés au sort votent « faite » ou « pas faite ».",
+    "Chacun raconte ce qu'il a fait, et 3 autres membres tirés au sort votent « faite » ou « pas faite ».",
   "mission.launch": "Lancer la mission",
   "mission.announce": "🎯 Mission : {text}",
   "mission.validCount": "{n} validé(s)",
@@ -23,28 +23,28 @@ export const fr = {
   "mission.mine.invalid": "Ta mission n'est pas validée.",
   "mission.mine.pending": "Ta preuve est envoyée, en attente de vérification.",
   "mission.badReveal":
-    "Le code révélé ne correspond pas à celui annoncé : le créateur a changé de code, la mission ne peut pas être validée.",
+    "Le code révélé n'est pas celui annoncé, le créateur a changé de code.\nLa mission ne peut pas être validée.",
   "mission.openWindow": "Ouvrir le code de présence (10 min)",
   "mission.qr": "QR code de présence",
-  "mission.showCode": "Montre ce code ou ce QR (sur place), ou dis-le (en ligne). Encore {left}.",
+  "mission.showCode": "Montre ce code ou ce QR sur place, ou dis-le en ligne. Encore {left}.",
   "mission.reveal": "Révéler le code et valider ({n} preuve(s) reçue(s))",
   "mission.closeNow": "Clore maintenant et valider ({n} preuve(s) reçue(s))",
   "mission.notOpen": "Le code n'est pas encore ouvert.",
   "mission.closed": "Le temps pour saisir le code est passé.",
-  "mission.sent": "Preuve envoyée. Validation quand le créateur révélera le code.",
+  "mission.sent": "Preuve envoyée.\nElle sera validée quand le créateur révélera le code.",
   "mission.enterCode": "Code de présence (encore {left})",
   "mission.prove": "Valider",
   "mission.wrongCode": "Ce n'est pas le bon code.",
   "mission.proofLabel": "Ce que tu as fait",
   "mission.proofHint":
-    "Reste vague sur ce qui t'identifie (pas de nom de compte, d'adresse…) : les vérificateurs lisent ta preuve.",
+    "Reste vague sur ce qui permet de te reconnaître (pas de nom de compte, d'adresse…), les vérificateurs lisent ta preuve.",
   "mission.sendProof": "Envoyer ma preuve",
   "mission.toCheck": "À vérifier ({n}) : tu as été tiré·e au sort",
   "mission.voteYes": "Faite",
   "mission.voteNo": "Pas faite",
   "mission.kind.x": "Action sur X",
   "mission.kindHint.x":
-    "Retweet ou commentaire d'un post X. Chacun envoie son lien, lisible seulement par 3 membres tirés au sort, qui vérifient. Ils revérifient ensuite à un moment surprise : l'action doit rester en ligne pendant le délai choisi.",
+    "Un retweet ou un commentaire sur un post X.\nChacun envoie son lien, lisible seulement par 3 membres tirés au sort qui vérifient. Ils revérifient ensuite à un moment surprise, l'action doit rester en ligne pendant le délai choisi.",
   "mission.x.target": "Lien du post X",
   "mission.x.badTarget": "Ce n'est pas un lien de post X (https://x.com/…/status/…).",
   "mission.x.actionLabel": "Action demandée",
@@ -54,7 +54,7 @@ export const fr = {
   "mission.x.days": "{n} jour(s)",
   "mission.x.tooLate": "Le salon ferme trop tôt pour un contrôle de maintien.",
   "mission.x.holdHint":
-    "Un contrôle surprise a lieu pendant ce délai. Une action retirée perd sa validation (sans autre sanction).",
+    "Un contrôle surprise a lieu pendant ce délai.\nSi l'action a été retirée, elle n'est plus validée (rien de plus).",
   "mission.x.holdFor": "à garder {n} jour(s)",
   "mission.x.openTarget": "Ouvrir le post",
   "mission.x.linkLabel.retweet": "Lien de ton profil X (où apparaît ton retweet)",
@@ -62,7 +62,7 @@ export const fr = {
   "mission.x.badLink.retweet": "Ce n'est pas un lien de profil X (https://x.com/ton_compte).",
   "mission.x.badLink.reply": "Ce n'est pas un lien de commentaire X (https://x.com/…/status/…).",
   "mission.x.onlyCheckers":
-    "Ce lien est chiffré pour 3 membres seulement : {names}. Eux seuls verront ton compte X.",
+    "Ce lien est chiffré pour 3 membres seulement : {names}.\nEux seuls verront ton compte X.",
   "mission.x.check.retweet": "Le retweet apparaît-il sur ce profil ?",
   "mission.x.check.reply": "Ce commentaire répond-il bien au post ?",
   "mission.x.surprise": "Contrôle surprise ({n}) : vérifie que l'action est toujours en ligne",
@@ -71,13 +71,13 @@ export const fr = {
   "mission.x.removed": "Retirée",
   "mission.x.unreadable": "Lien illisible (pas chiffré pour toi).",
   "mission.x.mine.provisional":
-    "Validée provisoirement. Un contrôle surprise aura lieu dans les {n} jour(s) : garde ton action en ligne.",
+    "Validée pour l'instant.\nUn contrôle surprise aura lieu dans les {n} jour(s), garde ton action en ligne.",
   "mission.x.mine.confirmed": "Confirmée : ton action est restée en ligne.",
   "mission.x.mine.removed": "Ton action a été retirée : mission non validée.",
   "mission.validatedMember": "Mission validée",
   "mission.kind.sign": "Lettre collective",
   "mission.kindHint.sign":
-    "Tu rédiges la lettre ; chacun la signe dans le salon (avec un nom ou anonymement). Signer = mission faite. Tu récupères la lettre avec la liste des signataires.",
+    "Tu écris la lettre, et chacun la signe dans le salon (avec un nom ou anonymement).\nSigner, c'est la mission. À la fin tu récupères la lettre avec la liste des signataires.",
   "mission.letterPlaceholder": "Madame, Monsieur,\n\nNous, membres de…",
   "mission.announceLetter": "✍️ Lettre collective à signer : {text}",
   "mission.signersHeader": "Signataires ({n}) :",
@@ -85,7 +85,7 @@ export const fr = {
   "mission.signAs": "Signer sous le nom (facultatif)",
   "mission.sign": "Signer la lettre",
   "mission.signHint":
-    "Le nom choisi est vu par les membres du salon et figure sous la lettre. Laisse vide pour signer anonymement.",
+    "Le nom choisi est vu par les membres du salon et apparaît sous la lettre.\nLaisse vide pour signer anonymement.",
   "mission.copyLetter": "Copier la lettre signée",
   "mission.copied": "Copiée",
   "mission.downloadLetter": "Télécharger (.txt)",
@@ -123,19 +123,19 @@ export const fr = {
   "rpg.xp.quests": "Quêtes : {n} XP",
   "rpg.page.title": "Ma progression",
   "rpg.page.lead":
-    "Ton expérience vient seulement de tes actions réelles inscrites sur la blockchain : t'engager, lancer des actions, aller jusqu'au bout. Personne ne peut tricher : chacun peut la recalculer.",
+    "Ton expérience vient seulement de ce que tu fais vraiment, inscrit sur la blockchain : t'engager, lancer des actions, aller jusqu'au bout.\nPersonne ne peut tricher, tout le monde peut la recalculer.",
   "rpg.page.connect": "Connecte ton wallet pour voir ta progression.",
   "rpg.page.rank": "Ton rang",
   "rpg.page.xp": "{xp} XP · prochain niveau à {next} XP",
   "rpg.page.class": "Ta classe",
   "rpg.page.classLead":
-    "Elle donne un bonus de 25 % sur un type d'action. Tu peux en changer quand tu veux ; les membres de tes salons la voient à côté de ton pseudo.",
+    "Elle te donne 25 % de bonus sur un type d'action.\nTu peux en changer quand tu veux, les membres de tes salons la voient à côté de ton pseudo.",
   "rpg.page.quests": "Quêtes de la semaine",
   "rpg.page.questsNote":
-    "Nouvelles quêtes chaque lundi. Seules les actions qui se déclenchent comptent : s'engager partout pour gagner de l'XP ne sert à rien.",
+    "Nouvelles quêtes chaque lundi.\nSeules les actions qui démarrent comptent, s'engager partout pour gagner de l'XP ne sert à rien.",
   "rpg.page.done": "Fait",
   "rpg.page.privacy":
-    "Ton niveau n'apparaît que dans les salons de tes actions, à côté de ton pseudo, pour leurs membres. Il est calculé à partir de données déjà publiques sur la blockchain.",
+    "Ton niveau n'apparaît que dans les salons de tes actions, à côté de ton pseudo, pour les membres.\nIl est calculé avec des données déjà publiques sur la blockchain.",
   "nav.menu": "Menu",
   "nav.home": "Accueil Huntited",
   "lang.switch": "Langue",
@@ -157,10 +157,10 @@ export const fr = {
   "wallet.unlock.wait": "Trop d'essais : réessaie dans {s} s.",
   "wallet.unlock.cancelled": "Empreinte ou visage non confirmé.",
   "wallet.unlock.wiped":
-    "Trop de codes faux : le wallet a été effacé de cet appareil. Ta phrase de 12 mots permet de le retrouver.",
+    "Trop de codes faux, le wallet a été effacé de cet appareil.\nTa phrase de 12 mots permet de le retrouver.",
   "wallet.lock.title": "Protection",
   "wallet.lock.none":
-    "Aucune protection : quiconque utilise ce navigateur peut envoyer tes KAS et voir ta phrase.",
+    "Aucune protection : n'importe qui avec ce navigateur peut envoyer tes KAS et voir ta phrase.",
   "wallet.lock.isCode": "Protégé par un code.",
   "wallet.lock.isBio": "Protégé par ton empreinte ou ton visage.",
   "wallet.lock.isBoth": "Protégé par un code et ton empreinte ou ton visage.",
@@ -171,11 +171,11 @@ export const fr = {
   "wallet.lock.password": "Mot de passe",
   "wallet.lock.confirm": "Confirme",
   "wallet.lock.pinHint":
-    "Au moins 6 chiffres. Après 5 erreurs, il faut attendre un peu plus à chaque essai.",
+    "Au moins 6 chiffres.\nAprès 5 erreurs, il faut attendre un peu plus à chaque essai.",
   "wallet.lock.passwordHint":
-    "Au moins 8 caractères ; une phrase de quelques mots est plus sûre et facile à retenir.",
+    "Au moins 8 caractères. Une petite phrase de quelques mots, c'est plus sûr et plus facile à retenir.",
   "wallet.lock.pinWarning":
-    "Un code à chiffres retient quelqu'un qui prend ton téléphone, pas une personne qui copierait les données du navigateur. Pour mieux protéger : mot de passe, ou empreinte dans l'app.",
+    "Un code à chiffres arrête quelqu'un qui prend ton téléphone, pas quelqu'un qui copierait les données du navigateur.\nPour être mieux protégé : un mot de passe, ou l'empreinte dans l'app.",
   "wallet.lock.wipe":
     "Effacer le wallet de cet appareil après 10 codes faux (garde ta phrase de 12 mots)",
   "wallet.lock.useBio": "Empreinte ou visage",
@@ -189,27 +189,28 @@ export const fr = {
   "wallet.lock.save": "Enregistrer la protection",
   "wallet.lock.saved": "Protection enregistrée.",
   "wallet.lock.removed": "Protection retirée.",
-  "wallet.lock.failed": "Protection non enregistrée (déverrouillage annulé ou empreinte refusée).",
+  "wallet.lock.failed":
+    "Protection pas enregistrée, le déverrouillage a été annulé ou l'empreinte refusée.",
   "wallet.lock.invalid": "Code trop court, ou les deux ne sont pas identiques.",
   "wallet.lock.lockNow": "Verrouiller maintenant",
   "wallet.lock.locked": "Wallet verrouillé.",
   "wallet.err.needWallet": "Crée d'abord ton wallet (page « Mon wallet »).",
-  "wallet.err.node": "Réseau Kaspa injoignable pour le moment. Réessaie dans un instant.",
+  "wallet.err.node": "Le réseau Kaspa ne répond pas pour l'instant, réessaie dans un moment.",
   "wallet.page.title": "Mon wallet",
   "wallet.page.lead":
-    "Un wallet Kaspa rangé sur cet appareil, sans extension : il marche sur ordinateur, sur téléphone et dans l'app Huntited Chat.",
+    "Un wallet Kaspa rangé sur cet appareil, sans rien installer.\nIl marche sur ordinateur, sur téléphone et dans l'app Huntited Chat.",
   "wallet.page.testnet":
-    "Réseau de test : ces KAS sont gratuits et n'ont aucune valeur. N'envoie jamais de vrais KAS à ce wallet.",
+    "Réseau de test : ces KAS sont gratuits et ne valent rien.\nN'envoie jamais de vrais KAS sur ce wallet.",
   "wallet.page.create": "Créer mon wallet",
   "wallet.page.createNote":
-    "Tu recevras 12 mots à noter sur papier : ils permettent de retrouver ce wallet, ici ou dans Kastle et Kaspium.",
+    "Tu vas recevoir 12 mots à noter sur papier.\nIls permettent de retrouver ce wallet, ici ou dans Kastle et Kaspium.",
   "wallet.page.haveOne": "J'ai déjà une phrase de récupération",
   "wallet.page.importLabel": "Ta phrase de récupération (12 ou 24 mots)",
-  "wallet.page.importBad": "Cette phrase n'est pas valable : vérifie les mots et leur ordre.",
+  "wallet.page.importBad": "Cette phrase ne marche pas, vérifie les mots et leur ordre.",
   "wallet.page.import": "Retrouver mon wallet",
   "wallet.page.backupTitle": "Note ces 12 mots",
   "wallet.page.backupLead":
-    "Sur papier, dans l'ordre, rangés en lieu sûr. C'est la seule façon de retrouver ce wallet si tu changes d'appareil ou effaces tes données. Ne les donne à personne : Huntited ne te les demandera jamais.",
+    "Sur papier, dans l'ordre, rangés dans un endroit sûr.\nC'est le seul moyen de retrouver ce wallet si tu changes d'appareil ou effaces tes données.\nNe les donne à personne, Huntited ne te les demandera jamais.",
   "wallet.page.backupNoted": "J'ai noté mes 12 mots",
   "wallet.page.backupDone": "Continuer",
   "wallet.page.balance": "Solde",
@@ -222,24 +223,24 @@ export const fr = {
   "wallet.page.copy": "Copier l'adresse",
   "wallet.page.faucet": "Recevoir des KAS de test gratuits",
   "wallet.page.faucetNote":
-    "L'adresse est copiée et le distributeur du réseau de test s'ouvre : colle-la, valide, et les KAS arrivent en quelques secondes.",
+    "Ton adresse est copiée et le distributeur du réseau de test s'ouvre.\nColle-la, valide, et les KAS arrivent en quelques secondes.",
   "wallet.page.buyTitle": "Obtenir des KAS",
   "wallet.page.changenow": "Échanger contre des KAS avec ChangeNOW",
   "wallet.page.changenowNote":
-    "ChangeNOW échange d'autres cryptomonnaies (BTC, ETH…) contre des KAS, sans compte. Ton adresse est copiée : colle-la comme adresse de réception. Selon le montant ou le paiement en euros, une pièce d'identité peut être demandée.",
+    "ChangeNOW échange d'autres cryptos (BTC, ETH…) contre des KAS, sans compte.\nTon adresse est copiée, colle-la comme adresse de réception. Selon le montant ou si tu paies en euros, on peut te demander une pièce d'identité.",
   "wallet.page.buy": "Acheter des KAS en euros",
   "wallet.page.buyLater":
-    "Disponible au passage au réseau principal. Pour l'instant, les KAS de test sont gratuits.",
+    "Ce sera possible au passage au vrai réseau.\nPour l'instant, les KAS de test sont gratuits.",
   "wallet.page.buyNote":
-    "L'achat se fait chez un service de paiement autorisé, qui demande une pièce d'identité et prend des frais. Huntited ne touche pas à ton argent et ne donne aucun conseil d'investissement.",
+    "L'achat se fait chez un service de paiement autorisé, qui demande une pièce d'identité et prend des frais.\nHuntited ne touche jamais à ton argent et ne te donne aucun conseil d'investissement.",
   "wallet.page.safety": "Sauvegarde et sécurité",
   "wallet.page.safetyNote":
-    "La phrase de récupération est rangée sur cet appareil. Effacer les données du site (ou « Effacer les salons » dans l'app) retire aussi ce wallet : garde tes 12 mots.",
+    "Ta phrase de récupération est rangée sur cet appareil.\nSi tu effaces les données du site (ou « Effacer les salons » dans l'app), ce wallet part avec, alors garde bien tes 12 mots.",
   "wallet.page.show": "Afficher ma phrase de récupération",
-  "wallet.page.showConfirm": "Vérifie que personne ne regarde ton écran. Afficher la phrase ?",
+  "wallet.page.showConfirm": "Vérifie que personne ne regarde ton écran. On affiche la phrase ?",
   "wallet.page.remove": "Retirer ce wallet de cet appareil",
   "wallet.page.removeConfirm":
-    "Sans tes 12 mots, ce wallet et ses KAS seront perdus. Le retirer de cet appareil ?",
+    "Sans tes 12 mots, ce wallet et ses KAS seront perdus. On le retire de cet appareil ?",
   "footer.tagline": "Tout le monde ou personne. Sans compte ni e-mail.",
   "footer.testnet": "Réseau de test · aucun vrai KAS",
   "dev.reset": "Réinitialiser les données de démonstration",
@@ -333,7 +334,7 @@ export const fr = {
   "group.offer": "Un syndicat, une association ? Ouvre cette action à tes adhérents",
   "data.group.group": "Pass d'organisation",
   "data.group.group.text":
-    "Ton organisation et les liens de ses adhérents, ou la place qu'on t'a offerte. Secret : qui a ces clés peut utiliser les places.",
+    "Ton organisation et les liens de ses adhérents, ou la place qu'on t'a offerte.\nC'est secret : qui a ces clés peut utiliser les places.",
   "org.title": "Pass d'organisation",
   "org.lead":
     "Pour un syndicat, une association ou un collectif : chaque adhérent reçoit un lien personnel, une fois pour toutes. Ensuite, tu ouvres des actions à tes adhérents : ils s'engagent sans wallet ni KAS, et la blockchain ne voit que l'organisation. D'une action à l'autre, on ne peut pas relier leurs engagements.",
@@ -510,7 +511,7 @@ export const fr = {
   "chat.p2p.notifyHint":
     "Une notification à chaque nouveau message, tant qu'une page Huntited reste ouverte (même en arrière-plan).",
   "chat.p2p.notifyDenied":
-    "Les notifications sont bloquées pour ce site : autorise-les dans les réglages du navigateur.",
+    "Les notifications sont bloquées pour ce site, autorise-les dans les réglages du navigateur.",
   "chat.notify.title": "Nouveau message",
   "chat.notify.body": "Dans le chat de « {title} »",
   "inbox.title": "Activité",
@@ -524,12 +525,11 @@ export const fr = {
   "inbox.markRead": "Tout marquer comme lu",
   "data.group.inbox": "Activité",
   "data.group.inbox.text":
-    "Les nouveautés de tes actions (cloche de l'en-tête), et leur dernier état connu.",
+    "Les nouveautés de tes actions (la cloche en haut), et leur dernier état connu.",
   "chat.p2p.as": "Tu écris en tant que",
   "chat.p2p.rename": "Modifier",
   "chat.p2p.nameLabel": "Ton pseudo dans ce chat",
-  "chat.p2p.nameHint":
-    "Visible seulement par les membres, et seulement dans ce chat. Évite ton vrai nom.",
+  "chat.p2p.nameHint": "Visible seulement par les membres, et seulement ici.\nÉvite ton vrai nom.",
   "chat.p2p.save": "OK",
   "sim.title": "Simulation",
   "sim.people": "Si autant de personnes s'engagent",
@@ -563,12 +563,12 @@ export const fr = {
   "sim.simulated": "Pour l'instant, caution et dépôts sont simulés : aucun KAS n'est bloqué.",
   "chat.p2p.bitchat.title": "Plan B si le réseau coupe (bitchat)",
   "chat.p2p.bitchat.lead":
-    "Le jour J, internet peut tomber (foule, zone blanche, coupure). L'application bitchat permet alors de s'écrire par Bluetooth, de téléphone à téléphone, sans réseau. Installe-la avant, puis partage ici ton pseudo bitchat : seuls les membres le verront.",
+    "Le jour J, internet peut lâcher (foule, zone blanche, coupure).\nAvec l'appli bitchat, on peut alors s'écrire par Bluetooth, de téléphone à téléphone, sans réseau. Installe-la avant, puis partage ici ton pseudo bitchat, seuls les membres le verront.",
   "chat.p2p.bitchat.placeholder": "Ton pseudo bitchat",
   "chat.p2p.bitchat.share": "Partager avec les membres",
   "chat.p2p.bitchat.shared": "Mon pseudo bitchat : {nick}",
   "chat.p2p.bitchat.warning":
-    "Dans bitchat, le canal #bluetooth est public : tout le monde à proximité le lit. N'y écris rien de sensible ; écris plutôt en privé aux pseudos ci-dessus.",
+    "Dans bitchat, le canal #bluetooth est public, tout le monde autour le lit.\nN'y écris rien de sensible, écris plutôt en privé aux pseudos ci-dessus.",
   "chat.app.title": "Ouvrir dans l'app Huntited Chat (Android)",
   "chat.app.lead":
     "L'app Huntited Chat ouvre ce même salon sur ton téléphone. Bientôt, elle le fera fonctionner sans internet, par Bluetooth.",
@@ -581,9 +581,9 @@ export const fr = {
   "chat.app.install": "Installer Huntited Chat",
   "chat.p2p.loading": "Connexion au chat…",
   "chat.p2p.noKey":
-    "Ce navigateur n'a pas de clé de chat pour cette action. Elle est créée sur l'appareil où tu t'es engagé·e (ou as créé l'action) : ouvre le chat depuis celui-ci.",
+    "Ce navigateur n'a pas la clé du salon pour cette action.\nElle est sur l'appareil où tu t'es engagé (ou as créé l'action), ouvre le salon depuis celui-là.",
   "chat.p2p.notMember":
-    "Le chat est réservé aux personnes engagées et au créateur ou à la créatrice.",
+    "Le salon est réservé aux personnes engagées et à celui qui a créé l'action.",
   "chat.p2p.empty": "Aucun message pour l'instant.",
   "chat.p2p.placeholder": "Écrire un message…",
   "chat.p2p.send": "Envoyer",
@@ -591,7 +591,7 @@ export const fr = {
   "chat.p2p.you": "Toi",
   "chat.p2p.member": "Membre {n}",
   "chat.p2p.ends":
-    "Le chat ferme le {date}, et ses messages sont alors effacés des relais qui le permettent.",
+    "Le salon ferme le {date}, et ses messages sont alors effacés des relais qui le permettent.",
   "chat.p2p.mesh.on":
     "Bluetooth actif : sans internet, les messages passent de téléphone en téléphone entre les apps Huntited Chat proches.",
   "chat.p2p.mesh.off":
@@ -605,28 +605,28 @@ export const fr = {
   "chat.p2p.ephemeral.announce":
     "⏳ Messages éphémères : chaque message disparaît {d} après l'envoi.",
   "chat.p2p.ephemeral.announceOff":
-    "⏳ Messages éphémères désactivés : les messages restent jusqu'à la fermeture du salon.",
+    "⏳ Messages éphémères désactivés, les messages restent jusqu'à la fermeture du salon.",
   "chat.p2p.forget.button": "Oublier ce salon sur cet appareil",
   "chat.p2p.forget.confirm":
-    "Effacer la clé de ce salon sur cet appareil ? Tu ne pourras plus lire ni écrire ici, sauf en rouvrant le lien du salon.",
+    "Effacer la clé de ce salon sur cet appareil ?\nTu ne pourras plus lire ni écrire ici, sauf en rouvrant le lien du salon.",
   "chat.p2p.forget.done": "Salon oublié sur cet appareil : sa clé est effacée.",
   "chat.p2p.voice.record": "Enregistrer un message vocal",
   "chat.p2p.voice.send": "Arrêter et envoyer",
   "chat.p2p.voice.cancel": "Annuler",
-  "chat.p2p.voice.denied": "Micro refusé : autorise-le dans les réglages pour envoyer des vocaux.",
+  "chat.p2p.voice.denied": "Micro refusé, autorise-le dans les réglages pour envoyer des vocaux.",
   "chat.p2p.voice.label": "Message vocal de {s} s",
   "chat.p2p.talkie.title": "Talkie-walkie",
   "chat.p2p.talkie.label": "Talkie-walkie",
   "chat.p2p.talkie.listen": "Écouter",
   "chat.p2p.talkie.listening": "À l'écoute",
   "chat.p2p.talkie.hint":
-    "Réservé aux membres de l'action. Maintiens le bouton pour parler (15 s au plus) : ton message part dès que tu relâches, par Bluetooth sans internet, et se joue tout de suite chez les membres à l'écoute (salon ouvert, écran allumé).",
+    "Réservé aux membres de l'action.\nGarde le bouton appuyé pour parler (15 s max). Ton message part dès que tu lâches, par Bluetooth sans internet, et se joue tout de suite chez les membres à l'écoute (salon ouvert, écran allumé).",
   "chat.p2p.talkie.hold": "Maintenir pour parler",
   "chat.p2p.talkie.talking": "Je parle… relâche pour envoyer",
   "chat.p2p.presence.title": "Présence sur place",
   "chat.p2p.presence.around": "Membres de l'action autour de toi (toi compris) : {n}",
   "chat.p2p.presence.app":
-    "Le jour J, ouvre ce salon dans l'app Huntited Chat : elle compte par Bluetooth les membres présents autour de toi, sans dire qui.",
+    "Le jour J, ouvre ce salon dans l'app Huntited Chat.\nElle compte par Bluetooth les membres présents autour de toi, sans dire qui.",
   "chat.p2p.presence.threshold": "Seuil sur place fixé par le créateur : {onsite} personnes.",
   "chat.p2p.presence.progress": "Seuil sur place : {n} sur {onsite}",
   "chat.p2p.presence.go": "C'est le moment : vous êtes {n} sur place.",
@@ -634,7 +634,7 @@ export const fr = {
   "chat.p2p.presence.define": "Définir",
   "chat.p2p.presence.announce": "📍 Seuil sur place : on y va quand on est {n} sur place.",
   "chat.p2p.presence.note":
-    "Compte approximatif : la portée Bluetooth est de 10 à 50 m par téléphone, et les signaux passent de téléphone en téléphone.",
+    "C'est approximatif : le Bluetooth porte à 10 à 50 m par téléphone, et les signaux passent de téléphone en téléphone.",
   "chat.p2p.ended": "Le chat est fermé (24 h après la date limite).",
   "chat.p2p.unavailable": "Chat indisponible pour le moment.",
   "chatLogin.copied": "Copié.",
@@ -713,47 +713,50 @@ export const fr = {
   "val.placeholder": "Remplace les passages [entre crochets] par tes informations.",
   "data.title": "Tes données",
   "data.lead":
-    "Huntited n'a pas de compte : presque tout reste dans ton navigateur. Voici exactement ce qu'il garde, et ce que sait le serveur.",
+    "Huntited n'a pas de compte et pas de serveur, presque tout reste dans ton navigateur.\nVoici exactement ce qu'il garde ici, et ce qui est public sur la blockchain.",
   "data.device": "Sur cet appareil",
   "data.empty": "Rien pour l'instant.",
   "data.bytes": "{n} octets",
   "data.kb": "{n} Ko",
   "data.show": "Voir le contenu",
-  "data.secret": "Contenu secret, non affiché. Il est inclus dans l'export.",
+  "data.secret": "Contenu secret, pas affiché. Il est dans l'export.",
   "data.group.wallet": "Connexion du wallet",
-  "data.group.wallet.text": "Pour te reconnecter sans tout refaire. Ton adresse ne sort pas d'ici.",
+  "data.group.wallet.text":
+    "Ton wallet intégré et de quoi te reconnecter sans tout refaire.\nTa phrase et ton adresse ne sortent pas d'ici.",
   "data.group.pass": "Ton pass",
   "data.group.pass.text":
-    "Le secret qui prouve que tu as été invité·e. Si tu le perds, il faudra une nouvelle invitation.",
+    "Le secret qui prouve que tu as été invité.\nSi tu le perds, il faudra une nouvelle invitation.",
   "data.group.chat": "Tes clés de chat",
   "data.group.chat.text":
-    "Une clé par action, pour lire et écrire dans son chat chiffré. Si tu les effaces, tu ne pourras plus lire ces chats depuis cet appareil.",
+    "Une clé par action, pour lire et écrire dans son salon chiffré.\nSi tu les effaces, tu ne pourras plus lire ces salons depuis cet appareil.",
   "data.group.hunts": "Tes actions et engagements",
   "data.group.hunts.text":
     "Les actions que tu as créées ou rejointes, et ton seuil personnel, pour les retrouver dans « Mes actions ».",
   "data.group.draft": "Brouillon",
   "data.group.draft.text": "L'action que tu étais en train de créer.",
   "data.group.notify": "Actions suivies",
-  "data.group.notify.text": "Les actions pour lesquelles tu as demandé à être prévenu·e.",
+  "data.group.notify.text": "Les actions pour lesquelles tu as demandé à être prévenu.",
   "data.group.prefs": "Préférences",
   "data.group.prefs.text": "Langue, thème et affichage des badges.",
   "data.group.demo": "Démonstration",
-  "data.group.demo.text": "Actions de démonstration, quand le site tourne sans serveur.",
+  "data.group.demo.text": "Les actions de démonstration, quand le site tourne en mode démo.",
   "data.group.other": "Autres",
   "data.group.other.text": "Données techniques de Huntited.",
   "data.export": "Exporter",
   "data.export.note":
-    "L'export est un fichier JSON créé sur ton appareil. Il contient le secret de ton pass : garde-le pour toi.",
+    "L'export est un fichier JSON créé sur ton appareil.\nIl contient tes secrets (phrase du wallet, clés), garde-le pour toi.",
   "data.erase": "Tout effacer",
   "data.erase.title": "Effacer les données de cet appareil ?",
   "data.erase.text":
-    "Ton pass, tes actions suivies et tes préférences seront supprimés de ce navigateur. Tes engagements, eux, restent valables : ils sont sur le serveur. Exporte d'abord si tu veux garder ton pass.",
+    "Ton wallet, tes clés de salon, tes actions suivies et tes réglages seront supprimés de ce navigateur.\nTes engagements, eux, restent valables, ils sont sur la blockchain. Note tes 12 mots ou exporte d'abord si tu veux tout garder.",
   "data.erase.confirm": "Effacer",
-  "data.server": "Sur le serveur",
-  "data.server.hunts": "Les actions elles-mêmes, publiques : titre, lieu, date, seuil.",
+  "data.server": "Public, sur la blockchain",
+  "data.server.hunts":
+    "Les actions elles-mêmes : titre, lieu, date, nombre de personnes nécessaires.",
   "data.server.commits":
-    "Pour chaque engagement, une empreinte propre à l'action, qui ne permet pas de retrouver ton wallet. Effacée 24 h après une action ratée.",
-  "data.server.never": "Jamais ton adresse de wallet en clair, ton IP, ton nom ou ton e-mail.",
+    "Chaque engagement, avec l'adresse du wallet qui l'a envoyé.\nLe site ne l'affiche jamais, mais quelqu'un qui lit la blockchain peut le voir.",
+  "data.server.never":
+    "Huntited n'a pas de serveur : il ne garde jamais ton nom, ton e-mail ni ton IP.",
   "data.server.more": "Le détail dans la politique de vie privée",
   "footer.legalShort": "Conditions et vie privée",
   "footer.versions": "Versions",
@@ -767,14 +770,15 @@ export const fr = {
   "footer.data": "Tes données",
   "guide.title": "Avant de connecter ton wallet",
   "guide.lead":
-    "Tes engagements seront des transactions publiques. Pour qu'on ne puisse pas les relier au reste de ton activité, utilise un compte réservé à Huntited.",
+    "Tes engagements seront des transactions publiques.\nPour qu'on ne puisse pas les relier au reste de ton activité, utilise un compte rien que pour Huntited.",
   "guide.step1":
     "Dans Kastle, crée un nouveau compte (par exemple « Huntited ») et sélectionne-le.",
   "guide.step2":
-    "Alimente-le directement depuis l'extérieur : le faucet du réseau de test, une plateforme d'échange ou un ami.",
+    "Mets-y des KAS directement depuis l'extérieur : le distributeur du réseau de test, une plateforme d'échange ou un ami.",
   "guide.step3":
-    "Évite de l'alimenter depuis ton compte principal : ce transfert serait visible et relierait les deux.",
-  "guide.note": "Huntited n'affiche jamais ton adresse. Ces conseils ne s'afficheront qu'une fois.",
+    "Évite de le remplir depuis ton compte principal, ce transfert serait visible et relierait les deux.",
+  "guide.note":
+    "Huntited n'affiche jamais ton adresse.\nCes conseils ne s'afficheront qu'une fois.",
   "guide.connect": "Connecter",
   "guide.close": "Fermer",
   "chain.commitNote":
