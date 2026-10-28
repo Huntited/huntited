@@ -269,7 +269,7 @@ export const fr = {
   // Accueil
   "home.title": "Agir ensemble, sans y aller seul",
   "home.lead":
-    "Se mobiliser, changer d'appli, lancer un projet, prendre la parole… Seul·e, c'est risqué. Ici, tu t'engages sans attendre que les autres se montrent, et ça n'a lieu que si assez de monde suit.",
+    "Se mobiliser, changer d'appli, lancer un projet, prendre la parole… seul, c'est risqué.\nIci tu t'engages sans attendre que les autres se montrent, et ça n'a lieu que si assez de monde suit.",
   "hunt.hidden.title": "Action masquée",
   "hunt.hidden.text":
     "Huntited a masqué cette action ({reason}). Elle reste inscrite sur la blockchain, que personne ne peut modifier, mais le site ne l'affiche plus.",
@@ -367,7 +367,7 @@ export const fr = {
   "member.keep":
     "Ajoute cette page à tes favoris : c'est ton pass pour toutes les actions de ton organisation.",
   "hunt.explain":
-    "Ici, personne n'y va seul·e : ton engagement ne compte que si au moins {threshold} personnes s'engagent avant la date limite. Sinon, ton dépôt t'est rendu.",
+    "Ici personne n'y va seul, ton engagement ne compte que si au moins {threshold} personnes s'engagent avant la date limite.\nSinon, ton dépôt t'est rendu.",
   "hunt.explain.link": "Comment ça marche ?",
   "home.browse": "Voir les actions",
   "home.example.title": "Comment ça marche, avec un exemple",
@@ -380,23 +380,23 @@ export const fr = {
   "home.example.cardLabel": "Exemple d'action",
   "home.example.cardTitle": "On nettoie la plage samedi",
   "home.example.cardMeta": "Plage du Prado · avant samedi",
-  "home.example.cardProgress": "Seuil : 15 personnes · progression masquée",
+  "home.example.cardProgress": "15 personnes nécessaires",
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Il faut un wallet ?",
   "home.faq.wallet.a":
-    "Oui, un wallet Kaspa : Huntited t'en crée un en un clic, sans extension (page « Mon wallet »). Pour l'instant, tout se passe sur le réseau de test : aucun vrai KAS n'est utilisé.",
+    "Oui, un wallet Kaspa. Huntited t'en crée un en un clic, sans rien installer (page « Mon wallet »).\nPour l'instant tout se passe sur le réseau de test, aucun vrai KAS n'est utilisé.",
   "home.faq.deposit.q": "Pourquoi un dépôt ?",
   "home.faq.deposit.a":
-    "Pour que l'engagement compte : on réfléchit avant de cliquer, et créer de faux engagements coûte cher. Le dépôt est toujours rendu à la fin.",
-  "home.faq.who.q": "Qui sait que je me suis engagé·e ?",
+    "Pour que l'engagement compte vraiment.\nOn réfléchit avant de cliquer, et créer de faux engagements coûte cher.\nTon dépôt t'est toujours rendu à la fin.",
+  "home.faq.who.q": "Qui sait que je me suis engagé ?",
   "home.faq.who.a":
-    "Le site ne l'affiche jamais, pas même au créateur. Mais ton engagement est inscrit sur la blockchain Kaspa avec l'adresse de ton wallet : c'est public et permanent, et quelqu'un qui lit la blockchain peut le voir. Pour plus de discrétion, utilise un wallet qui n'est pas relié à ton identité.",
+    "Le site ne l'affiche jamais, même pas à celui qui a créé l'action.\nPar contre ton engagement est inscrit sur la blockchain Kaspa avec l'adresse de ton wallet, c'est public et ça reste. Quelqu'un qui lit la blockchain peut donc le voir.\nSi tu veux rester discret, utilise un wallet qui n'est pas relié à ton identité.",
   "home.faq.after.q": "Et si l'action se déclenche ?",
   "home.faq.after.a":
-    "Tu restes libre : Huntited ne force personne. Mais tu sais que tu ne seras pas seul·e, et le chat permet de s'organiser.",
+    "Tu restes libre, personne ne t'oblige à rien.\nMais tu sais que tu ne seras pas seul, et le salon est là pour s'organiser.",
   "home.faq.cost.q": "Ça coûte quelque chose ?",
   "home.faq.cost.a":
-    "S'engager coûte 0,2 KAS, non rendus : c'est ce qui inscrit ton engagement sur la blockchain. Ton dépôt de 5 KAS, lui, est rendu. Créer une action coûte aussi 0,2 KAS, et la caution n'est pas rendue en entier : une partie paie les participants si l'action a lieu, une petite partie revient à Huntited pour financer le service. Pour l'instant, tout se fait en KAS de test.",
+    "S'engager coûte 0,2 KAS, c'est ce qui inscrit ton engagement sur la blockchain, et ça n'est pas rendu.\nTon dépôt de 5 KAS, lui, t'est rendu.\nCréer une action coûte aussi 0,2 KAS. La caution n'est pas rendue en entier : une partie récompense les participants si l'action a lieu, une petite partie va à Huntited pour faire tourner le service.\nPour l'instant tout se fait en KAS de test.",
   "home.create": "Créer une action",
   "home.search": "Rechercher une action…",
   "home.filter": "Filtrer par statut",
@@ -445,7 +445,7 @@ export const fr = {
   "hunt.big.otherwise": "Sinon, rien ne se passe.",
   "hunt.big.count": "{count} déjà",
   "hunt.reassure":
-    "Personne ne voit que tu t'es engagé. Si on n'est pas {threshold}, tu récupères tout.",
+    "Personne ne voit que tu t'es engagé.\nSi on n'est pas {threshold}, tu récupères tout.",
   "hunt.more": "Plus d'infos",
   "hunt.cta.commit": "J'en suis",
   "hunt.condition": "Ta condition : au moins {count} personnes —",
@@ -456,9 +456,8 @@ export const fr = {
   "hunt.banner.stillOpen": "On peut encore te rejoindre jusqu'à la date limite.",
   "hunt.banner.expired": "Pas assez de monde : si rien ne se passe, chacun récupère son dépôt.",
   "hunt.chat.title": "Salon des participants",
-  "hunt.chat.expired":
-    "Cette action a expiré avant d'atteindre son seuil : aucun chat n'a été ouvert.",
-  "hunt.chat.later": "Le chat s'ouvrira si le seuil est atteint.",
+  "hunt.chat.expired": "Pas assez de monde avant la date limite, le salon ne s'est pas ouvert.",
+  "hunt.chat.later": "Le salon s'ouvrira quand on sera assez.",
 
   // Fenêtre d'engagement
   "common.cancel": "Annuler",
@@ -466,7 +465,7 @@ export const fr = {
   "commit.point.secret": "Personne ne voit que tu t'es engagé.",
   "commit.point.threshold": "Si on n'est pas {threshold}, rien ne se passe.",
   "commit.point.fee":
-    "Réseau de test : ton wallet envoie aussi 0,2 KAS de test (non rendus) pour inscrire ton engagement.",
+    "Réseau de test : ton wallet envoie aussi 0,2 KAS de test pour inscrire ton engagement, ceux-là ne sont pas rendus.",
   "commit.options": "Options",
   "commit.title": "Tu en es ?",
   "commit.already": "Tu es déjà engagé·e dans cette action.",
@@ -474,7 +473,7 @@ export const fr = {
   "commit.personal.before": "Je viens si au moins",
   "commit.personal.after": "personnes viennent",
   "commit.personal.help":
-    "Facultatif. Laisse {threshold} si tu viens dès que l'action se déclenche. Si tu mets plus et que ce nombre n'est pas atteint, tu ne viens pas et tes {amount} KAS te sont rendus. Personne d'autre ne voit ce chiffre.",
+    "Facultatif, laisse {threshold} si tu viens dès que l'action démarre.\nSi tu mets plus et qu'on n'atteint pas ce nombre, tu ne viens pas et tes {amount} KAS te sont rendus.\nPersonne d'autre ne voit ce chiffre.",
   "commit.personal.invalid": "Indique un nombre entier d'au moins {threshold}.",
   "commit.keyTerms": "Conditions",
   "commit.fullTerms": "Voir les conditions complètes",
@@ -500,7 +499,7 @@ export const fr = {
   // Chat
   "common.retry": "Réessayer",
   "chat.soon":
-    "L'action est déclenchée. Le chat chiffré entre participants arrive bientôt : en attendant, organisez-vous par vos moyens habituels.",
+    "C'est parti ! Le salon chiffré entre participants arrive bientôt, en attendant organisez-vous comme d'habitude.",
   "chat.p2p.secure": "Chiffré : seuls les membres de l'action peuvent lire.",
   "chat.p2p.creator": "Créateur·rice",
   "chat.p2p.failed": "Non envoyé",
@@ -685,14 +684,14 @@ export const fr = {
   // Création
   "create.title": "Créer une action",
   "create.lead":
-    "Décris ton action, puis choisis combien de personnes il faut. Elle n'a lieu que si assez de monde s'engage.",
+    "Décris ton action, puis dis combien de personnes il faut.\nElle n'a lieu que si assez de monde s'engage.",
   "form.title": "Titre",
   "form.title.placeholder": "Ex. On nettoie la plage samedi",
   "form.description": "Description",
   "form.description.placeholder": "Ce qu'on fera, où se retrouver, quoi apporter…",
   "form.location.placeholder": "Ex. Marseille",
   "form.location.help":
-    "Choisis ta ville dans la liste : le pays se remplit tout seul. Le point de rendez-vous précis va dans la description. Petite commune absente ? Indique la ville la plus proche.",
+    "Choisis ta ville dans la liste, le pays se remplit tout seul.\nLe point de rendez-vous précis, tu le mets dans la description. Ta commune n'y est pas ? Mets la ville la plus proche.",
   "form.deadline": "Date et heure limite",
   "form.deadline.help": "Si on n'est pas assez à cette date, rien ne se passe.",
   "form.threshold": "Personnes nécessaires",
@@ -700,13 +699,13 @@ export const fr = {
   "form.threshold.help": "Minimum {min}.",
   "form.hide": "Progression masquée",
   "form.hide.help":
-    "Le site n'affiche jamais le nombre d'engagés avant le déclenchement : personne n'attend de voir les autres pour se lancer. Attention : les engagements restent inscrits sur la blockchain, et quelqu'un d'équipé peut les compter.",
+    "Le site n'affiche jamais combien de personnes se sont engagées avant le démarrage, comme ça personne n'attend de voir les autres pour se lancer.\nPar contre les engagements restent inscrits sur la blockchain, et quelqu'un d'équipé peut les compter.",
   "form.caution": "Ta caution",
   "form.caution.label": "Ta caution (KAS)",
   "form.caution.short":
     "Minimum {min} KAS. Une partie récompense les participants et Huntited, le reste t'est rendu.",
   "form.commitDeposit": "Dépôt d'engagement (par participant)",
-  "form.commitDeposit.help": "Rendu au participant à la fin, que l'action réussisse ou non.",
+  "form.commitDeposit.help": "Rendu à chaque participant à la fin, que l'action ait lieu ou non.",
   "form.draftError": "Impossible d'enregistrer le brouillon. Réessaie.",
   "form.submit": "Vérifier",
   "val.title.required": "Le titre est requis.",
@@ -786,7 +785,7 @@ export const fr = {
   "hunt.outcomePending":
     "Date limite passée : vérification du résultat en cours. Les derniers engagements peuvent mettre quelques minutes à apparaître.",
   "hunt.pending":
-    "Inscription sur la blockchain en cours : l'action sera visible par tous dans environ une minute.",
+    "Inscription sur la blockchain en cours.\nTon action sera visible par tous d'ici une minute environ.",
   "err.alreadyCommitted": "Tu es déjà engagé·e dans cette action.",
   "wallet.err.needKastle": "Il faut le wallet Kastle pour publier sur la blockchain.",
   "wallet.err.noFunds":
@@ -836,7 +835,7 @@ export const fr = {
 
   // Récapitulatif
   "review.title": "Récapitulatif de ton action",
-  "review.lead": "Vérifie les informations. Une fois créée, l'action ne pourra plus être modifiée.",
+  "review.lead": "Relis bien, une fois créée l'action ne pourra plus être modifiée.",
   "review.progress": "Progression",
   "review.hidden": "Masquée jusqu'à la fin",
   "review.visible": "Visible par tous",
@@ -860,7 +859,7 @@ export const fr = {
   // Encadré du créateur
   "creator.title": "C'est ton action : fais-la connaître",
   "creator.text":
-    "Une action ne se déclenche que si assez de monde est au courant. Partage le lien là où ton action compte.",
+    "Une action ne démarre que si assez de monde est au courant.\nPartage le lien là où ça compte : tes groupes, tes réseaux, ton quartier.",
   "creator.tip1": "Envoie-le dans tes groupes (Signal, WhatsApp, Telegram…).",
   "creator.tip2": "Réponds aux tweets qui parlent du sujet avec « Répondre à un tweet ».",
   "creator.tip3":
@@ -883,7 +882,7 @@ export const fr = {
   "form.where.place": "Sur place",
   "form.where.online": "En ligne",
   "form.where.onlineHelp":
-    "Une action sur internet (publication, courriels, signature…) : pas de ville ni de pays. Précise le réseau ou le site dans la description.",
+    "Une action sur internet (publication, mails, signature…), pas besoin de ville.\nPrécise le réseau ou le site dans la description.",
   "hunt.online": "En ligne",
   "val.city.unknown":
     "Ville introuvable. Choisis-la dans la liste (petite commune : indique la ville la plus proche).",
@@ -931,16 +930,16 @@ export const fr = {
   "err.withdrawUnavailable": "Le retrait n'est possible qu'avec le registre sur la blockchain.",
   "withdraw.button": "Retirer mon engagement",
   "withdraw.confirmText":
-    "Tu retires ton engagement : il ne compte plus pour le déclenchement. Ton wallet envoie 0,2 KAS de test au registre. Tu pourras te réengager tant que l'action est ouverte.",
+    "Tu retires ton engagement, il ne compte plus.\nTon wallet envoie 0,2 KAS de test au registre.\nTu pourras revenir tant que l'action est ouverte.",
   "withdraw.confirm": "Oui, me retirer",
   "withdraw.sending": "Envoi…",
   "withdraw.hint":
-    "Possible jusqu'au déclenchement. Une fois l'action déclenchée, tout le groupe s'est engagé en même temps : plus de retrait.",
+    "Possible tant que l'action n'a pas démarré.\nUne fois lancée, tout le groupe s'est engagé en même temps, on ne peut plus se retirer.",
   "after.label": "Seulement si une autre action se déclenche d'abord",
   "after.select": "Action qui doit se déclencher d'abord",
   "after.alreadyOn": "déjà déclenchée",
   "after.help":
-    "Ton engagement ne comptera que lorsque cette autre action se sera déclenchée. Si elle ne se déclenche jamais, il ne compte pas. Exemple : « je participe à l'étape 2 si l'étape 1 a réussi ».",
+    "Ton engagement ne comptera qu'une fois cette autre action lancée, si elle ne démarre jamais il ne compte pas.\nPar exemple : « je participe à l'étape 2 si l'étape 1 a marché ».",
   "after.mine": "Ton engagement compte seulement si cette action se déclenche :",
   "after.met": "c'est fait, il compte.",
   "after.waiting": "en attente.",

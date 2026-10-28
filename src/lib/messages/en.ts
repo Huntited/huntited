@@ -268,7 +268,7 @@ export const en: Messages = {
   // Home
   "home.title": "Act together, never alone",
   "home.lead":
-    "Taking a stand, switching apps, launching a project, speaking up… Alone, it's risky. Here you commit without waiting for others to show up, and it only happens if enough people join.",
+    "Taking a stand, switching apps, launching a project, speaking up… alone, it's risky.\nHere you commit without waiting for others to show up, and it only happens if enough people join.",
   "hunt.hidden.title": "Hidden action",
   "hunt.hidden.text":
     "Huntited hid this action ({reason}). It remains written on the blockchain, which nobody can change, but the site no longer shows it.",
@@ -363,7 +363,7 @@ export const en: Messages = {
   "member.joined": "Written ✓ — see the action",
   "member.keep": "Bookmark this page: it's your pass for all your organisation's actions.",
   "hunt.explain":
-    "Nobody goes alone here: your commitment only counts if at least {threshold} people commit before the deadline. Otherwise, your deposit is returned.",
+    "Nobody goes alone here, your commitment only counts if at least {threshold} people commit before the deadline.\nOtherwise, your deposit comes back.",
   "hunt.explain.link": "How does it work?",
   "home.browse": "Browse actions",
   "home.example.title": "How it works, with an example",
@@ -377,23 +377,23 @@ export const en: Messages = {
   "home.example.cardLabel": "Example action",
   "home.example.cardTitle": "Beach clean-up on Saturday",
   "home.example.cardMeta": "Brighton Beach · before Saturday",
-  "home.example.cardProgress": "Threshold: 15 people · progress hidden",
+  "home.example.cardProgress": "15 people needed",
   "home.faq.title": "Questions",
   "home.faq.wallet.q": "Do I need a wallet?",
   "home.faq.wallet.a":
-    'Yes, a Kaspa wallet: Huntited creates one for you in one click, no extension needed ("My wallet" page). For now everything runs on the test network: no real KAS is used.',
+    'Yes, a Kaspa wallet. Huntited creates one for you in one click, nothing to install ("My wallet" page).\nFor now everything runs on the test network, no real KAS is used.',
   "home.faq.deposit.q": "Why a deposit?",
   "home.faq.deposit.a":
-    "So a commitment means something: you think before clicking, and fake commitments get expensive. The deposit is always returned at the end.",
+    "So that committing really means something.\nYou think before you click, and fake commitments get expensive.\nYour deposit always comes back at the end.",
   "home.faq.who.q": "Who knows I committed?",
   "home.faq.who.a":
-    "The site never shows it, not even to the creator. But your commitment is written on the Kaspa blockchain with your wallet address: it's public and permanent, and someone reading the blockchain can see it. For more discretion, use a wallet that isn't linked to your identity.",
+    "The site never shows it, not even to the person who created the action.\nBut your commitment is written on the Kaspa blockchain with your wallet address, it's public and it stays. Someone reading the blockchain can see it.\nIf you want to stay discreet, use a wallet that isn't linked to your identity.",
   "home.faq.after.q": "What if the action triggers?",
   "home.faq.after.a":
-    "You're still free: Huntited doesn't force anyone. But you know you won't be alone, and the chat helps you get organised.",
+    "You're still free, nobody forces you to do anything.\nBut you know you won't be alone, and the room is there to get organised.",
   "home.faq.cost.q": "Does it cost anything?",
   "home.faq.cost.a":
-    "Committing costs 0.2 KAS, not returned: that's what writes your commitment on the blockchain. Your 5 KAS deposit is returned. Creating an action also costs 0.2 KAS, and the deposit isn't fully returned: part of it pays participants if the action happens, a small part goes to Huntited to fund the service. For now, everything uses test KAS.",
+    "Committing costs 0.2 KAS, that's what records it on the blockchain, and it isn't returned.\nYour 5 KAS deposit does come back.\nCreating an action also costs 0.2 KAS. The deposit isn't fully returned: part of it rewards participants if the action happens, a small part goes to Huntited to keep the service running.\nFor now everything is in test KAS.",
   "home.create": "Create an action",
   "home.search": "Search actions…",
   "home.filter": "Filter by status",
@@ -442,7 +442,7 @@ export const en: Messages = {
   "hunt.big.otherwise": "Otherwise, nothing happens.",
   "hunt.big.count": "{count} so far",
   "hunt.reassure":
-    "Nobody sees that you joined. If there aren't {threshold} of us, you get everything back.",
+    "Nobody sees that you joined.\nIf there aren't {threshold} of us, you get everything back.",
   "hunt.more": "More info",
   "hunt.cta.commit": "I'm in",
   "hunt.condition": "Your condition: at least {count} people —",
@@ -452,8 +452,8 @@ export const en: Messages = {
   "hunt.banner.stillOpen": "People can still join you until the deadline.",
   "hunt.banner.expired": "Not enough people: if nothing happens, everyone gets their deposit back.",
   "hunt.chat.title": "Participants' room",
-  "hunt.chat.expired": "This action expired before reaching its threshold: no chat was opened.",
-  "hunt.chat.later": "The chat opens if the threshold is reached.",
+  "hunt.chat.expired": "Not enough people before the deadline, the room never opened.",
+  "hunt.chat.later": "The room opens once there are enough of us.",
 
   // Commit dialog
   "common.cancel": "Cancel",
@@ -469,7 +469,7 @@ export const en: Messages = {
   "commit.personal.before": "I'll come if at least",
   "commit.personal.after": "people come",
   "commit.personal.help":
-    "Optional. Leave {threshold} if you'll come as soon as the action triggers. If you set more and that number isn't reached, you don't come and your {amount} KAS are returned. Nobody else sees this number.",
+    "Optional, leave {threshold} if you're in as soon as the action starts.\nIf you set more and that number isn't reached, you don't go and your {amount} KAS come back.\nNobody else sees this number.",
   "commit.personal.invalid": "Enter a whole number of at least {threshold}.",
   "commit.keyTerms": "Terms",
   "commit.fullTerms": "See the full terms",
@@ -677,14 +677,14 @@ export const en: Messages = {
   // Creation
   "create.title": "Create an action",
   "create.lead":
-    "Describe your action, then choose how many people are needed. It only happens if enough people join.",
+    "Describe your action, then say how many people are needed.\nIt only happens if enough people join.",
   "form.title": "Title",
   "form.title.placeholder": "E.g. Beach clean-up on Saturday",
   "form.description": "Description",
   "form.description.placeholder": "What we'll do, where to meet, what to bring…",
   "form.location.placeholder": "E.g. Marseille",
   "form.location.help":
-    "Pick your city from the list: the country fills in by itself. Put the exact meeting point in the description. Small town missing? Use the nearest city.",
+    "Pick your city from the list, the country fills itself in.\nThe exact meeting point goes in the description. Your town isn't there? Use the nearest city.",
   "form.deadline": "Deadline (date and time)",
   "form.deadline.help": "If there aren't enough people by then, nothing happens.",
   "form.threshold": "People needed",
@@ -827,7 +827,7 @@ export const en: Messages = {
 
   // Review
   "review.title": "Review your action",
-  "review.lead": "Check the details. Once created, the action can't be changed.",
+  "review.lead": "Read it over, once created the action can't be changed.",
   "review.progress": "Progress",
   "review.hidden": "Hidden until the end",
   "review.visible": "Visible to all",
@@ -851,7 +851,7 @@ export const en: Messages = {
   // Creator box
   "creator.title": "This is your action: spread the word",
   "creator.text":
-    "An action only triggers if enough people know about it. Share the link where your action matters.",
+    "An action only starts if enough people know about it.\nShare the link where it matters: your groups, your networks, your neighbourhood.",
   "creator.tip1": "Send it to your groups (Signal, WhatsApp, Telegram…).",
   "creator.tip2": 'Reply to tweets about the topic with "Reply to a tweet".',
   "creator.tip3":
@@ -874,7 +874,7 @@ export const en: Messages = {
   "form.where.place": "In person",
   "form.where.online": "Online",
   "form.where.onlineHelp":
-    "An action on the internet (post, emails, signing…): no city or country. Name the network or website in the description.",
+    "An action on the internet (post, emails, petition…), no city needed.\nSay which network or site in the description.",
   "hunt.online": "Online",
   "val.city.unknown": "City not found. Pick it from the list (small town: use the nearest city).",
   "val.city.country": "This city isn't in the chosen country.",
@@ -921,16 +921,16 @@ export const en: Messages = {
   "err.withdrawUnavailable": "Withdrawing is only possible with the blockchain registry.",
   "withdraw.button": "Withdraw my commitment",
   "withdraw.confirmText":
-    "You withdraw your commitment: it no longer counts toward the trigger. Your wallet sends 0.2 test KAS to the registry. You can commit again while the action is open.",
+    "You withdraw your commitment, it no longer counts.\nYour wallet sends 0.2 test KAS to the registry.\nYou can come back while the action is open.",
   "withdraw.confirm": "Yes, withdraw",
   "withdraw.sending": "Sending…",
   "withdraw.hint":
-    "Possible until the trigger. Once the action triggers, the whole group committed at the same time: no more withdrawing.",
+    "Possible until the action starts.\nOnce it's on, the whole group committed at the same time, you can't withdraw anymore.",
   "after.label": "Only if another action triggers first",
   "after.select": "Action that must trigger first",
   "after.alreadyOn": "already triggered",
   "after.help":
-    'Your commitment only counts once this other action has triggered. If it never triggers, it doesn\'t count. Example: "I join step 2 if step 1 succeeded".',
+    'Your commitment only counts once that other action has started, if it never starts it doesn\'t count.\nFor example: "I join step 2 if step 1 worked".',
   "after.mine": "Your commitment only counts if this action triggers:",
   "after.met": "done, it counts.",
   "after.waiting": "waiting.",

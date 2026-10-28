@@ -194,6 +194,12 @@ select option {
     border-color: var(--color-border);
   }
 
+  /* Textes du site : un retour à la ligne dans un texte s'affiche (texte aéré). */
+  p,
+  li {
+    white-space: pre-line;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
