@@ -234,6 +234,25 @@ function LockGate({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [open]);
 
+  // « À chaque opération » : quitter l'écran (autre onglet, autre appli)
+  // referme la page ; au retour, le code est redemandé.
+  useEffect(() => {
+    if (!open || !isProtected() || builtinProtection()?.lockAfterMs !== 0) return;
+    const onHidden = () => {
+      if (document.visibilityState !== "hidden") return;
+      lockBuiltin();
+      setOpen(false);
+      const onBack = () => {
+        if (document.visibilityState !== "visible") return;
+        document.removeEventListener("visibilitychange", onBack);
+        ask();
+      };
+      document.addEventListener("visibilitychange", onBack);
+    };
+    document.addEventListener("visibilitychange", onHidden);
+    return () => document.removeEventListener("visibilitychange", onHidden);
+  }, [open]);
+
   if (open === null) return null;
   if (open) return <>{children}</>;
   return (
