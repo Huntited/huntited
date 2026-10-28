@@ -229,6 +229,16 @@ export const en: Messages = {
     "A Kaspa wallet kept on this device, no extension needed: it works on computers, phones and in the Huntited Chat app.",
   "wallet.page.testnet":
     "Test network: these KAS are free and worthless. Never send real KAS to this wallet.",
+  "wallet.page.testnetTag": "Test network",
+  "wallet.page.freeKas": "Free KAS",
+  "wallet.page.phraseTitle": "Recovery phrase",
+  "wallet.page.locked.title": "Wallet locked",
+  "wallet.page.locked.text": "Enter your code to see your balance and address.",
+  "wallet.page.locked.button": "Unlock",
+  "wallet.lock.short.none": "none",
+  "wallet.lock.short.code": "code",
+  "wallet.lock.short.bio": "fingerprint",
+  "wallet.lock.short.both": "code and fingerprint",
   "wallet.page.create": "Create my wallet",
   "wallet.page.createNote":
     "You'll get 12 words to write down on paper: they recover this wallet, here or in Kastle and Kaspium.",

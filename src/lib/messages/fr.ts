@@ -231,6 +231,16 @@ export const fr = {
     "Un wallet Kaspa rangé sur cet appareil, sans rien installer.\nIl marche sur ordinateur, sur téléphone et dans l'app Huntited Chat.",
   "wallet.page.testnet":
     "Réseau de test : ces KAS sont gratuits et ne valent rien.\nN'envoie jamais de vrais KAS sur ce wallet.",
+  "wallet.page.testnetTag": "Réseau de test",
+  "wallet.page.freeKas": "KAS gratuits",
+  "wallet.page.phraseTitle": "Phrase de récupération",
+  "wallet.page.locked.title": "Wallet verrouillé",
+  "wallet.page.locked.text": "Entre ton code pour voir ton solde et ton adresse.",
+  "wallet.page.locked.button": "Déverrouiller",
+  "wallet.lock.short.none": "aucune",
+  "wallet.lock.short.code": "code",
+  "wallet.lock.short.bio": "empreinte",
+  "wallet.lock.short.both": "code et empreinte",
   "wallet.page.create": "Créer mon wallet",
   "wallet.page.createNote":
     "Tu vas recevoir 12 mots à noter sur papier.\nIls permettent de retrouver ce wallet, ici ou dans Kastle et Kaspium.",

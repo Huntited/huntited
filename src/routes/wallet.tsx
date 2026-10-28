@@ -3,8 +3,18 @@
 // gratuits, achat en euros), l'utiliser sur Huntited, le protéger (code,
 // empreinte), sauvegarder sa phrase.
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Fingerprint, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  ChevronDown,
+  CircleCheck,
+  ExternalLink,
+  Fingerprint,
+  KeyRound,
+  Lock,
+  RefreshCw,
+  ShieldCheck,
+  ShoppingCart,
+} from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +30,11 @@ import {
   hasBuiltinWallet,
   importBuiltinWallet,
   isLocked,
+  isProtected,
   lockBuiltin,
   protectBuiltin,
   removeBuiltinWallet,
+  unlockForPage,
   type CodeKind,
   type Protection,
 } from "@/lib/builtin-wallet";
@@ -41,6 +53,11 @@ const FAUCET = "https://faucet-tn10.kaspanet.io/";
 const ONRAMP = (import.meta.env["VITE_ONRAMP_URL"] as string | undefined)?.trim() || null;
 /** Échange d'autres cryptomonnaies contre des KAS, sans compte (réseau principal). */
 const CHANGENOW = "https://changenow.io/currencies/kaspa";
+/** Achat de KAS en euros (réseau principal), comme dans « Connecter un wallet ». */
+const SHOPS = [
+  { name: "Deskoin", note: "picker.deskoin", href: "https://deskoin.com/en/acheter/kaspa" },
+  { name: "Kraken", note: "picker.kraken", href: "https://www.kraken.com/buy/kas" },
+] as const;
 
 const kas = (sompi: bigint) =>
   (Number(sompi) / 1e8).toLocaleString(undefined, { maximumFractionDigits: 4 });
@@ -54,13 +71,18 @@ function WalletPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6 px-4 py-10">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{t("wallet.page.title")}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{t("wallet.page.lead")}</p>
-        {TESTNET && (
-          <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-            {t("wallet.page.testnet")}
-          </p>
-        )}
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight">{t("wallet.page.title")}</h1>
+          {TESTNET && (
+            <span
+              className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
+              title={t("wallet.page.testnet")}
+            >
+              {t("wallet.page.testnetTag")}
+            </span>
+          )}
+        </div>
+        {!exists && <p className="mt-2 text-sm text-muted-foreground">{t("wallet.page.lead")}</p>}
       </div>
 
       {fresh ? (
@@ -72,7 +94,9 @@ function WalletPage() {
           }}
         />
       ) : exists ? (
-        <MyWallet onRemoved={() => setExists(false)} />
+        <LockGate>
+          <MyWallet onRemoved={() => setExists(false)} />
+        </LockGate>
       ) : (
         <Start
           onCreated={(phrase) => setFresh(phrase)}
@@ -183,6 +207,84 @@ function Backup({ phrase, onDone }: { phrase: string; onDone: () => void }) {
   );
 }
 
+/**
+ * Wallet protégé : la page demande le code (ou l'empreinte) avant d'afficher
+ * le solde et l'adresse, puis se referme après le délai choisi.
+ */
+function LockGate({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState<boolean | null>(null);
+
+  const ask = () => void unlockForPage().then(setOpen);
+  useEffect(() => {
+    // Déjà ouvert récemment (délai pas écoulé) : pas de nouvelle demande.
+    if (!isProtected() || !isLocked()) return setOpen(true);
+    setOpen(false);
+    // Après le montage de la fenêtre de déverrouillage (WalletUnlock).
+    const timer = setTimeout(ask, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Se referme au bout du délai choisi (5 min, 30 min…).
+  useEffect(() => {
+    if (!open || !isProtected()) return;
+    const after = builtinProtection()?.lockAfterMs ?? 0;
+    if (after <= 0) return;
+    const timer = setTimeout(() => setOpen(false), after);
+    return () => clearTimeout(timer);
+  }, [open]);
+
+  if (open === null) return null;
+  if (open) return <>{children}</>;
+  return (
+    <div className="space-y-3 rounded-2xl border bg-card px-4 py-10 text-center">
+      <Lock className="mx-auto size-7 text-primary" aria-hidden />
+      <h2 className="text-lg font-semibold">{t("wallet.page.locked.title")}</h2>
+      <p className="text-sm text-muted-foreground">{t("wallet.page.locked.text")}</p>
+      <Button onClick={ask}>{t("wallet.page.locked.button")}</Button>
+    </div>
+  );
+}
+
+/** Une partie repliée de la page : titre (et état), contenu au clic. */
+function Fold({
+  icon,
+  title,
+  status,
+  warn,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  status?: string;
+  /** État à surveiller (pas de protection) : en orange. */
+  warn?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <details className="group rounded-2xl border bg-card p-4 text-sm">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-md font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <span className="flex items-center gap-2">
+          {icon}
+          {title}
+          {status ? (
+            <span
+              className={`font-normal ${warn ? "text-amber-700 dark:text-amber-400" : "text-primary"}`}
+            >
+              · {status}
+            </span>
+          ) : null}
+        </span>
+        <ChevronDown
+          className="size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+          aria-hidden
+        />
+      </summary>
+      <div className="mt-3 space-y-3">{children}</div>
+    </details>
+  );
+}
+
 const LOCK_CHOICES: { ms: number; key: MessageKey }[] = [
   { ms: 0, key: "wallet.lock.each" },
   { ms: 5 * 60_000, key: "wallet.lock.5min" },
@@ -194,7 +296,7 @@ const LOCK_CHOICES: { ms: number; key: MessageKey }[] = [
  * Protection du wallet : code (chiffres ou mot de passe), empreinte ou visage
  * (app), ou les deux ; quand reverrouiller ; effacement après trop d'erreurs.
  */
-function ProtectionSection() {
+function ProtectionSection({ onChange }: { onChange: () => void }) {
   const { t } = useI18n();
   const [current, setCurrent] = useState<Protection | null>(null);
   const [useCode, setUseCode] = useState(false);
@@ -243,6 +345,7 @@ function ProtectionSection() {
       setCode("");
       setConfirm("");
       load();
+      onChange();
       setMessage({
         key: useCode || bio ? "wallet.lock.saved" : "wallet.lock.removed",
         error: false,
@@ -255,12 +358,8 @@ function ProtectionSection() {
   }
 
   return (
-    <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2 className="flex items-center gap-1.5 font-semibold">
-          <ShieldCheck className="size-4" aria-hidden />
-          {t("wallet.lock.title")}
-        </h2>
+    <div className="space-y-3">
+      <div className="flex items-baseline justify-end gap-2">
         {protectedNow && !isLocked() && (
           <button
             type="button"
@@ -408,19 +507,21 @@ function ProtectionSection() {
           {busy ? t("wallet.unlock.busy") : t("wallet.lock.save")}
         </Button>
       </form>
-    </section>
+    </div>
   );
 }
 
-/** Le wallet : adresse, solde, recevoir, utiliser, sauvegarder, retirer. */
+/** Le wallet : solde et boutons en haut ; protection, phrase et achat repliés. */
 function MyWallet({ onRemoved }: { onRemoved: () => void }) {
   const { t } = useI18n();
   const address = builtinAddress(TESTNET ? "kaspatest" : "kaspa")!;
   const [balance, setBalance] = useState<bigint | null>(null);
   const [balanceError, setBalanceError] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [receiving, setReceiving] = useState(false);
   const [shownPhrase, setShownPhrase] = useState<string | null>(null);
   const [inUse, setInUse] = useState(false);
+  const [protection, setProtection] = useState<Protection | null>(null);
 
   const refresh = () => {
     setBalanceError(false);
@@ -432,6 +533,7 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
     refresh();
     const s = getWalletState();
     setInUse(s.isConnected && s.kind === "builtin");
+    setProtection(builtinProtection());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
@@ -441,16 +543,32 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
       setTimeout(() => setCopied(false), 2000);
     });
 
+  const protectionStatus = t(
+    protection?.code && protection.bio
+      ? "wallet.lock.short.both"
+      : protection?.bio
+        ? "wallet.lock.short.bio"
+        : protection?.code
+          ? "wallet.lock.short.code"
+          : "wallet.lock.short.none",
+  );
+
   return (
-    <div className="space-y-6">
-      <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="font-semibold">{t("wallet.page.balance")}</h2>
-          <button type="button" className="text-xs underline" onClick={refresh}>
-            {t("wallet.page.refresh")}
+    <div className="space-y-3">
+      <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-muted-foreground">{t("wallet.page.balance")}</h2>
+          <button
+            type="button"
+            className="rounded-md p-1 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={refresh}
+            aria-label={t("wallet.page.refresh")}
+            title={t("wallet.page.refresh")}
+          >
+            <RefreshCw className="size-4" aria-hidden />
           </button>
         </div>
-        <p className="text-2xl font-semibold" aria-live="polite">
+        <p className="text-3xl font-semibold tracking-tight" aria-live="polite">
           {balanceError ? (
             <span className="text-sm font-normal text-destructive">{t("wallet.err.node")}</span>
           ) : balance === null ? (
@@ -460,7 +578,8 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
           )}
         </p>
         {inUse ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="flex items-center gap-1.5 text-xs text-primary">
+            <CircleCheck className="size-4" aria-hidden />
             {t("wallet.page.inUse")}{" "}
             <Link to="/" className="underline">
               {t("wallet.page.seeHunts")}
@@ -469,6 +588,7 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
         ) : (
           <Button
             size="sm"
+            variant="outline"
             onClick={() => {
               connectBuiltin();
               setInUse(true);
@@ -477,72 +597,53 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
             {t("wallet.page.use")}
           </Button>
         )}
-      </section>
-
-      <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
-        <h2 className="font-semibold">{t("wallet.page.receive")}</h2>
-        <div
-          className="mx-auto w-44 rounded bg-white p-2"
-          role="img"
-          aria-label={t("wallet.page.qr")}
-          dangerouslySetInnerHTML={{ __html: qrSvg(address) }}
-        />
-        <p className="break-all text-center font-mono text-xs">{address}</p>
-        <Button variant="outline" size="sm" className="w-full" onClick={copy}>
-          {copied ? t("chatLogin.copied") : t("wallet.page.copy")}
-        </Button>
-        {TESTNET ? (
-          <div className="space-y-2">
+        <div className={`grid gap-2 ${TESTNET ? "grid-cols-2" : "grid-cols-1"}`}>
+          {TESTNET && (
             <Button
-              className="w-full"
               onClick={() => {
                 copy();
                 window.open(FAUCET, "_blank", "noopener");
               }}
             >
-              {t("wallet.page.faucet")}
+              {t("wallet.page.freeKas")}
             </Button>
-            <p className="text-xs text-muted-foreground">{t("wallet.page.faucetNote")}</p>
-          </div>
-        ) : null}
-        <div className="space-y-2 border-t pt-3">
-          <h3 className="font-medium">{t("wallet.page.buyTitle")}</h3>
-          {!TESTNET && ONRAMP ? (
-            <Button
-              className="w-full"
-              onClick={() => {
-                copy();
-                window.open(ONRAMP, "_blank", "noopener");
-              }}
-            >
-              {t("wallet.page.buy")}
-            </Button>
-          ) : null}
-          {!TESTNET ? (
-            <>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  copy();
-                  window.open(CHANGENOW, "_blank", "noopener");
-                }}
-              >
-                {t("wallet.page.changenow")}
-              </Button>
-              <p className="text-xs text-muted-foreground">{t("wallet.page.changenowNote")}</p>
-            </>
-          ) : (
-            <p className="text-xs text-muted-foreground">{t("wallet.page.buyLater")}</p>
           )}
-          <p className="text-xs text-muted-foreground">{t("wallet.page.buyNote")}</p>
+          <Button
+            variant="outline"
+            onClick={() => setReceiving((r) => !r)}
+            aria-expanded={receiving}
+          >
+            {t("wallet.page.receive")}
+          </Button>
         </div>
+        {TESTNET && <p className="text-xs text-muted-foreground">{t("wallet.page.faucetNote")}</p>}
+        {receiving && (
+          <div className="space-y-3 border-t pt-3">
+            <div
+              className="mx-auto w-44 rounded bg-white p-2"
+              role="img"
+              aria-label={t("wallet.page.qr")}
+              dangerouslySetInnerHTML={{ __html: qrSvg(address) }}
+            />
+            <p className="break-all text-center font-mono text-xs">{address}</p>
+            <Button variant="outline" size="sm" className="w-full" onClick={copy}>
+              {copied ? t("chatLogin.copied") : t("wallet.page.copy")}
+            </Button>
+            {TESTNET && <p className="text-xs text-muted-foreground">{t("wallet.page.testnet")}</p>}
+          </div>
+        )}
       </section>
 
-      <ProtectionSection />
+      <Fold
+        icon={<ShieldCheck className="size-4" aria-hidden />}
+        title={t("wallet.lock.title")}
+        status={protectionStatus}
+        warn={!protection?.code && !protection?.bio}
+      >
+        <ProtectionSection onChange={() => setProtection(builtinProtection())} />
+      </Fold>
 
-      <section className="space-y-3 rounded-lg border bg-card p-4 text-sm">
-        <h2 className="font-semibold">{t("wallet.page.safety")}</h2>
+      <Fold icon={<KeyRound className="size-4" aria-hidden />} title={t("wallet.page.phraseTitle")}>
         <p className="text-xs text-muted-foreground">{t("wallet.page.safetyNote")}</p>
         {shownPhrase ? (
           <p className="rounded border bg-muted p-2 font-mono text-xs">{shownPhrase}</p>
@@ -564,21 +665,81 @@ function MyWallet({ onRemoved }: { onRemoved: () => void }) {
             {t("wallet.page.show")}
           </Button>
         )}
-        <div>
-          <button
-            type="button"
-            className="text-xs text-destructive underline"
-            onClick={() => {
-              if (!window.confirm(t("wallet.page.removeConfirm"))) return;
+      </Fold>
+
+      <Fold
+        icon={<ShoppingCart className="size-4" aria-hidden />}
+        title={t("wallet.page.buyTitle")}
+      >
+        {TESTNET ? (
+          <p className="text-xs text-muted-foreground">{t("wallet.page.buyLater")}</p>
+        ) : (
+          <>
+            {ONRAMP ? (
+              <Button
+                className="w-full"
+                onClick={() => {
+                  copy();
+                  window.open(ONRAMP, "_blank", "noopener");
+                }}
+              >
+                {t("wallet.page.buy")}
+              </Button>
+            ) : null}
+            {SHOPS.map((shop) => (
+              <div key={shop.name} className="flex items-center gap-3">
+                <span className="min-w-0 flex-1">
+                  <span className="font-semibold">{shop.name}</span>{" "}
+                  <span className="text-muted-foreground">· {t(shop.note)}</span>
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    copy();
+                    window.open(shop.href, "_blank", "noopener");
+                  }}
+                >
+                  {t("picker.get")}
+                  <ExternalLink className="size-3.5" aria-hidden />
+                </Button>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                copy();
+                window.open(CHANGENOW, "_blank", "noopener");
+              }}
+            >
+              {t("wallet.page.changenow")}
+            </Button>
+            <p className="text-xs text-muted-foreground">{t("wallet.page.changenowNote")}</p>
+          </>
+        )}
+        <p className="text-xs text-muted-foreground">{t("wallet.page.buyNote")}</p>
+      </Fold>
+
+      <div className="pt-3 text-center">
+        <button
+          type="button"
+          className="text-xs text-destructive underline"
+          onClick={() => {
+            if (!window.confirm(t("wallet.page.removeConfirm"))) return;
+            // Wallet protégé : le code (ou l'empreinte) d'abord.
+            const go = isProtected() ? unlockForPage() : Promise.resolve(true);
+            void go.then((ok) => {
+              if (!ok) return;
               if (getWalletState().kind === "builtin") disconnectWallet();
               removeBuiltinWallet();
               onRemoved();
-            }}
-          >
-            {t("wallet.page.remove")}
-          </button>
-        </div>
-      </section>
+            });
+          }}
+        >
+          {t("wallet.page.remove")}
+        </button>
+      </div>
     </div>
   );
 }

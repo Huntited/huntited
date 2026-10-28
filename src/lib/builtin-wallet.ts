@@ -232,6 +232,27 @@ export function lockBuiltin(): void {
   session = null;
 }
 
+/**
+ * Demande le code (ou l'empreinte) pour ouvrir la page « Mon wallet » ;
+ * true si c'est bon. En mode « à chaque opération », la clé est aussitôt
+ * reverrouillée : ouvrir la page ne vaut pas pour l'engagement suivant.
+ */
+export async function unlockForPage(): Promise<boolean> {
+  try {
+    await requireUnlocked();
+    afterUse();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Le wallet est protégé (code ou empreinte) : la page demande de le déverrouiller. */
+export function isProtected(): boolean {
+  const p = builtinProtection();
+  return p != null && (p.code != null || p.bio);
+}
+
 /** Verrouillé : il faut déverrouiller avant d'envoyer ou d'afficher la phrase. */
 export const isLocked = () => hasBuiltinWallet() && unlocked() === null;
 
