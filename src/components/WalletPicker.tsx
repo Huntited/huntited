@@ -2,9 +2,11 @@
 // puis les extensions à installer), à droite ce qu'est un wallet, la création
 // du wallet Huntited et, sur le vrai réseau, l'achat de KAS.
 import { useNavigate } from "@tanstack/react-router";
-import { Castle, ExternalLink, Fish, KeyRound, UserRoundCheck } from "lucide-react";
+import { ExternalLink, KeyRound, UserRoundCheck } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
+import kasperiaLogo from "@/assets/wallets/kasperia.png";
+import kastleLogo from "@/assets/wallets/kastle.jpg";
 import { LogoMark } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -16,18 +18,23 @@ import { closePicker, subscribePicker } from "@/lib/wallet-picker";
 const TESTNET = REGISTRY_ADDRESS.startsWith("kaspatest:");
 const FAUCET = "https://faucet-tn10.kaspanet.io/";
 
+/** Logo officiel d'un wallet (fichier local, aucune requête vers son site). */
+const WalletLogo = ({ src }: { src: string }) => (
+  <img src={src} alt="" className="h-9 w-9 rounded-[22%] object-cover" aria-hidden="true" />
+);
+
 const EXTENSIONS: { id: "kastle" | "kasperia"; name: string; icon: ReactNode; install: string }[] =
   [
     {
       id: "kastle",
       name: "Kastle",
-      icon: <Castle className="h-5 w-5" aria-hidden="true" />,
+      icon: <WalletLogo src={kastleLogo} />,
       install: "https://kastle.cc/",
     },
     {
       id: "kasperia",
       name: "Kasperia",
-      icon: <Fish className="h-5 w-5" aria-hidden="true" />,
+      icon: <WalletLogo src={kasperiaLogo} />,
       install: "https://chromewebstore.google.com/detail/kasperia/ffalcabgggegkejjlknofllbaledgcob",
     },
   ];
